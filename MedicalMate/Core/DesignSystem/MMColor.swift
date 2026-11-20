@@ -48,6 +48,23 @@ enum MMColor {
     static let borderFocus = Palette.primary500
     static let borderPrimary = Palette.primary500
     static let borderOnDark = Color(hex: 0xFFFFFF, opacity: 0.32)
+
+    // 통증 강도 1~5. 서열척도라 순서가 뜻을 가진다.
+    // 원색은 칩·트랙 채움에, tint는 판독 영역의 면에 쓴다.
+
+    /// `severity/1` ~ `severity/5`. 1~5 밖의 값은 가장 가까운 끝으로 잡는다.
+    static func severity(_ level: Int) -> Color {
+        Palette.severityBase[clampedIndex(level)]
+    }
+
+    /// `severity/1-tint` ~ `severity/5-tint`.
+    static func severityTint(_ level: Int) -> Color {
+        Palette.severityTint[clampedIndex(level)]
+    }
+
+    private static func clampedIndex(_ level: Int) -> Int {
+        min(max(level, 1), 5) - 1
+    }
 }
 
 /// 브랜드가 고정한 색.
