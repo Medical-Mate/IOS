@@ -149,6 +149,18 @@ struct ComponentSpecTests {
         #expect(MMIcon.allCases.contains(.noteFilled))
         #expect(MMIcon.allCases.contains(.calendarFilled))
     }
+    @Test("Typing 점은 7 · 간격 5 · 높이 50이고 투명도는 0.35 · 0.6 · 1.0 (3663:7212)")
+    func typingIndicator() {
+        #expect(TypingMetrics.dot == CGFloat(7))
+        #expect(TypingMetrics.gap == CGFloat(5))
+        #expect(TypingMetrics.height == CGFloat(50))
+    }
+
+    @Test("Chat Composer의 Actions 한 칸은 48 (631:1294)")
+    func chatComposerActions() {
+        #expect(ComposerMetrics.action == CGFloat(48))
+    }
+
 }
 
 extension MMCalendarDay.DayKind: @retroactive Equatable {}

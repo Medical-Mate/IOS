@@ -36,7 +36,8 @@ struct MainTabView: View {
         case .home:
             HomeView(
                 onOpenCardList: { path.append(Route.briefCardList) },
-                onOpenCard: { path.append(Route.briefCard(cardId: $0.id)) }
+                onOpenCard: { path.append(Route.briefCard(cardId: $0.id)) },
+                onStartIntake: { path.append(Route.intake(sessionId: nil)) }
             )
         case .record:
             PlaceholderView(title: "기록", note: "H 섹션 `1j-1`(3663:15519)을 그린다")
@@ -48,8 +49,26 @@ struct MainTabView: View {
         // 화면이 붙는 대로 여기에 등록한다.
         switch route {
         case .briefCardList:
-            BriefCardListView()
+            BriefCardListView(
+                onOpenCard: { path.append(Route.briefCard(cardId: "\($0)")) },
+                onResumeIntake: { path.append(Route.intake(sessionId: $0)) }
+            )
+            .toolbar(.hidden, for: .navigationBar)
+
+        case .intake(let sessionId):
+            // 새로 시작하는 길은 1단계(인체도)가 짚은 부위를 넘겨줘야 열린다. 아직
+            // 그 화면이 없어서 이어서 하는 길만 간다.
+            if let sessionId {
+                IntakeFlowView(
+                    sessionId: sessionId,
+                    onClose: { path.removeLast() },
+                    onCreateCard: { _ in path.append(Route.briefCardList) },
+                    onFindHospital: { path.append(Route.hospitalPick) }
+                )
                 .toolbar(.hidden, for: .navigationBar)
+            } else {
+                PlaceholderView(title: "인체도", note: "1단계 `1c-1`이 서면 여기서 부위를 짚는다 (D5 미정)")
+            }
         default:
             PlaceholderView(title: "\(route)", note: "아직 그리지 않았다")
         }

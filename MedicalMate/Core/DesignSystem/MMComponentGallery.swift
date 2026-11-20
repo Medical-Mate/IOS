@@ -11,6 +11,7 @@ struct MMComponentGallery: View {
     @State private var text = ""
     @State private var memo = "지난번에 받은 약을 먹고 속이 쓰렸어요."
     @State private var query = ""
+    @State private var message = ""
     @State private var toggleOn = true
     @State private var severity = 3
     @State private var tooltipOpen = false
@@ -128,6 +129,12 @@ struct MMComponentGallery: View {
                     HStack { Spacer(); MMBubble(text: "한 3주쯤 됐어요.", sender: .patient) }
                     MMQuestionRow(number: 1, text: "검사를 받아야 하나요?", state: .selected, action: {})
                     MMQuestionRow(number: 2, text: "질문 직접 추가", state: .add, action: {})
+                    MMTypingIndicator()
+                }
+
+                section("Chat Composer · 295:692 + 631:1294") {
+                    MMChatComposer(text: $message) { _ in }
+                    MMChatComposer(text: $message, showsMic: false) { _ in }
                 }
 
                 section("Progress · 334:1139 · 1155:854 / Step·Hint Row · 3644:7457 · 3645:2369") {
