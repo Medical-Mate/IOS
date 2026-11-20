@@ -179,16 +179,19 @@ swiftlint --strict
 | Xcode 프로젝트 | `MedicalMate.xcodeproj`. objectVersion 77, 동기화 폴더 그룹이라 파일을 더해도 프로젝트 파일을 고치지 않습니다 |
 | Swift 언어 모드 | 6.0. 동시성 검사가 켜져 있습니다 |
 | 디자인 토큰 | 색 · 글자 · 간격 · 크기 · 반경 · 고도를 Figma 값 그대로 옮겼습니다. **컴포넌트는 아직 없습니다** |
-| 유닛 테스트 | 21건 (토큰 환산 · 컴포넌트 수치 · `ApiResult` · 토큰 재발급) |
+| 유닛 테스트 | 30건 (토큰 환산 · 컴포넌트 수치 · `ApiResult` · 토큰 재발급) |
 | CI | `.github/workflows/ci.yml` — SwiftLint + 빌드 · 테스트 |
 | Sign in with Apple | **미정.** 백엔드 스키마 변경 필요. 심사 리스크 |
 | 3D 인체도 렌더러 | **미정.** Filament iOS 1순위, 2D 선행 가능 |
 | 호출어 · 온디바이스 LLM | **1차 출시 제외 제안.** 승인 대기 |
 | 예약 문자 가져오기 | Share Extension 필요. M4 |
 | 로컬 저장 방식 | **미정.** Android도 미정 |
-| 컴포넌트 | **6종 들어옴** (Button · Social Login Button · Badge · Chip · Card · Checkbox). 마스터 52종 중 나머지는 쓰는 화면에서 가져옵니다 |
-| 아이콘 | `check` 하나. 45종 남았습니다 |
-| 디자인 어긋남 | `Label/S` 굵기가 Android와 다릅니다(Figma Regular / Android Medium — Figma를 따랐습니다). `Chip / Selected`의 체크가 마스터에 없습니다. 둘 다 디자인 트랙 확인 대기 |
+| 컴포넌트 | **38종 들어옴.** 게시된 마스터는 다 옮겼습니다. 목록과 노드 id는 [`docs/COMPONENT-MAP.md`](docs/COMPONENT-MAP.md) |
+| 아이콘 | 47종 전부 |
+| 에셋 | 로고 8 · 온보딩 일러스트 4 · 공유 시트 1 · 홈 첫 배너 사진 1 |
+| 안 옮긴 것 | `Archive`(미사용 15종) · 홈 제안 카드 3종(미게시) · `수정 중` 2종 · Push Notification(안드로이드 알림 모형). 이유는 COMPONENT-MAP 2장 |
+| 디자인 어긋남 | **9건.** 마스터와 설명이 다른 자리는 마스터를 따르고 COMPONENT-MAP 3장에 적었습니다. 전부 디자인 트랙 확인 대기 |
+| 못 받은 에셋 | 홈 배너 사진 5장 · 네이버·Apple·Google 로고 |
 | 화면 | 1o 로그인의 버튼만 마스터로 교체했고 화면 전체는 와이어프레임 대조 전입니다. 나머지는 `PlaceholderView` 자리입니다 |
 | 카카오 SDK | 미연결. `UnavailableKakaoLoginClient`가 자리를 잡고 있습니다 |
 | 앱 아이콘 | 비어 있습니다. Figma에서 내보내 넣습니다 |

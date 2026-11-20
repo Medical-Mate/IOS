@@ -15,11 +15,20 @@ struct MMSearchField: View {
             MMIcon.search.view()
                 .foregroundStyle(MMColor.fgDefault)
 
-            TextField(placeholder, text: $text)
-                .mmTextStyle(MMFont.bodyL)
-                .foregroundStyle(text.isEmpty ? MMColor.fgSubtle : MMColor.fgDefault)
-                .textFieldStyle(.plain)
-                .submitLabel(.search)
+            // 플레이스홀더는 직접 그린다 — 마스터의 색이 시스템 기본보다 진하다.
+            ZStack(alignment: .leading) {
+                if text.isEmpty {
+                    Text(placeholder)
+                        .mmTextStyle(MMFont.bodyL)
+                        .foregroundStyle(MMColor.fgSubtle)
+                        .allowsHitTesting(false)
+                }
+                TextField("", text: $text)
+                    .mmTextStyle(MMFont.bodyL)
+                    .foregroundStyle(MMColor.fgDefault)
+                    .textFieldStyle(.plain)
+                    .submitLabel(.search)
+            }
 
             if text.isEmpty {
                 Color.clear.frame(width: MMSize.controlMd, height: MMSize.controlMd)

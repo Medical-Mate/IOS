@@ -67,4 +67,88 @@ struct ComponentSpecTests {
     func chipMetrics() {
         #expect(MMSize.controlSm == CGFloat(40))
     }
+
+    @Test("Icon Button은 L 48 · M 40 · S 32이고 아이콘이 24/20/18이다 (298:715)")
+    func iconButtonSizes() {
+        #expect(MMIconButton.Size.l.frame == CGFloat(48))
+        #expect(MMIconButton.Size.m.frame == CGFloat(40))
+        #expect(MMIconButton.Size.s.frame == CGFloat(32))
+        #expect(MMIconButton.Size.l.iconSize == CGFloat(24))
+        #expect(MMIconButton.Size.m.iconSize == CGFloat(20))
+        #expect(MMIconButton.Size.s.iconSize == CGFloat(18))
+    }
+
+    @Test("Nav Bar는 56, Tab Bar는 79다 (298:739 · 319:1026)")
+    func barHeights() {
+        #expect(MMSize.navBarHeight == CGFloat(56))
+        #expect(MMSize.tabBarHeight == CGFloat(79))
+    }
+
+    @Test("Glass 불투명도는 마스터 값이다 (298:739 · 319:1026)")
+    func glassOpacity() {
+        // Nav Bar 설명이 82%, Tab Bar 설명이 86%로 적었다.
+        #expect(MMGlass.navBarOpacity == 0.82)
+        #expect(MMGlass.tabBarOpacity == 0.86)
+    }
+
+    @Test("입력 상태는 Default가 bg/subtle, Focus가 2px 테두리다 (295:692)")
+    func fieldStates() {
+        #expect(FieldState.default.border?.width == CGFloat(1))
+        #expect(FieldState.focus.border?.width == CGFloat(2))
+        #expect(FieldState.error.border?.width == CGFloat(2))
+        // Disabled는 테두리가 없다.
+        #expect(FieldState.disabled.border == nil)
+        // 지우기는 값이 있거나 포커스된 상태에만 선다.
+        #expect(FieldState.filled.showsClear)
+        #expect(!FieldState.default.showsClear)
+    }
+
+    @Test("Severity 단계는 다섯이고 낱말과 서술을 함께 든다 (339:1293)")
+    func severityLevels() {
+        #expect(MMSeverityLevel.all.count == 5)
+        #expect(MMSeverityLevel.of(1).title == "조금 불편해요")
+        #expect(MMSeverityLevel.of(5).nrs == "NRS 9–10")
+        // 범위 밖은 가장 가까운 끝으로 잡는다.
+        #expect(MMSeverityLevel.of(0).level == 1)
+        #expect(MMSeverityLevel.of(9).level == 5)
+    }
+
+    @Test("Severity 슬라이더는 정지점 다섯을 고르게 둔다 (339:1293)")
+    func severityStops() {
+        let width: CGFloat = 320
+        // 양 끝은 손잡이 반지름만큼 안쪽이다.
+        #expect(MMSeveritySlider.center(for: 1, in: width) == SeverityMetrics.thumb / 2)
+        #expect(MMSeveritySlider.center(for: 5, in: width) == width - SeverityMetrics.thumb / 2)
+        // 누른 자리는 가장 가까운 단계로 스냅된다.
+        #expect(MMSeveritySlider.level(atX: 0, in: width) == 1)
+        #expect(MMSeveritySlider.level(atX: width, in: width) == 5)
+        #expect(MMSeveritySlider.level(atX: width / 2, in: width) == 3)
+    }
+
+    @Test("캘린더 요일 색은 일 danger · 토 link다 (3778:1868)")
+    func calendarWeekdayColors() {
+        #expect(MMCalendarGrid.kind(forColumn: 0) == .sunday)
+        #expect(MMCalendarGrid.kind(forColumn: 6) == .saturday)
+        #expect(MMCalendarGrid.kind(forColumn: 3) == .weekday)
+    }
+
+    @Test("캘린더 칸은 44×46이고 안쪽 면이 42다 (3778:1867)")
+    func calendarCellMetrics() {
+        #expect(CalendarMetrics.cellWidth == CGFloat(44))
+        #expect(CalendarMetrics.cellHeight == CGFloat(46))
+        #expect(CalendarMetrics.face == CGFloat(42))
+        // 점이 생겨도 숫자가 올라가지 않게 위 패딩이 고정이다.
+        #expect(CalendarMetrics.topInset == CGFloat(7))
+    }
+
+    @Test("아이콘 47종이 모두 에셋에 있다 (296:4148)")
+    func iconsExist() {
+        #expect(MMIcon.allCases.count == 47)
+        // 탭바가 쓰는 채움형 셋이 들어 있다.
+        #expect(MMIcon.allCases.contains(.homeFilled))
+        #expect(MMIcon.allCases.contains(.noteFilled))
+        #expect(MMIcon.allCases.contains(.calendarFilled))
+    }
 }
+
+extension MMCalendarDay.DayKind: @retroactive Equatable {}

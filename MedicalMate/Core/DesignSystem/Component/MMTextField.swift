@@ -53,11 +53,21 @@ struct MMTextField: View {
 
     private var field: some View {
         HStack(spacing: MMSpace.s12) {
-            TextField(placeholder, text: $text)
-                .mmTextStyle(MMFont.bodyL)
-                .foregroundStyle(state.valueColor)
-                .focused($isFocused)
-                .textFieldStyle(.plain)
+            // 플레이스홀더를 직접 그린다. SwiftUI 기본 색은 시스템 회색이라
+            // 마스터의 `fg/subtle`보다 옅다.
+            ZStack(alignment: .leading) {
+                if text.isEmpty {
+                    Text(placeholder)
+                        .mmTextStyle(MMFont.bodyL)
+                        .foregroundStyle(state.valueColor)
+                        .allowsHitTesting(false)
+                }
+                TextField("", text: $text)
+                    .mmTextStyle(MMFont.bodyL)
+                    .foregroundStyle(state.valueColor)
+                    .focused($isFocused)
+                    .textFieldStyle(.plain)
+            }
 
             if state.showsClear && !text.isEmpty {
                 Button { text = "" } label: {
