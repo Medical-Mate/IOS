@@ -62,6 +62,14 @@ enum MMColor {
         Palette.severityTint[clampedIndex(level)]
     }
 
+    // 캘린더 점. Figma가 팔레트를 직접 가리키는 몇 안 되는 자리라 이름을 따로 둔다.
+    /// 예정 일정 점. `amber/500`.
+    static let dotScheduled = Palette.amber500
+    /// 선택된 날 위의 예정 점. `amber/100`.
+    static let dotScheduledOnPrimary = Palette.amber100
+    /// 기록 있음 점. `bg/primary`.
+    static let dotRecord = Palette.primary500
+
     private static func clampedIndex(_ level: Int) -> Int {
         min(max(level, 1), 5) - 1
     }
