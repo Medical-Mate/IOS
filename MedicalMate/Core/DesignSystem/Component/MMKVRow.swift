@@ -90,3 +90,74 @@ private enum AvatarMetrics {
     .padding(.horizontal, MMSize.gutter)
     .background(MMColor.bgCanvas)
 }
+
+/// `KV Row / Editing` (Figma `597:4801`) — 브리핑 카드 편집의 항목 줄(1e-1-E).
+///
+/// 읽는 줄과 다른 컴포넌트다. 키 폭이 60이 아니라 **52**이고, 값이 `border/strong`
+/// 밑줄 위에 서며, 오른쪽 끝에 지우기가 붙는다. 줄 전체 오른쪽에 30을 비워 지우기 자리를
+/// 만든다 — 값이 길어도 ✕ 아래로 들어가지 않게.
+///
+/// **축에서 오지 않은 줄(복용약 · 기저질환)은 고쳐도 보낼 곳이 없다.** 그 줄은 값을
+/// 잠그고 지우기만 남긴다.
+struct MMKVEditRow: View {
+    let key: String
+    @Binding var value: String
+    /// 고칠 수 있는 줄인지. 축이 없는 줄은 `false`다.
+    var isEditable: Bool = true
+    let onDelete: () -> Void
+
+    var body: some View {
+        HStack(spacing: 0) {
+            HStack(alignment: .top, spacing: MMSpace.s10) {
+                Text(key)
+                    .mmTextStyle(MMFont.bodyM)
+                    .foregroundStyle(MMColor.fgSubtle)
+                    .frame(width: KVEditMetrics.key, alignment: .leading)
+
+                field
+            }
+            .padding(.trailing, KVEditMetrics.deleteGutter)
+            .padding(.vertical, MMSpace.s14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .overlay(alignment: .trailing) {
+            Button(action: onDelete) {
+                MMIcon.close.view(size: MMSize.iconSm)
+                    .foregroundStyle(MMColor.fgDefault)
+                    .frame(width: MMSize.iconLg, height: MMSize.iconLg)
+                    .contentShape(Rectangle())
+            }
+            .accessibilityLabel("\(key) 지우기")
+        }
+    }
+
+    private var field: some View {
+        VStack(spacing: 0) {
+            Group {
+                if isEditable {
+                    TextField("", text: $value, axis: .vertical)
+                        .mmTextStyle(MMFont.bodyL)
+                        .foregroundStyle(MMColor.fgDefault)
+                        .textFieldStyle(.plain)
+                } else {
+                    Text(value)
+                        .mmTextStyle(MMFont.bodyL)
+                        .foregroundStyle(MMColor.fgDefault)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+
+            Rectangle()
+                .fill(MMColor.borderStrong)
+                .frame(height: 1)
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+private enum KVEditMetrics {
+    /// 편집 줄의 키 폭. 읽는 줄(60)보다 좁다.
+    static let key: CGFloat = 52
+    /// 지우기 자리.
+    static let deleteGutter: CGFloat = 30
+}

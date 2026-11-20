@@ -36,7 +36,7 @@ struct MainTabView: View {
         case .home:
             HomeView(
                 onOpenCardList: { path.append(Route.briefCardList) },
-                onOpenCard: { path.append(Route.briefCard(cardId: $0.id)) },
+                onOpenCard: { card in Int64(card.id).map { path.append(Route.briefCard(cardId: $0)) } },
                 onStartIntake: { path.append(Route.intake(sessionId: nil)) }
             )
         case .record:
@@ -50,8 +50,21 @@ struct MainTabView: View {
         switch route {
         case .briefCardList:
             BriefCardListView(
-                onOpenCard: { path.append(Route.briefCard(cardId: "\($0)")) },
+                onOpenCard: { path.append(Route.briefCard(cardId: $0)) },
                 onResumeIntake: { path.append(Route.intake(sessionId: $0)) }
+            )
+            .toolbar(.hidden, for: .navigationBar)
+
+        case .briefCard(let cardId, let justCreated):
+            BriefCardView(
+                cardId: cardId,
+                justCreated: justCreated,
+                onBack: { path.removeLast() },
+                onChangeHospital: { path.append(Route.hospitalPick) },
+                onSchedule: { path.append(Route.scheduleAdd(date: nil)) },
+                onViewSchedule: { path.append(Route.calendarDay(date: "", appointmentId: $0)) },
+                onRecordVisit: { path.append(Route.clinicConfirm(cardId: cardId)) },
+                onDeleted: { path.removeLast() }
             )
             .toolbar(.hidden, for: .navigationBar)
 
@@ -62,7 +75,7 @@ struct MainTabView: View {
                 IntakeFlowView(
                     sessionId: sessionId,
                     onClose: { path.removeLast() },
-                    onCardCreated: { path.append(Route.briefCard(cardId: "\($0)")) }
+                    onCardCreated: { path.append(Route.briefCard(cardId: $0, justCreated: true)) }
                 )
                 .toolbar(.hidden, for: .navigationBar)
             } else {

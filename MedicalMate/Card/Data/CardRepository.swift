@@ -90,3 +90,24 @@ struct CardRepository: Sendable {
         selected ? "\(count)장 선택됨" : "\(count)장"
     }
 }
+
+extension CardRepository {
+    /// 카드 한 장을 읽는다(1e-1).
+    func card(id: Int64) async -> ApiResult<CardResponse> {
+        await client.send(.get("api/cards/\(id)"), as: CardResponse.self)
+    }
+
+    /// 카드를 고친다. **보낸 필드만 바뀐다.**
+    ///
+    /// **확정된 카드를 고치면 서버가 새 버전을 만든다**(FEATURE-SPEC 2.4). 앱은 응답의
+    /// 카드를 다시 그린다 — 고친 값을 화면에 그대로 두면 서버가 버린 값이 남는다.
+    func update(
+        cardId: Int64,
+        axes: [AxisEditRequest]? = nil,
+        questions: [String]? = nil,
+        clinic: ClinicRequest? = nil
+    ) async -> ApiResult<CardResponse> {
+        let body = UpdateCardRequest(axes: axes, questions: questions, clinic: clinic)
+        return await client.send(.patch("api/cards/\(cardId)", body: body), as: CardResponse.self)
+    }
+}

@@ -19,6 +19,11 @@ struct MMCallout: View {
     var isEditing: Bool = false
     var onDelete: ((Int) -> Void)?
     var onAdd: (() -> Void)?
+    /// 이 번호부터는 **이번에 더한 줄**이라 그 자리에서 적는다(1e-1-A2 `1117:796`).
+    /// 마스터의 `Question 4`가 값 대신 밑줄 친 빈 칸이다. 이미 담긴 질문은 고치지 않고
+    /// 지웠다 다시 더한다.
+    var editableFrom: Int?
+    var value: ((Int) -> Binding<String>)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: MMSpace.s12) {
@@ -58,10 +63,23 @@ struct MMCallout: View {
                 .background(MMColor.bgPrimary)
                 .clipShape(RoundedRectangle(cornerRadius: CalloutMetrics.numRadius))
 
-            Text(text)
-                .mmTextStyle(MMFont.bodyM)
-                .foregroundStyle(MMColor.fgDefault)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            if isEditing, let editableFrom, index >= editableFrom, let value {
+                VStack(spacing: CalloutMetrics.fieldGap) {
+                    TextField("", text: value(index))
+                        .mmTextStyle(MMFont.bodyM)
+                        .foregroundStyle(MMColor.fgDefault)
+                        .textFieldStyle(.plain)
+                    Rectangle()
+                        .fill(MMColor.borderSubtle)
+                        .frame(height: 1)
+                }
+                .frame(maxWidth: .infinity)
+            } else {
+                Text(text)
+                    .mmTextStyle(MMFont.bodyM)
+                    .foregroundStyle(MMColor.fgDefault)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
 
             if isEditing {
                 MMIconButton(icon: .close, label: "질문 지우기", style: .ghost, size: .s) {
@@ -92,6 +110,8 @@ struct MMCallout: View {
 private enum CalloutMetrics {
     static let num: CGFloat = MMSize.iconMd
     static let numRadius: CGFloat = 10
+    /// 빈 칸의 글자와 밑줄 사이.
+    static let fieldGap: CGFloat = 5
 }
 
 #Preview {

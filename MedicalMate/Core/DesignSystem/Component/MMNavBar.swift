@@ -15,12 +15,25 @@ import SwiftUI
 /// Android는 블러가 API 31부터라 Opaque 대안이 필수였다. iOS는 전 지원 버전에서 돈다.
 struct MMNavBar: View {
     enum Leading { case back, close, none }
+    enum ActionTone {
+        case primary, subtle
+
+        var color: Color {
+            switch self {
+            case .primary: MMColor.fgPrimary
+            case .subtle: MMColor.fgSubtle
+            }
+        }
+    }
 
     let title: String
     var leading: Leading = .back
     var onLeading: (() -> Void)?
     /// 우측 액션. 라벨을 반드시 적는다.
     var actionTitle: String?
+    /// 액션의 색. 기본은 `fg/primary`이고, 되돌리는 액션("취소")은 `fg/subtle`이다
+    /// (1e-1-E `3663:7530`).
+    var actionTone: ActionTone = .primary
     var onAction: (() -> Void)?
 
     var body: some View {
@@ -71,7 +84,7 @@ struct MMNavBar: View {
             Button { onAction?() } label: {
                 Text(actionTitle)
                     .mmTextStyle(MMFont.bodyLStrong)
-                    .foregroundStyle(MMColor.fgPrimary)
+                    .foregroundStyle(actionTone.color)
                     .padding(.leading, MMSpace.s8)
                     .padding(.trailing, MMSpace.s12)
                     .frame(height: NavBarMetrics.slot)

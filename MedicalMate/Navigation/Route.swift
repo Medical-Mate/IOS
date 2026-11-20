@@ -19,7 +19,8 @@ enum Route: Hashable, Sendable {
     case intakeDone(sessionId: Int64?)
 
     // 카드·기록
-    case briefCard(cardId: String)
+    /// `justCreated`면 일정 시트(1e-1-S)가 먼저 뜬다.
+    case briefCard(cardId: Int64, justCreated: Bool = false)
     case briefCardList
     case recordDetail(recordId: String)
 
@@ -29,9 +30,9 @@ enum Route: Hashable, Sendable {
 
     // 진료 후 기록
     case hospitalPick
-    case clinicConfirm(cardId: String)
-    case visitNote(cardId: String)
-    case visitRecord(cardId: String)
+    case clinicConfirm(cardId: Int64)
+    case visitNote(cardId: Int64)
+    case visitRecord(cardId: Int64)
     case visitDetail(visitId: String)
 
     // 내 정보
