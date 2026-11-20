@@ -11,7 +11,31 @@
 
 ## 지금 상태
 
-**설계 단계입니다.** 코드는 아직 없고, 착수 전에 아래 네 문서를 먼저 정리했습니다.
+**M0 완료.** 앱이 빌드되고 시뮬레이터에서 뜹니다. 로그인 화면까지 서고, 카카오 SDK는
+아직 연결하지 않았습니다. 화면은 Figma 마스터 대조 전이라 골격만 있습니다.
+
+```bash
+xcodebuild test -project MedicalMate.xcodeproj -scheme MedicalMate -destination 'platform=iOS Simulator,name=iPhone 17'
+```
+
+M0에서 들어온 것:
+
+| 묶음 | 내용 |
+| -- | -- |
+| 프로젝트 | `MedicalMate.xcodeproj` · iOS 17.0 · Swift 6 · iPhone 세로 전용 |
+| 디자인 토큰 | 색 44종 · 글자 16종 · 간격 · 크기 · 반경 · 고도 · Glass. **Figma 값 그대로** |
+| 폰트 | Pretendard 4종 번들 (OFL) |
+| 네트워크 | `ApiResult` 세 갈래 · 401 자동 재발급 · 재발급 직렬화 |
+| 저장 | Keychain(`ThisDeviceOnly`)에 서버 JWT |
+| 인증 | 카카오 → 서버 토큰 교환 · 로그아웃 · 회원탈퇴 흐름 |
+| 네비게이션 | 단일 `NavigationStack` · 타입 세이프 라우트 · 탭 셋 |
+| 테스트 | 12건 |
+| CI | SwiftLint + 빌드 · 테스트 |
+
+**컴포넌트는 아직 하나도 없습니다.** Figma 마스터 52종을 그대로 옮기는 일이 M1 이후의
+첫 작업입니다. 임의로 만들지 않습니다.
+
+## 문서
 
 | 문서 | 내용 |
 | -- | -- |
@@ -36,10 +60,10 @@
 AI 처리(문답 · 질문 추천 · 메모 분류)는 백엔드 API가 맡습니다. 기기 안에서 도는 것은
 음성 받아쓰기이고 **오디오는 기기 밖으로 나가지 않습니다.**
 
-## 착수 전에 답이 필요한 것
+## 아직 답이 필요한 것
 
-[`docs/AOS-IOS-DIFF.md`](docs/AOS-IOS-DIFF.md) 4장의 결정 목록 가운데 아래 셋은 코드를
-쓰기 전에 정해야 합니다.
+[`docs/AOS-IOS-DIFF.md`](docs/AOS-IOS-DIFF.md) 4장의 결정 목록 가운데 아래 셋이 남아
+있습니다. M1을 넘기기 전에 정해야 합니다.
 
 1. **Sign in with Apple** — 소셜 로그인만 제공하면 App Store 심사 지침 4.8이 걸립니다.
    백엔드 `User` 식별자가 `kakaoId` 단독이라 스키마 변경이 필요합니다.
@@ -58,7 +82,17 @@ AI 처리(문답 · 질문 추천 · 메모 분류)는 백엔드 API가 맡습�
 - Kakao iOS SDK
 - SwiftLint · SwiftFormat · Swift Testing — CI에서 강제
 
-최소 iOS 버전은 17 제안입니다. 아직 확정이 아닙니다.
+최소 iOS 버전은 **17.0**입니다(2026-11-20 확정).
+
+### 로컬 설정
+
+카카오 앱 키와 백엔드 주소는 빌드 설정에서 들어옵니다. 비밀 값은 커밋하지 않습니다.
+
+```bash
+cp Config/Example.xcconfig Config/Secrets.xcconfig
+```
+
+`Config/Secrets.xcconfig`가 없어도 빌드는 통과합니다. 실패는 카카오 API를 부를 때만 납니다.
 
 ## 함께 쓰는 저장소
 

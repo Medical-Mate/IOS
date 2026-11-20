@@ -144,12 +144,21 @@ MedicalMate/
 
 ## 7. 검증
 
-코드가 생기면 커밋 전에 아래를 통과시킵니다. (스크립트는 M0에서 추가합니다.)
+커밋 전에 실행합니다. CI(`.github/workflows/ci.yml`)가 같은 것을 돌립니다.
 
 ```bash
-xcodebuild -scheme MedicalMate -destination 'platform=iOS Simulator,name=iPhone 17' build test
+xcodebuild test -project MedicalMate.xcodeproj -scheme MedicalMate -destination 'platform=iOS Simulator,name=iPhone 17'
+```
+
+```bash
 swiftlint --strict
 ```
+
+주의:
+
+- **`plutil -extract`를 쓸 때 `-o -`를 빼지 마세요.** 기본 동작이 추출값을 그 파일에
+  덮어쓰는 것이라 Info.plist가 통째로 날아갑니다.
+- 검사가 실패하면 코드를 고칩니다. 우회 금지 항목은 6장에 있습니다.
 
 ---
 
@@ -157,13 +166,20 @@ swiftlint --strict
 
 | 항목 | 상태 |
 | -- | -- |
-| 저장소 | 문서만 있습니다. Xcode 프로젝트 없음 |
+| M0 | **완료.** 프로젝트 골격 · 디자인 토큰 · 네트워크 계층 · 카카오 로그인 뼈대 |
 | PRD · 기능명세 · AOS/iOS 차이 | 작성 완료 (2026-11-20) |
-| 최소 iOS 버전 | **미정.** 17 제안 |
+| 최소 iOS 버전 | **17.0 확정** (2026-11-20) |
+| Xcode 프로젝트 | `MedicalMate.xcodeproj`. objectVersion 77, 동기화 폴더 그룹이라 파일을 더해도 프로젝트 파일을 고치지 않습니다 |
+| Swift 언어 모드 | 6.0. 동시성 검사가 켜져 있습니다 |
+| 디자인 토큰 | 색 · 글자 · 간격 · 크기 · 반경 · 고도를 Figma 값 그대로 옮겼습니다. **컴포넌트는 아직 없습니다** |
+| 유닛 테스트 | 12건 (토큰 환산 · `ApiResult` · 토큰 재발급) |
+| CI | `.github/workflows/ci.yml` — SwiftLint + 빌드 · 테스트 |
 | Sign in with Apple | **미정.** 백엔드 스키마 변경 필요. 심사 리스크 |
 | 3D 인체도 렌더러 | **미정.** Filament iOS 1순위, 2D 선행 가능 |
 | 호출어 · 온디바이스 LLM | **1차 출시 제외 제안.** 승인 대기 |
 | 예약 문자 가져오기 | Share Extension 필요. M4 |
 | 로컬 저장 방식 | **미정.** Android도 미정 |
-| 디자인 시스템 코드 | 없음. M0에서 토큰부터 |
-| CI | 없음. M0에서 추가 |
+| 컴포넌트 | 없음. **Figma 마스터 52종을 그대로 옮겨야 합니다** — 임의로 만들지 않습니다 |
+| 화면 | 1o 로그인만 골격으로 있고 Figma 대조 전입니다. 나머지는 `PlaceholderView` 자리입니다 |
+| 카카오 SDK | 미연결. `UnavailableKakaoLoginClient`가 자리를 잡고 있습니다 |
+| 앱 아이콘 | 비어 있습니다. Figma에서 내보내 넣습니다 |
