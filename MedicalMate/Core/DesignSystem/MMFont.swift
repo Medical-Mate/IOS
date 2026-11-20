@@ -53,7 +53,10 @@ enum MMFont {
 
     static let labelL = MMTextStyle(weight: .semibold, size: 15, lineHeight: 20, letterSpacingPercent: 0)
     static let labelM = MMTextStyle(weight: .semibold, size: 13, lineHeight: 18, letterSpacingPercent: 0)
-    static let labelS = MMTextStyle(weight: .medium, size: 11, lineHeight: 16, letterSpacingPercent: 2.0)
+    /// **Regular다.** Figma 스타일 정의가 `Pretendard Regular 400`이고 Badge · Card가 그
+    /// 스타일을 쓴다. Android는 Medium으로 들고 있어 두 플랫폼이 갈린다 — Figma가 정본이라
+    /// 여기서는 Regular로 둔다. 디자인 트랙에 Android 쪽을 올려야 한다.
+    static let labelS = MMTextStyle(weight: .regular, size: 11, lineHeight: 16, letterSpacingPercent: 2.0)
     static let labelXS = MMTextStyle(weight: .bold, size: 11, lineHeight: 16, letterSpacingPercent: 0)
 
     static let numericL = MMTextStyle(weight: .bold, size: 24, lineHeight: 30, letterSpacingPercent: -1.5)

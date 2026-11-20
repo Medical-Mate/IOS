@@ -2,12 +2,10 @@ import SwiftUI
 
 /// 1o 로그인.
 ///
-/// **아직 Figma 마스터를 대조하지 않은 골격이다.** 카카오 버튼은 디자인 시스템의
-/// `Social Login Button / Provider=Kakao`(`383:1290`)로 교체한다. 그 마스터 안에 말풍선
-/// 심볼이 들어 있어 콘솔에서 따로 받지 않는다.
+/// 카카오 버튼은 디자인 시스템의 `Social Login Button / Provider=Kakao`(`383:1290`)다.
 ///
-/// 브랜드 색은 ``BrandColor``에서 읽는다. 카카오 디자인 가이드가 변경을 금지하므로
-/// 테마를 타지 않는다.
+/// **화면 전체는 아직 Figma 와이어프레임(`1o`)과 대조하지 않았다.** 지금 있는 것은
+/// 컴포넌트를 올려 둔 골격이고, 제목·안내 문구와 배치는 시안을 열어 맞춘다.
 struct LoginView: View {
     @Environment(\.appEnvironment) private var app
     @Environment(SessionModel.self) private var session
@@ -49,18 +47,9 @@ struct LoginView: View {
     }
 
     private var kakaoButton: some View {
-        Button {
+        MMSocialLoginButton(provider: .kakao) {
             Task { await model?.logIn() }
-        } label: {
-            Text("카카오로 시작하기")
-                .mmTextStyle(MMFont.labelL)
-                .foregroundStyle(BrandColor.kakaoLabel)
-                .frame(maxWidth: .infinity)
-                .frame(height: MMSize.controlLg)
-                .background(BrandColor.kakaoContainer)
-                .clipShape(RoundedRectangle(cornerRadius: MMRadius.sm))
         }
         .disabled(model?.isWorking ?? false)
-        .accessibilityLabel("카카오로 시작하기")
     }
 }

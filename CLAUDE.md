@@ -12,6 +12,7 @@ Medical Mate **iOS** 저장소에서 AI 에이전트가 작업할 때 참고하�
 | [`docs/PRD.md`](docs/PRD.md) | 무엇을 왜 만드는지, 범위 안인지 밖인지 판단할 때 |
 | [`docs/FEATURE-SPEC.md`](docs/FEATURE-SPEC.md) | 화면 · API · 도메인 모델 · 상태 규칙을 확인할 때 |
 | [`docs/AOS-IOS-DIFF.md`](docs/AOS-IOS-DIFF.md) | **Android 코드를 옮기기 전에 항상.** 6장의 규칙 20개는 다시 발견하지 말고 그대로 지킵니다 |
+| [`docs/COMPONENT-MAP.md`](docs/COMPONENT-MAP.md) | **컴포넌트를 만들기 전에 항상.** 어떤 마스터가 들어왔는지, 가져오는 절차, 대조하면서 발견한 어긋남 |
 
 Android 구현이 사실상의 참조 구현입니다. 어떤 화면이나 규칙이 모호하면
 [`Medical-Mate/Android`](https://github.com/Medical-Mate/Android)의 같은 도메인
@@ -46,7 +47,13 @@ Android 구현이 사실상의 참조 구현입니다. 어떤 화면이나 규�
    넘어가야 했다면 그 사실을 PR 본문에 적습니다.
 5. **Figma를 열 수 없으면 작업하지 않습니다.**
 
-**SF Symbols로 아이콘을 대신하지 않습니다.** Figma에서 내보낸 자산을 씁니다.
+**SF Symbols로 아이콘을 대신하지 않습니다.** Figma에서 `download_assets`로 **PDF**를
+받아 에셋 카탈로그에 넣고(벡터 보존) `MMIcon`으로만 가리킵니다. SVG는 SwiftUI가 읽지
+못하고, 경로를 손으로 옮겨 그리지 않습니다.
+
+**컴포넌트는 Figma 마스터를 그대로 옮깁니다.** 절차와 현재 상태는
+[`docs/COMPONENT-MAP.md`](docs/COMPONENT-MAP.md)에 있습니다. 새 컴포넌트를 더하면
+`MMComponentGallery`와 `ComponentSpecTests`, 그 표에 함께 적습니다.
 
 **다크 모드는 지원 대상이 아닙니다.** 디자인 시스템에 다크 값이 없습니다. 색은 Asset
 Catalog에 Any Appearance 하나만 넣고, 루트에서 밝은 모드로 고정합니다.
@@ -172,14 +179,16 @@ swiftlint --strict
 | Xcode 프로젝트 | `MedicalMate.xcodeproj`. objectVersion 77, 동기화 폴더 그룹이라 파일을 더해도 프로젝트 파일을 고치지 않습니다 |
 | Swift 언어 모드 | 6.0. 동시성 검사가 켜져 있습니다 |
 | 디자인 토큰 | 색 · 글자 · 간격 · 크기 · 반경 · 고도를 Figma 값 그대로 옮겼습니다. **컴포넌트는 아직 없습니다** |
-| 유닛 테스트 | 12건 (토큰 환산 · `ApiResult` · 토큰 재발급) |
+| 유닛 테스트 | 21건 (토큰 환산 · 컴포넌트 수치 · `ApiResult` · 토큰 재발급) |
 | CI | `.github/workflows/ci.yml` — SwiftLint + 빌드 · 테스트 |
 | Sign in with Apple | **미정.** 백엔드 스키마 변경 필요. 심사 리스크 |
 | 3D 인체도 렌더러 | **미정.** Filament iOS 1순위, 2D 선행 가능 |
 | 호출어 · 온디바이스 LLM | **1차 출시 제외 제안.** 승인 대기 |
 | 예약 문자 가져오기 | Share Extension 필요. M4 |
 | 로컬 저장 방식 | **미정.** Android도 미정 |
-| 컴포넌트 | 없음. **Figma 마스터 52종을 그대로 옮겨야 합니다** — 임의로 만들지 않습니다 |
-| 화면 | 1o 로그인만 골격으로 있고 Figma 대조 전입니다. 나머지는 `PlaceholderView` 자리입니다 |
+| 컴포넌트 | **6종 들어옴** (Button · Social Login Button · Badge · Chip · Card · Checkbox). 마스터 52종 중 나머지는 쓰는 화면에서 가져옵니다 |
+| 아이콘 | `check` 하나. 45종 남았습니다 |
+| 디자인 어긋남 | `Label/S` 굵기가 Android와 다릅니다(Figma Regular / Android Medium — Figma를 따랐습니다). `Chip / Selected`의 체크가 마스터에 없습니다. 둘 다 디자인 트랙 확인 대기 |
+| 화면 | 1o 로그인의 버튼만 마스터로 교체했고 화면 전체는 와이어프레임 대조 전입니다. 나머지는 `PlaceholderView` 자리입니다 |
 | 카카오 SDK | 미연결. `UnavailableKakaoLoginClient`가 자리를 잡고 있습니다 |
 | 앱 아이콘 | 비어 있습니다. Figma에서 내보내 넣습니다 |

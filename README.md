@@ -29,11 +29,12 @@ M0에서 들어온 것:
 | 저장 | Keychain(`ThisDeviceOnly`)에 서버 JWT |
 | 인증 | 카카오 → 서버 토큰 교환 · 로그아웃 · 회원탈퇴 흐름 |
 | 네비게이션 | 단일 `NavigationStack` · 타입 세이프 라우트 · 탭 셋 |
-| 테스트 | 12건 |
+| 테스트 | 21건 |
 | CI | SwiftLint + 빌드 · 테스트 |
 
-**컴포넌트는 아직 하나도 없습니다.** Figma 마스터 52종을 그대로 옮기는 일이 M1 이후의
-첫 작업입니다. 임의로 만들지 않습니다.
+**컴포넌트 6종이 Figma 마스터에서 들어왔습니다** — Button · Social Login Button · Badge ·
+Chip · Card · Checkbox. 나머지는 쓰는 화면을 만들 때 같은 방법으로 가져옵니다. 절차와
+대조하면서 발견한 어긋남은 [`docs/COMPONENT-MAP.md`](docs/COMPONENT-MAP.md)에 있습니다.
 
 ## 문서
 
@@ -42,6 +43,7 @@ M0에서 들어온 것:
 | [`docs/PRD.md`](docs/PRD.md) | 제품 요구. 문제 · 타깃 · 범위 · 성공 지표 · 마일스톤 · 열린 질문 |
 | [`docs/FEATURE-SPEC.md`](docs/FEATURE-SPEC.md) | 기능명세. 화면 23개, API 28개, 도메인 모델, 상태 규칙, 디자인 토큰 |
 | [`docs/AOS-IOS-DIFF.md`](docs/AOS-IOS-DIFF.md) | **AOS ↔ iOS 구현 차이.** 기술 대응표, 결정이 필요한 4건, 포팅할 때 가져와야 하는 규칙 20개 |
+| [`docs/COMPONENT-MAP.md`](docs/COMPONENT-MAP.md) | Figma 마스터 ↔ iOS 컴포넌트 대응표, 가져오는 절차 |
 | [`CLAUDE.md`](CLAUDE.md) | 이 저장소에서 작업할 때의 규칙 |
 
 ## 무엇을 만드는가
