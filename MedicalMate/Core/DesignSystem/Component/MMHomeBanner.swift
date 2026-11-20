@@ -49,6 +49,8 @@ struct MMLinkOnImage: View {
 /// 것은 첫 홈(`1 오늘의 한 줄 · CTA=None`)의 사진 하나이고, 나머지 다섯 장은 디자인
 /// 트랙에서 받아야 한다(`docs/COMPONENT-MAP.md`).
 struct MMHomeBanner<Photo: View>: View {
+    @Environment(\.mmSafeAreaTop) private var safeAreaTop
+
     let title: String
     let message: String
     /// 아래 링크. 첫 홈(`CTA=None`)은 `nil`이다.
@@ -71,7 +73,8 @@ struct MMHomeBanner<Photo: View>: View {
                 content
             }
         }
-        .frame(width: MMSize.canvasWidth, height: link == nil ? BannerMetrics.firstHeight : BannerMetrics.height)
+        .frame(maxWidth: .infinity)
+        .frame(height: (link == nil ? BannerMetrics.firstHeight : BannerMetrics.height) + safeAreaTop)
         .clipped()
     }
 
@@ -107,6 +110,8 @@ struct MMHomeBanner<Photo: View>: View {
         }
         .padding(.horizontal, MMSize.gutter)
         .frame(height: MMSize.navBarHeight)
+        // 시안에는 상태바가 없다. 기기에서는 그만큼 내려야 로고가 시계에 겹치지 않는다.
+        .padding(.top, safeAreaTop)
     }
 
     private var content: some View {

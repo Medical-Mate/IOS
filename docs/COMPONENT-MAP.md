@@ -86,6 +86,8 @@ Figma 마스터와 iOS 구현의 대응이다. **컴포넌트는 Figma 마스터
 | Mate Card | `3532:5543` | `MMMateCard` | 상태 4 |
 | Home Banner | `3317:5085` | `MMHomeBanner` | 사진은 바깥에서 넣는다 |
 | Link / On Image | `3313:4925` | `MMLinkOnImage` | |
+| Card / Action | `3313:4946` | `MMCardAction` | **마스터가 미게시 프레임에 있다.** 게시된 `1n-2`·`1n-1`이 써서 화면에서 읽어 옮겼다 |
+| Card / Schedule | `3313:4967` | `MMCardSchedule` | 위와 같다. D-day 배지는 화면의 16을 따랐다(마스터는 26) |
 | Card Thumbnail | `3610:10202` | `MMCardThumbnail` | |
 | Export Preview | `3610:10245` | `MMExportPreview` | |
 
@@ -133,11 +135,16 @@ Hospital Card는 1e-1, Picker Field·Card Pick·Add Row는 1r-4, Todo Row는 1r-
 쓴다고 했다. **Figma가 미사용으로 옮긴 것인지, 보관함에 중복으로 들어간 것인지
 확인해야 한다.** 답이 나오기 전에는 옮기지 않는다.
 
-### 2.2 `홈 · 신규 컴포넌트 (제안 · 미게시)` 3종
+### 2.2 `홈 · 신규 컴포넌트 (제안 · 미게시)` — 남은 것은 `Card / Resume` 하나
 
-`3313:4910`의 `Card / Action` · `Card / Resume` · `Card / Schedule`. 프레임 이름이
-**제안 · 미게시**다. 같은 프레임의 `Link / On Image`는 `Home Banner`가 실제로 쓰고
-있어 함께 들어왔다. **⚠️ Android는 홈(1n)에서 이 셋을 쓴다. 게시 여부 확인 필요.**
+`3313:4910` 프레임 이름이 **제안 · 미게시**다. 그 가운데 **`Link / On Image` ·
+`Card / Action` · `Card / Schedule` 셋은 게시된 와이어프레임(`1n-2` · `1n-1`)이
+실제로 쓰고 있어** 화면에서 읽어 옮겼다. 프레임이 미게시여도 화면이 쓰면 화면이
+정본이다.
+
+남은 것은 **`Card / Resume`(이어서 하기)** 하나다. `1n-1`에 인스턴스가 없어 규격을
+읽을 자리가 없다. 이어서 하기가 필요한 화면을 그릴 때 그 화면에서 읽거나, 그때까지
+마스터가 게시되면 마스터에서 가져온다. **⚠️ 그 전에는 만들지 않는다.**
 
 ### 2.3 `수정 중` 2종
 
@@ -181,9 +188,10 @@ Hospital Card는 1e-1, Picker Field·Card Pick·Add Row는 1r-4, Todo Row는 1r-
 
 ### SwiftUI로 표현하지 못한 것
 
-`Elevation/Primary`(`#3B4FC0 28% (0,8) blur 30 **spread -18**`)는 `.shadow`에 spread가
-없어 아직 쓰지 못한다. 이 고도를 쓰는 컴포넌트(`Card / Action`)를 만들 때 축소한 도형을
-뒤에 깔아 직접 그리는 방법을 검토한다.
+~~`Elevation/Primary`는 `.shadow`에 spread가 없어 쓰지 못한다~~ → **풀었다.**
+`#3B4FC0 28% (0,8) blur 30 spread -18`을 **도형을 18 줄여 뒤에 깔고 거기에 그림자를
+거는** 방식으로 냈다(`mmPrimaryElevation()`). 줄인 도형은 카드가 덮어 그림자만 남는다.
+그냥 `.shadow`를 걸면 그림자가 카드보다 커져 번져 보인다.
 
 ---
 

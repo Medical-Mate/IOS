@@ -13,17 +13,30 @@ struct MainTabView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            TabView(selection: $tab) {
-                PlaceholderView(title: "캘린더", note: "M3에서 Figma `1r-1`을 그린다")
-                    .tag(Tab.calendar)
-                PlaceholderView(title: "홈", note: "M2에서 Figma `1n-1`을 그린다")
-                    .tag(Tab.home)
-                PlaceholderView(title: "기록", note: "M3에서 Figma `1j-1`을 그린다")
-                    .tag(Tab.record)
+            // 시스템 탭바를 쓰지 않는다. 디자인 시스템의 `Tab Bar`(319:1026)가 Glass
+            // 86% · 채움 아이콘 전환으로 그려져 있고, 시스템 바로는 그 모양이 안 된다.
+            ZStack(alignment: .bottom) {
+                screen
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                MMTabBar(selection: $tab)
             }
+            .ignoresSafeArea(edges: .bottom)
             .navigationDestination(for: Route.self) { route in
                 destination(for: route)
             }
+        }
+    }
+
+    @ViewBuilder
+    private var screen: some View {
+        switch tab {
+        case .calendar:
+            PlaceholderView(title: "캘린더", note: "G 섹션 `1r-1`(3663:15299)을 그린다")
+        case .home:
+            HomeView()
+        case .record:
+            PlaceholderView(title: "기록", note: "H 섹션 `1j-1`(3663:15519)을 그린다")
         }
     }
 
