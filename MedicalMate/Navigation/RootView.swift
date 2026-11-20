@@ -16,7 +16,7 @@ struct RootView: View {
             case .loggedOut:
                 LoginView()
             case .needsOnboarding:
-                OnboardingIntroView()
+                OnboardingFlowView()
             case .ready:
                 MainTabView()
             }

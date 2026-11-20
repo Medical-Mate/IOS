@@ -49,7 +49,9 @@ struct OnboardingPage: Identifiable {
 ///
 /// 마지막 장만 버튼이 "시작하기"다. 건너뛰기는 네 장 모두에 있다.
 struct OnboardingIntroView: View {
-    @Environment(SessionModel.self) private var session
+    /// 소개가 끝났을 때. 건너뛰기도 같은 곳으로 간다 — 소개만 건너뛰는 것이다.
+    var onFinish: () -> Void = {}
+
     @State private var index = 0
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -75,9 +77,7 @@ struct OnboardingIntroView: View {
             MMOnboardingProgress(step: index + 1)
                 .frame(maxWidth: .infinity)
 
-            Button {
-                session.completeOnboarding()
-            } label: {
+            Button(action: onFinish) {
                 Text("건너뛰기")
                     .mmTextStyle(MMFont.bodyLStrong)
                     .foregroundStyle(MMColor.fgSubtle)
@@ -118,7 +118,7 @@ struct OnboardingIntroView: View {
     private var footer: some View {
         MMButton(isLast ? "시작하기" : "다음") {
             if isLast {
-                session.completeOnboarding()
+                onFinish()
             } else {
                 index += 1
             }
@@ -139,5 +139,4 @@ private enum OnboardingMetrics {
 
 #Preview {
     OnboardingIntroView()
-        .environment(SessionModel(tokens: TokenStore(), auth: AppEnvironment().auth))
 }
