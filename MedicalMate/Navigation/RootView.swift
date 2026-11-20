@@ -16,26 +16,12 @@ struct RootView: View {
             case .loggedOut:
                 LoginView()
             case .needsOnboarding:
-                // ONB-00~03. M1에서 붙인다.
-                PlaceholderView(title: "온보딩", note: "M1에서 Figma `ONB-00`~`ONB-03`을 그린다")
+                OnboardingIntroView()
             case .ready:
                 MainTabView()
             }
         }
         .task { await session.restore() }
-    }
-}
-
-/// 1a-1 스플래시.
-///
-/// 세션을 확인하는 동안만 보인다. **로고와 배경만 있고 그 밖의 것을 그리지 않는다** —
-/// Figma 마스터를 아직 대조하지 않았다.
-struct SplashView: View {
-    var body: some View {
-        ZStack {
-            MMColor.bgSurface.ignoresSafeArea()
-            ProgressView()
-        }
     }
 }
 
