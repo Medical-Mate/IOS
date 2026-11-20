@@ -1,0 +1,92 @@
+import SwiftUI
+
+/// 디자인 시스템 `KV Row` (Figma `333:1100`).
+///
+/// Figma 설명 그대로:
+/// > 브리핑 카드의 항목 행. **키 고정 + 값 FILL. 키 폭을 고정하는 이유: 값이 세로로
+/// > 정렬돼야 의사가 훑어 읽는다. 키가 길면 줄바꿈시키고 폭은 늘리지 않는다.**
+/// > `Type=Emphasis`는 **그 진료에서 가장 중요한 한 항목에만. 카드마다 하나를 넘기지
+/// > 않는다** — 전부 강조하면 아무것도 강조되지 않는다. `Type=Link`는 눌러서 원문이나
+/// > 상세로 들어가는 행이다.
+///
+/// 설명은 키 폭을 72로 적었는데 마스터는 60이다. 마스터를 따랐다.
+struct MMKVRow: View {
+    enum Kind { case `default`, emphasis, link }
+
+    let key: String
+    let value: String
+    var kind: Kind = .default
+    var action: (() -> Void)?
+
+    var body: some View {
+        if kind == .link, let action {
+            Button(action: action) { content }.buttonStyle(.plain)
+        } else {
+            content
+        }
+    }
+
+    private var content: some View {
+        HStack(alignment: .top, spacing: MMSpace.s16) {
+            Text(key)
+                .mmTextStyle(MMFont.bodyM)
+                .foregroundStyle(MMColor.fgSubtle)
+                .frame(width: KVRowMetrics.keyWidth, alignment: .leading)
+
+            Text(value)
+                .mmTextStyle(kind == .emphasis ? MMFont.bodyLStrong : MMFont.bodyL)
+                .foregroundStyle(kind == .emphasis ? MMColor.fgPrimary : MMColor.fgDefault)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if kind == .link {
+                MMIcon.chevronRight.view(size: MMSize.iconMd)
+                    .foregroundStyle(MMColor.fgDefault)
+            }
+        }
+        .padding(.vertical, MMSpace.s14)
+    }
+}
+
+private enum KVRowMetrics {
+    static let keyWidth: CGFloat = 60
+}
+
+/// 디자인 시스템 `Avatar` (Figma `311:839`).
+///
+/// Figma 설명 그대로:
+/// > 44 원형. **Patient는 primary tint, Doctor는 무채색. 환자가 색을 갖는 규칙이
+/// > 아바타에도 적용된다 — 화면의 주인공은 환자다.**
+struct MMAvatar: View {
+    enum Kind { case patient, doctor }
+
+    /// 한 글자. 이름의 끝 글자나 "나"를 넣는다.
+    let initial: String
+    var kind: Kind = .patient
+
+    var body: some View {
+        Text(initial)
+            .mmTextStyle(MMFont.bodyMStrong)
+            .foregroundStyle(kind == .patient ? MMColor.fgPrimary : MMColor.fgSubtle)
+            .frame(width: AvatarMetrics.size, height: AvatarMetrics.size)
+            .background(kind == .patient ? MMColor.bgPrimarySubtle : MMColor.bgSubtle)
+            .clipShape(Circle())
+    }
+}
+
+private enum AvatarMetrics {
+    static let size: CGFloat = 44
+}
+
+#Preview {
+    VStack(alignment: .leading, spacing: 0) {
+        MMKVRow(key: "부위", value: "복부 (하복부 중앙)")
+        MMKVRow(key: "강도", value: "많이 아파요", kind: .emphasis)
+        MMKVRow(key: "복용약", value: "이부프로펜(증상 시)", kind: .link, action: {})
+        HStack(spacing: MMSpace.s12) {
+            MMAvatar(initial: "나", kind: .patient)
+            MMAvatar(initial: "김", kind: .doctor)
+        }
+    }
+    .padding(.horizontal, MMSize.gutter)
+    .background(MMColor.bgCanvas)
+}
