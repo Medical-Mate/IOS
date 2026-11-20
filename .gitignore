@@ -6,6 +6,8 @@ build/
 DerivedData/
 *.xcuserstate
 xcuserdata/
+*.xcresult
+TestResults.xcresult
 *.xcscmblueprint
 *.xccheckout
 *.moved-aside
@@ -18,7 +20,7 @@ xcuserdata/
 .build/
 .swiftpm/
 Packages/
-Package.resolved
+# Package.resolved는 커밋한다. 의존성 버전이 사람마다 달라지면 안 된다.
 
 # CocoaPods / Carthage (사용하지 않지만 실수 방지)
 Pods/
@@ -29,8 +31,8 @@ fastlane/report.xml
 fastlane/screenshots/**/*.png
 
 # 민감정보 — 카카오 앱 키, 서명, 프로비저닝
-*.xcconfig
-!Example.xcconfig
+# Base.xcconfig와 Example.xcconfig는 커밋한다. 비밀 값은 Secrets.xcconfig에만 둔다.
+Config/Secrets.xcconfig
 *.p12
 *.mobileprovision
 *.cer

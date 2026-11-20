@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>ko_KR</string>
+	<key>CFBundleDisplayName</key>
+	<string>진료메이트</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>UILaunchScreen</key>
+	<dict/>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>UIUserInterfaceStyle</key>
+	<string>Light</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>pretendard_regular.otf</string>
+		<string>pretendard_medium.otf</string>
+		<string>pretendard_semibold.otf</string>
+		<string>pretendard_bold.otf</string>
+	</array>
+	<key>BackendBaseURL</key>
+	<string>$(BACKEND_BASE_URL)</string>
+	<key>KakaoNativeAppKey</key>
+	<string>$(KAKAO_NATIVE_APP_KEY)</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>증상과 진료 후 메모를 말로 적을 때 마이크를 씁니다.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>말한 내용을 글로 바꿉니다. 받아쓰기는 기기 안에서 처리되고 음성은 밖으로 나가지 않습니다.</string>
+</dict>
+</plist>

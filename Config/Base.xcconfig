@@ -1,0 +1,12 @@
+// 빌드 설정 기본값.
+//
+// 비밀 값은 여기 적지 않는다. `Config/Secrets.xcconfig`를 만들어 덮어쓴다. 그 파일은
+// `.gitignore`가 막고 있다. 마지막 줄의 `#include?`가 있어 없어도 빌드는 통과한다.
+
+// 백엔드 주소. 기본값은 dev 서버다.
+BACKEND_BASE_URL = https:/$()/dev-api.medicalmate.app
+
+// 카카오 네이티브 앱 키. 비어 있어도 빌드는 통과하고, 실패는 로그인 버튼을 눌렀을 때만 난다.
+KAKAO_NATIVE_APP_KEY =
+
+#include? "Secrets.xcconfig"
