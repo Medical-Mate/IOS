@@ -34,7 +34,10 @@ struct MainTabView: View {
         case .calendar:
             PlaceholderView(title: "캘린더", note: "G 섹션 `1r-1`(3663:15299)을 그린다")
         case .home:
-            HomeView()
+            HomeView(
+                onOpenCardList: { path.append(Route.briefCardList) },
+                onOpenCard: { path.append(Route.briefCard(cardId: $0.id)) }
+            )
         case .record:
             PlaceholderView(title: "기록", note: "H 섹션 `1j-1`(3663:15519)을 그린다")
         }
@@ -42,7 +45,13 @@ struct MainTabView: View {
 
     @ViewBuilder
     private func destination(for route: Route) -> some View {
-        // 화면이 붙는 대로 여기에 등록한다. Android는 기능 패키지의 확장 함수가 맡는다.
-        PlaceholderView(title: "\(route)", note: "아직 그리지 않았다")
+        // 화면이 붙는 대로 여기에 등록한다.
+        switch route {
+        case .briefCardList:
+            BriefCardListView()
+                .toolbar(.hidden, for: .navigationBar)
+        default:
+            PlaceholderView(title: "\(route)", note: "아직 그리지 않았다")
+        }
     }
 }

@@ -12,6 +12,7 @@ final class AppEnvironment {
     let auth: AuthRepository
     let healthProfile: HealthProfileRepository
     let home: HomeRepository
+    let cards: CardRepository
     let session: SessionModel
 
     init(kakao: any KakaoLoginClient = UnavailableKakaoLoginClient()) {
@@ -33,6 +34,7 @@ final class AppEnvironment {
 
         self.healthProfile = HealthProfileRepository(client: client)
         self.home = HomeRepository(client: client)
+        self.cards = CardRepository(client: client)
 
         let remote = AuthRemote(client: client)
         let auth = AuthRepository(remote: remote, kakao: kakao, tokens: tokens)

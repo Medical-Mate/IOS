@@ -11,9 +11,9 @@ struct HomeView: View {
     @Environment(\.appEnvironment) private var app
     @State private var model: HomeModel?
 
-    var onStartIntake: () -> Void = {}
-    var onOpenCard: (HomeCard) -> Void = { _ in }
     var onOpenCardList: () -> Void = {}
+    var onOpenCard: (HomeCard) -> Void = { _ in }
+    var onStartIntake: () -> Void = {}
     var onOpenCalendar: () -> Void = {}
     var onOpenSchedule: (HomeSchedule) -> Void = { _ in }
     var onNotification: () -> Void = {}

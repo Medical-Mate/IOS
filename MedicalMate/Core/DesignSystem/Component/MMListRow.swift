@@ -14,14 +14,22 @@ struct MMListRow: View {
     var badge: (text: String, tone: MMBadge.Tone)?
     /// 한 줄 요약. 넘치면 잘린다.
     var summary: String?
+    /// 요약 줄의 색. 마스터는 `fg/default`인데 1j-4는 `fg/subtle`로, 이어서 정리할
+    /// 카드는 `fg/warning`으로 쓴다.
+    var summaryTone: SummaryTone = .default
     /// 여러 건 고르기. 편집 모드에서만 선다.
     var selection: Binding<Bool>?
     /// 들어갈 곳이 있으면 chevron이 서고 행이 눌린다. `nil`이면 `Type=Plain`이다.
     var action: (() -> Void)?
+    /// chevron 없이 행만 눌릴 때. 편집 중 고르기처럼 들어갈 곳이 없는 경우다.
+    var onTap: (() -> Void)?
 
     var body: some View {
         if let action {
             Button(action: action) { content }
+                .buttonStyle(.plain)
+        } else if let onTap {
+            Button(action: onTap) { content }
                 .buttonStyle(.plain)
         } else {
             content
@@ -54,7 +62,7 @@ struct MMListRow: View {
                 if let summary {
                     Text(summary)
                         .mmTextStyle(MMFont.bodyS)
-                        .foregroundStyle(MMColor.fgDefault)
+                        .foregroundStyle(summaryTone.color)
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -71,7 +79,29 @@ struct MMListRow: View {
         .frame(maxWidth: .infinity)
         .background(MMColor.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: MMRadius.md))
+        .overlay {
+            // 고른 줄은 1.5px 테두리로 표시한다. 색은 `bg/primary-subtle`이다 —
+            // `border/primary`보다 옅어서 카드가 들뜨지 않는다(1j-4-D2).
+            if selection?.wrappedValue == true {
+                RoundedRectangle(cornerRadius: MMRadius.md)
+                    .strokeBorder(MMColor.bgPrimarySubtle, lineWidth: 1.5)
+            }
+        }
         .mmShadow(MMElevation.card)
+    }
+}
+
+extension MMListRow {
+    enum SummaryTone {
+        case `default`, subtle, warning
+
+        var color: Color {
+            switch self {
+            case .default: MMColor.fgDefault
+            case .subtle: MMColor.fgSubtle
+            case .warning: MMColor.fgWarning
+            }
+        }
     }
 }
 
