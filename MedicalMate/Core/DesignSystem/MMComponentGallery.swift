@@ -20,6 +20,7 @@ struct MMComponentGallery: View {
     @State private var hour = 7
     @State private var minute = 0
     @State private var reminderOn = true
+    @State private var axisValue = "복부 (명치 아래 · 배꼽 위)"
 
     var body: some View {
         ScrollView {
@@ -83,9 +84,19 @@ struct MMComponentGallery: View {
                     MMKVRow(key: "부위", value: "복부 (하복부 중앙)")
                     MMKVRow(key: "강도", value: "많이 아파요", kind: .emphasis)
                     MMKVRow(key: "복용약", value: "이부프로펜", kind: .link, action: {})
+                    MMKVEditRow(key: "부위", value: $axisValue, onDelete: {})
                     HStack(spacing: MMSpace.s12) {
                         MMAvatar(initial: "나")
                         MMAvatar(initial: "김", kind: .doctor)
+                    }
+                }
+
+                section("Bottom Sheet · 3663:7479") {
+                    MMBottomSheet {
+                        Text("진료 날짜가 정해졌나요?")
+                            .mmTextStyle(MMFont.headingM)
+                            .foregroundStyle(MMColor.fgDefault)
+                            .padding(.top, MMSpace.s14)
                     }
                 }
 

@@ -161,6 +161,20 @@ struct ComponentSpecTests {
         #expect(ComposerMetrics.action == CGFloat(48))
     }
 
+    @Test("KV Row / Editing 키 폭은 52, 지우기 자리는 30 (597:4801)")
+    func kvEditRow() {
+        // 읽는 KV Row(60)와 다른 컴포넌트다.
+        #expect(KVEditMetrics.key == CGFloat(52))
+        #expect(KVEditMetrics.deleteGutter == CGFloat(30))
+    }
+
+    @Test("Bottom Sheet 손잡이는 36×4, 위 모서리는 28 (3663:7479)")
+    func bottomSheet() {
+        #expect(SheetMetrics.handle.width == CGFloat(36))
+        #expect(SheetMetrics.handle.height == CGFloat(4))
+        #expect(MMRadius.sheetTop == CGFloat(28))
+    }
+
 }
 
 extension MMCalendarDay.DayKind: @retroactive Equatable {}

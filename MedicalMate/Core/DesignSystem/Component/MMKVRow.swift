@@ -155,7 +155,7 @@ struct MMKVEditRow: View {
     }
 }
 
-private enum KVEditMetrics {
+enum KVEditMetrics {
     /// 편집 줄의 키 폭. 읽는 줄(60)보다 좁다.
     static let key: CGFloat = 52
     /// 지우기 자리.

@@ -35,7 +35,7 @@ struct MMBottomSheet<Content: View>: View {
     }
 }
 
-private enum SheetMetrics {
+enum SheetMetrics {
     static let handle = (width: CGFloat(36), height: CGFloat(4))
 }
 
