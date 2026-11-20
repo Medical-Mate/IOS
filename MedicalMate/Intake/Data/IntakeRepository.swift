@@ -41,6 +41,20 @@ struct IntakeRepository: Sendable {
         return await client.send(.put("api/sessions/\(sessionId)/questions", body: body), as: SessionResponse.self)
     }
 
+    /// 문답을 브리핑 카드로 굳힌다.
+    ///
+    /// 경로가 `api/sessions/...`라 여기 둔다. 카드 본문은 카드 화면이 따로 읽는다 —
+    /// 이쪽은 어디로 갈지만 알면 된다.
+    func createCard(
+        sessionId: Int64,
+        clinicName: String?,
+        clinicAddress: String?
+    ) async -> ApiResult<CardCreatedResponse> {
+        let clinic = clinicName.map { ClinicRequest(name: $0, address: clinicAddress) }
+        let body = GenerateCardRequest(clinic: clinic)
+        return await client.send(.post("api/sessions/\(sessionId)/card", body: body), as: CardCreatedResponse.self)
+    }
+
     func discard(sessionId: Int64) async -> ApiResult<Void> {
         await client.send(.delete("api/sessions/\(sessionId)"))
     }

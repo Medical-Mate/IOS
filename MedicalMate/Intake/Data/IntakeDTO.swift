@@ -39,6 +39,29 @@ struct SendMessageRequest: Encodable, Sendable {
     let inputMethod: String
 }
 
+/// `POST /api/sessions/{id}/card` — 문답을 브리핑 카드로 굳힌다.
+///
+/// 병원은 **선택이다.** 진료받을 병원을 아직 정하지 않았으면 비워 보내고 진료 후에
+/// 등록한다(1m-B).
+struct GenerateCardRequest: Encodable, Sendable {
+    let clinic: ClinicRequest?
+}
+
+/// 진료받을 병원. 병원 검색이 준 항목을 그대로 옮긴다.
+struct ClinicRequest: Encodable, Sendable {
+    let name: String
+    let address: String?
+}
+
+/// 카드를 만든 결과.
+///
+/// **id만 받는다.** 증상 정리는 만들고 나서 카드 화면으로 넘기기만 하면 되고, 카드
+/// 본문은 그 화면이 `GET /api/cards/{id}`로 읽는다. 여기서 카드 전체를 받으면 Intake가
+/// Card의 모델을 알아야 한다.
+struct CardCreatedResponse: Decodable, Sendable {
+    let cardId: Int64
+}
+
 /// `PUT /api/sessions/{id}/questions`. 체크한 줄만 **화면 순서대로** 통째로 보낸다.
 struct QuestionsRequest: Encodable, Sendable {
     let questions: [String]

@@ -13,7 +13,7 @@
 
 **M0 완료.** 앱이 빌드되고 시뮬레이터에서 뜹니다. 카카오 SDK는 아직 연결하지
 않았습니다. 화면은 Figma 마스터를 대조하면서 한 장씩 올리는 중입니다 — 진입과 홈,
-브리핑 카드 목록, 증상 정리 2 · 3단계가 섰습니다.
+브리핑 카드 목록, 증상 정리 2 · 3단계와 병원 찾기가 섰습니다.
 
 ```bash
 xcodebuild test -project MedicalMate.xcodeproj -scheme MedicalMate -destination 'platform=iOS Simulator,name=iPhone 17'
@@ -31,15 +31,15 @@ M0에서 들어온 것:
 | 저장 | Keychain(`ThisDeviceOnly`)에 서버 JWT |
 | 인증 | 카카오 → 서버 토큰 교환 · 로그아웃 · 회원탈퇴 흐름 |
 | 네비게이션 | 단일 `NavigationStack` · 타입 세이프 라우트 · 탭 셋 |
-| 화면 | 진입 10장 + 홈 2장 + 브리핑 카드 목록 4장 + 증상 정리 9장 |
+| 화면 | 진입 10장 + 홈 2장 + 브리핑 카드 목록 4장 + 증상 정리 9장 + 병원 찾기 2장 |
 | 받아쓰기 | 온디바이스 고정. 못 하는 기기에서는 마이크를 그리지 않습니다 |
-| 테스트 | 72건 |
+| 테스트 | 83건 |
 | CI | SwiftLint + 빌드 · 테스트 |
 
 **디자인 시스템이 Figma 마스터에서 전부 들어왔습니다** — 컴포넌트 40종, 아이콘 47종,
 로고 8종, 일러스트 5종. 게시된 마스터는 남김없이 옮겼고, `Archive`(미사용 15종)와
 미게시 작업물은 Figma가 그렇게 표시해 두어 일부러 옮기지 않았습니다. 목록 · 노드 id ·
-대조하면서 발견한 어긋남 12건은 [`docs/COMPONENT-MAP.md`](docs/COMPONENT-MAP.md)에
+대조하면서 발견한 어긋남 13건은 [`docs/COMPONENT-MAP.md`](docs/COMPONENT-MAP.md)에
 있습니다.
 
 ## 문서

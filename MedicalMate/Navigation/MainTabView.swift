@@ -62,8 +62,7 @@ struct MainTabView: View {
                 IntakeFlowView(
                     sessionId: sessionId,
                     onClose: { path.removeLast() },
-                    onCreateCard: { _ in path.append(Route.briefCardList) },
-                    onFindHospital: { path.append(Route.hospitalPick) }
+                    onCardCreated: { path.append(Route.briefCard(cardId: "\($0)")) }
                 )
                 .toolbar(.hidden, for: .navigationBar)
             } else {

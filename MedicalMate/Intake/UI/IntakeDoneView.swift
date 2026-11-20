@@ -8,6 +8,9 @@ struct IntakeDoneView: View {
     let onCreateCard: () -> Void
     let onFindHospital: () -> Void
     let onBack: () -> Void
+    /// 카드를 만드는 중. 두 번 눌리지 않게 막는다.
+    var isBusy = false
+    var errorMessage: String?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -31,6 +34,13 @@ struct IntakeDoneView: View {
                     .foregroundStyle(MMColor.fgSubtle)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
+
+                if let errorMessage {
+                    Text(errorMessage)
+                        .mmTextStyle(MMFont.bodyS)
+                        .foregroundStyle(MMColor.fgDanger)
+                        .multilineTextAlignment(.center)
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.horizontal, MMSize.gutter)
@@ -39,7 +49,9 @@ struct IntakeDoneView: View {
 
             VStack(spacing: MMSpace.s10) {
                 MMButton("브리핑 카드 만들기", action: onCreateCard)
+                    .disabled(isBusy)
                 MMButton("진료받을 병원 먼저 찾기", kind: .outline, action: onFindHospital)
+                    .disabled(isBusy)
             }
             .padding(.horizontal, MMSize.gutter)
             .padding(.top, MMSpace.s12)

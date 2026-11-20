@@ -16,6 +16,8 @@ final class IntakeModel {
         case chat
         /// 1c-5 — 증상 정리 완료.
         case done
+        /// 1m-B — 진료받을 병원 찾기. 완료 화면에서 "먼저 찾기"로 들어온다.
+        case hospital
     }
 
     private(set) var phase: Phase = .severity
@@ -133,6 +135,16 @@ final class IntakeModel {
         phase = .chat
     }
 
+    func goToHospital() {
+        errorMessage = nil
+        phase = .hospital
+    }
+
+    func backToDone() {
+        errorMessage = nil
+        phase = .done
+    }
+
     // MARK: - 3단계 · 문답
 
     func send(_ text: String, by method: IntakeInputMethod = .text) async {
@@ -205,6 +217,34 @@ final class IntakeModel {
         case .networkUnavailable:
             errorMessage = "연결이 끊어졌어요."
         }
+    }
+
+    // MARK: - 카드 만들기
+
+    /// 문답을 브리핑 카드로 굳힌다.
+    ///
+    /// 병원은 **선택이다** — 완료 화면에서 바로 만들면 비어 있고, 1m-B를 지나 왔으면
+    /// 고른 곳이 실린다. 고르지 않고 지나왔어도 비운다(건너뛸 수 있다).
+    func createCard(clinicName: String? = nil, clinicAddress: String? = nil) async -> Int64? {
+        guard let sessionId, !isBusy else { return nil }
+        isBusy = true
+        defer { isBusy = false }
+        errorMessage = nil
+
+        let result = await repository.createCard(
+            sessionId: sessionId,
+            clinicName: clinicName,
+            clinicAddress: clinicAddress
+        )
+        switch result {
+        case .success(let created):
+            return created.cardId
+        case .rejected(let error):
+            errorMessage = error.message ?? "카드를 만들지 못했어요."
+        case .networkUnavailable:
+            errorMessage = "연결이 끊어졌어요."
+        }
+        return nil
     }
 
     // MARK: - 받아쓰기

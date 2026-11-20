@@ -10,22 +10,47 @@ import SwiftUI
 struct MMEmptyState: View {
     enum Kind { case noRecord, noResult, offline, micDenied }
 
-    let kind: Kind
+    private let icon: MMIcon
+    private let title: String
+    private let message: String
+    /// 액션 라벨. 마스터의 네 variant는 모두 들고 있지만 **인스턴스가 끌 수 있다**.
+    private let actionTitle: String?
     var onAction: (() -> Void)?
+
+    init(kind: Kind, onAction: (() -> Void)? = nil) {
+        self.icon = kind.icon
+        self.title = kind.title
+        self.message = kind.message
+        self.actionTitle = kind.actionTitle
+        self.onAction = onAction
+    }
+
+    /// 화면이 내용을 갈아끼운 인스턴스.
+    ///
+    /// 마스터(`335:1166`)의 variant는 넷뿐이고 `1m-B`는 그중 하나에 **아이콘과 문구를
+    /// 덮고 액션을 끈** 인스턴스다(아이콘 바꿔치기는 Android #228에서도 같은 판단).
+    /// 새 variant를 만든 것이 아니라 마스터를 그대로 쓰는 자리라 이 생성자로 받는다.
+    init(icon: MMIcon, title: String, message: String) {
+        self.icon = icon
+        self.title = title
+        self.message = message
+        self.actionTitle = nil
+        self.onAction = nil
+    }
 
     var body: some View {
         VStack(spacing: MMSpace.s12) {
-            kind.icon.view(size: EmptyStateMetrics.icon)
+            icon.view(size: EmptyStateMetrics.icon)
                 .foregroundStyle(MMColor.fgPrimary)
                 .frame(width: EmptyStateMetrics.wrap, height: EmptyStateMetrics.wrap)
                 .background(MMColor.bgPrimaryFaint)
                 .clipShape(Circle())
 
             VStack(spacing: MMSpace.s6) {
-                Text(kind.title)
+                Text(title)
                     .mmTextStyle(MMFont.headingM)
                     .foregroundStyle(MMColor.fgDefault)
-                Text(kind.message)
+                Text(message)
                     .mmTextStyle(MMFont.bodyM)
                     .foregroundStyle(MMColor.fgSubtle)
             }
@@ -33,7 +58,9 @@ struct MMEmptyState: View {
             .padding(.top, MMSpace.s4)
             .frame(maxWidth: .infinity)
 
-            MMButton(kind.actionTitle, kind: .tonal, size: .m, fill: false) { onAction?() }
+            if let actionTitle {
+                MMButton(actionTitle, kind: .tonal, size: .m, fill: false) { onAction?() }
+            }
         }
         .padding(.vertical, MMSpace.s40)
         .frame(maxWidth: .infinity)
@@ -45,7 +72,7 @@ private enum EmptyStateMetrics {
     static let icon: CGFloat = 32
 }
 
-private extension MMEmptyState.Kind {
+extension MMEmptyState.Kind {
     var icon: MMIcon {
         switch self {
         case .noRecord: .emptyBox
