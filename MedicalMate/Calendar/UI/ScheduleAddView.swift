@@ -202,45 +202,6 @@ struct ScheduleAddView: View {
         .accessibilityAddTraits(isPicked ? [.isSelected] : [])
     }
 
-    // MARK: - 할 일
-
-    private func todoList(_ model: ScheduleAddModel) -> some View {
-        VStack(spacing: 0) {
-            ForEach(Array(model.todos.enumerated()), id: \.element.id) { index, todo in
-                HStack(spacing: MMSpace.s10) {
-                    MMSelectBox(isOn: .constant(todo.isDone))
-                        .allowsHitTesting(false)
-                        .onTapGesture { model.toggleTodo(todo) }
-
-                    // **빈 칸에는 안내 글을 넣지 않는다.** 시안(`3663:15151`)이 밑줄 친
-                    // 빈 자리를 그려 두었고, 적기 시작하면 밑줄이 사라진다
-                    // (`3663:15250`). 질문 빈 칸(`MMCallout`)과 같은 모양이다.
-                    VStack(spacing: ScheduleMetrics.todoFieldGap) {
-                        TextField("", text: model.todo(at: index))
-                            .mmTextStyle(MMFont.bodyM)
-                            .foregroundStyle(MMColor.fgDefault)
-                            .textFieldStyle(.plain)
-                        if todo.text.isEmpty {
-                            Rectangle()
-                                .fill(MMColor.borderSubtle)
-                                .frame(height: 1)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-
-                    Button { model.deleteTodo(todo) } label: {
-                        MMIcon.close.view(size: MMSize.iconMd)
-                            .foregroundStyle(MMColor.fgSubtle)
-                            .frame(width: MMSize.touchMin, height: MMSize.touchMin)
-                            .contentShape(Rectangle())
-                    }
-                    .accessibilityLabel("할 일 지우기")
-                }
-                .frame(height: ScheduleMetrics.rowHeight)
-            }
-        }
-    }
-
     /// "새 카드 만들기" · "할 일 추가". 플러스 18 + `fg/primary` 글자.
     private func addRow(title: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
@@ -382,7 +343,7 @@ struct ScheduleAddView: View {
     }
 }
 
-private enum ScheduleMetrics {
+enum ScheduleMetrics {
     /// 라벨과 칸 사이.
     static let labelGap: CGFloat = 7
     static let cardInset: CGFloat = 18
