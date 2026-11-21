@@ -61,8 +61,66 @@ struct HomeTests {
     @Test("아무것도 없으면 첫 홈 배너다 (3663:7007)")
     func emptyHomeBanner() {
         #expect(HomeSummary().isEmpty)
-        #expect(HomeBannerKind.first.link == nil)
-        #expect(HomeBannerKind.afterVisit.link?.counter == "1 / 5")
+        // 처음 온 사람에게는 링크도 장 수도 없다.
+        #expect(HomeBannerCopy.link(.firstVisit) == nil)
+        let today = HomeLead.todayVisit(clinic: nil, cardId: 1, cardTitle: "", clinicName: nil)
+        #expect(HomeBannerCopy.link(today)?.counter == "1 / 5")
+    }
+
+    @Test("오늘 진료 배너는 병원 이름을 글에 넣는다 (3663:7014)")
+    func todayBannerClinic() {
+        let lead = HomeLead.todayVisit(clinic: "서울OO병원 내과", cardId: 7, cardTitle: "복부 통증", clinicName: "서울OO병원")
+        #expect(HomeBannerCopy.message(lead) == "서울OO병원 내과에서 들은 말을\n잊기 전에 남겨두세요.")
+        // 병원을 모르면 "진료실에서"로 받친다. 표본에 있던 이름을 그대로 적지 않는다.
+        let unknown = HomeLead.todayVisit(clinic: nil, cardId: 7, cardTitle: "복부 통증", clinicName: nil)
+        #expect(HomeBannerCopy.message(unknown) == "진료실에서 들은 말을\n잊기 전에 남겨두세요.")
+    }
+
+    @Test("내일 진료 배너는 시각과 병원을 잇는다 (3663:7029)")
+    func tomorrowBanner() {
+        #expect(HomeBannerCopy.tomorrowMessage(time: "오전 10:30", clinic: "서울OO병원 내과")
+            == "내일 오전 10:30 서울OO병원 내과예요.\n달라진 점이 있으면 오늘 고쳐두세요.")
+        // 시간 미정이면 시각을 빼고 적는다.
+        #expect(HomeBannerCopy.tomorrowMessage(time: nil, clinic: "서울OO병원 내과")
+            == "내일 서울OO병원 내과예요.\n달라진 점이 있으면 오늘 고쳐두세요.")
+        #expect(HomeBannerCopy.tomorrowMessage(time: nil, clinic: nil)
+            == "내일 진료예요.\n달라진 점이 있으면 오늘 고쳐두세요.")
+    }
+
+    @Test("오늘 진료를 이미 기록했으면 오늘 배너를 띄우지 않는다")
+    func todayAlreadyRecorded() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
+        let today = HomeRepository.date(from: "2026-09-12")!
+        var input = HomeLeadInput()
+        input.nextOn = today
+        input.nextCard = (id: 7, title: "복부 통증")
+        #expect(HomeRepository.timedLead(input, today: today, calendar: calendar) != nil)
+
+        input.lastVisitedOn = today
+        #expect(HomeRepository.timedLead(input, today: today, calendar: calendar) == nil)
+    }
+
+    @Test("내일 진료면 내일 배너다")
+    func tomorrowLead() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
+        var input = HomeLeadInput()
+        input.nextOn = HomeRepository.date(from: "2026-09-13")
+        input.nextCard = (id: 7, title: "복부 통증")
+        let lead = HomeRepository.timedLead(input, today: HomeRepository.date(from: "2026-09-12")!, calendar: calendar)
+        #expect(lead == .tomorrowVisit(time: nil, clinic: nil, cardId: 7))
+    }
+
+    @Test("카드가 걸리지 않은 일정은 배너를 가르지 않는다")
+    func noCardNoLead() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
+        var input = HomeLeadInput()
+        input.nextOn = HomeRepository.date(from: "2026-09-12")
+        // 기록도 "카드 다시 보기"도 카드가 있어야 갈 곳이 있다.
+        let today = HomeRepository.date(from: "2026-09-12")!
+        #expect(HomeRepository.timedLead(input, today: today, calendar: calendar) == nil)
     }
 }
 

@@ -48,10 +48,11 @@ struct CalendarMonthTests {
         #expect(days.first { $0.date == 3 }?.state == .default)
     }
 
-    @Test func 예정이_기록보다_먼저_보인다() {
-        // 겹치면 아직 할 일이 남은 쪽을 보인다.
-        let days = september.days(calendar: calendar, selected: nil, today: nil, scheduled: [12], records: [12, 4])
-        #expect(days.first { $0.date == 12 }?.dot == .scheduled)
+    @Test func 기록이_예정보다_먼저_보인다() {
+        // 겹치면 이미 지난 일을 보인다. 지난 일은 사실이고 예정은 계획이다(Android markerOn).
+        let days = september.days(calendar: calendar, selected: nil, today: nil, scheduled: [12, 20], records: [12, 4])
+        #expect(days.first { $0.date == 12 }?.dot == .record)
+        #expect(days.first { $0.date == 20 }?.dot == .scheduled)
         #expect(days.first { $0.date == 4 }?.dot == .record)
         #expect(days.first { $0.date == 5 }?.dot == MMCalendarDay.Dot.none)
     }

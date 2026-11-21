@@ -9,10 +9,54 @@ struct HomeSummary: Sendable, Equatable {
     var upcoming: HomeSchedule?
     /// 아직 카드를 만들지 않은 문답. 있으면 "이어서 하기"가 선다.
     var openIntake: HomeOpenIntake?
+    /// 맨 위 배너를 가르는 데 쓰는 값.
+    var lead: HomeLeadInput = HomeLeadInput()
 
     var isEmpty: Bool {
         recentCards.isEmpty && upcoming == nil && openIntake == nil
     }
+}
+
+/// 배너 첫 장을 가르는 재료.
+///
+/// **꾸민 글이 아니라 값이다.** 어떤 배너를 세울지는 `HomeLead`가 정하고, 그 판단에
+/// 필요한 것만 담는다.
+struct HomeLeadInput: Sendable, Equatable {
+    /// 마지막 진료일. 없으면 아직 진료 기록이 없는 사람이다.
+    var lastVisitedOn: Date?
+    /// 다음 일정 날짜.
+    var nextOn: Date?
+    /// 다음 일정의 시각. 없으면 시간 미정이다.
+    var nextTime: String?
+    /// "서울OO병원 내과"처럼 합친 이름.
+    var nextClinicLabel: String?
+    /// 일정에 등록한 병원 이름. 비어 있으면 병원 찾기부터 간다.
+    var nextClinicName: String?
+    /// 다음 일정에 붙은 첫 카드.
+    var nextCard: (id: Int64, title: String)?
+
+    static func == (lhs: HomeLeadInput, rhs: HomeLeadInput) -> Bool {
+        lhs.lastVisitedOn == rhs.lastVisitedOn && lhs.nextOn == rhs.nextOn
+            && lhs.nextTime == rhs.nextTime && lhs.nextClinicLabel == rhs.nextClinicLabel
+            && lhs.nextClinicName == rhs.nextClinicName
+            && lhs.nextCard?.id == rhs.nextCard?.id && lhs.nextCard?.title == rhs.nextCard?.title
+    }
+}
+
+/// 배너 첫 장이 무엇을 말할지. Figma `Home Banner`의 `Banner=1` 네 갈래다.
+///
+/// 규칙은 `docs/FEATURE-SPEC.md` 2.9이고 Android `HomeLead`와 같다.
+enum HomeLead: Sendable, Equatable {
+    /// 카드도 일정도 진료도 없는 사람(`1n-2`).
+    case firstVisit
+    /// 오늘 카드가 걸린 진료가 있고 **아직 기록하지 않았다**(`1n-1`).
+    case todayVisit(clinic: String?, cardId: Int64, cardTitle: String, clinicName: String?)
+    /// 내일 카드가 걸린 진료가 있다(`1n-1-4`).
+    case tomorrowVisit(time: String?, clinic: String?, cardId: Int64)
+    /// 가장 최근 카드가 아직 진료 전이고 **그 카드로 잡은 일정이 없다**(`1n-1-5`).
+    case cardReady(cardId: Int64, symptom: String)
+    /// 그 밖. 배너 2~5 자리인데 사진을 못 받아 한 장으로 둔다.
+    case other
 }
 
 /// 홈의 최근 브리핑 카드 한 줄.

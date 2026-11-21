@@ -68,10 +68,11 @@ struct CalendarMonth: Sendable, Equatable {
                 if day == today { .today }
                 else if day == selected { .selected }
                 else { .default }
-            // 기록과 예정이 겹치면 예정을 보인다. 아직 할 일이 남은 쪽이다.
+            // **기록이 예정보다 앞선다.** 이미 지난 일은 사실이고 예정은 계획이다
+            // (Android `markerOn`과 같다).
             let dot: MMCalendarDay.Dot =
-                if scheduled.contains(day) { .scheduled }
-                else if records.contains(day) { .record }
+                if records.contains(day) { .record }
+                else if scheduled.contains(day) { .scheduled }
                 else { .none }
             cells.append(MMCalendarGrid.Day(date: day, state: state, dot: dot))
         }

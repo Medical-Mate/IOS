@@ -58,7 +58,10 @@ struct MainTabView: View {
                 onOpenCardList: { path.append(Route.briefCardList) },
                 onOpenCard: { card in Int64(card.id).map { path.append(Route.briefCard(cardId: $0)) } },
                 onStartIntake: { path.append(Route.intake(sessionId: nil)) },
-                onProfile: { path.append(Route.myProfile) }
+                onProfile: { path.append(Route.myProfile) },
+                onRecordVisit: { path.append(Route.clinicConfirm(cardId: $0)) },
+                onOpenCardId: { path.append(Route.briefCard(cardId: $0)) },
+                onScheduleCard: { _ in path.append(Route.scheduleAdd(date: nil)) }
             )
         case .record:
             BriefCardListView(

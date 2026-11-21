@@ -18,6 +18,10 @@ struct HomeView: View {
     var onOpenSchedule: (HomeSchedule) -> Void = { _ in }
     var onNotification: () -> Void = {}
     var onProfile: () -> Void = {}
+    /// 배너가 가리키는 곳. 갈래마다 다르다(1n-1 · 1n-1-4 · 1n-1-5).
+    var onRecordVisit: (Int64) -> Void = { _ in }
+    var onOpenCardId: (Int64) -> Void = { _ in }
+    var onScheduleCard: (Int64) -> Void = { _ in }
 
     var body: some View {
         Group {
@@ -55,19 +59,29 @@ struct HomeView: View {
         .background(MMColor.bgSurface)
     }
 
+    /// 배너 링크가 하는 일.
+    private func onBannerLink(_ lead: HomeLead) {
+        switch lead {
+        case .todayVisit(_, let cardId, _, _): onRecordVisit(cardId)
+        case .tomorrowVisit(_, _, let cardId): onOpenCardId(cardId)
+        case .cardReady(let cardId, _): onScheduleCard(cardId)
+        case .firstVisit, .other: break
+        }
+    }
+
     private func banner(_ model: HomeModel) -> some View {
-        let kind = model.banner
+        let lead = model.lead
         return MMHomeBanner(
-            title: kind.title,
-            message: kind.message,
-            link: kind.link.map { ($0.title, $0.counter, {}) },
+            title: HomeBannerCopy.title(lead),
+            message: HomeBannerCopy.message(lead),
+            link: HomeBannerCopy.link(lead).map { ($0.title, $0.counter, { onBannerLink(lead) }) },
             initial: "김",
             onNotification: onNotification,
             onAvatar: onProfile
         ) {
             // 첫 홈 사진만 에셋에 있다. 나머지 넷은 디자인 트랙에서 받아야 한다
             // (docs/COMPONENT-MAP.md 3장).
-            if kind == .first {
+            if lead == .firstVisit || lead == .other {
                 Image("home-banner-first")
                     .resizable()
                     .aspectRatio(contentMode: .fill)

@@ -15,16 +15,89 @@ struct HomeRepository: Sendable {
 
     func summary(from response: HomeResponse) -> HomeSummary {
         HomeSummary(
-            recentCards: (response.recentCards ?? []).map(card(from:)),
-            upcoming: response.upcomingAppointment.map(schedule(from:)),
-            openIntake: response.openIntake.map {
+            // **시안의 최근 브리핑 카드가 두 장이다.** 서버는 세 장을 준다.
+            recentCards: (response.recentCards ?? []).prefix(Self.recentCards).map(card(from:)),
+            upcoming: response.nextAppointment.map(schedule(from:)),
+            openIntake: response.inProgressSession.map {
                 HomeOpenIntake(
                     sessionId: $0.sessionId,
                     step: $0.progressCurrent ?? 0,
                     total: $0.progressTotal ?? 3
                 )
-            }
+            },
+            lead: leadInput(from: response)
         )
+    }
+
+    /// 시안 `1n-1`의 최근 브리핑 카드 장 수.
+    static let recentCards = 2
+
+    /// 배너를 가르는 재료만 추린다.
+    func leadInput(from response: HomeResponse) -> HomeLeadInput {
+        let next = response.nextAppointment
+        let card = next?.cards?.first
+        return HomeLeadInput(
+            lastVisitedOn: response.lastVisitedOn.flatMap(Self.date(from:)),
+            nextOn: next.flatMap { Self.date(from: $0.scheduledOn) },
+            nextTime: next?.scheduledTime.flatMap { Self.time(from: $0) } ?? nil,
+            nextClinicLabel: next.flatMap(Self.clinicLabel),
+            nextClinicName: next?.clinicName.flatMap { $0.isEmpty ? nil : $0 } ?? nil,
+            nextCard: card.map { (id: $0.cardId, title: $0.title ?? "") }
+        )
+    }
+
+    /// "서울OO병원 내과". 비면 `nil`이다.
+    static func clinicLabel(_ appointment: HomeResponse.Appointment) -> String? {
+        let joined = [appointment.clinicName, appointment.department]
+            .compactMap(\.self)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+        return joined.isEmpty ? nil : joined
+    }
+
+    /// 맨 위 배너를 고른다.
+    ///
+    /// 차례가 곧 우선순위다 — 오늘 진료 · 내일 진료 · 일정 없는 카드 · 처음 · 그 밖.
+    /// **일정이 있는지는 홈 응답에 없어** 가장 최근 카드를 한 번 더 읽는다. 못 읽으면 그
+    /// 갈래를 건너뛴다 — 배너 한 장 때문에 홈을 실패로 만들지 않는다.
+    func lead(for summary: HomeSummary) async -> HomeLead {
+        let today = calendar.startOfDay(for: today())
+        if let decided = HomeRepository.timedLead(summary.lead, today: today, calendar: calendar) {
+            return decided
+        }
+        if let ready = await cardReady(summary) { return ready }
+        return summary.isEmpty ? .firstVisit : .other
+    }
+
+    /// 날짜만으로 가를 수 있는 둘. **카드가 걸린 일정만 본다** — 기록도 "카드 다시 보기"도
+    /// 카드가 있어야 갈 곳이 있다.
+    nonisolated static func timedLead(_ input: HomeLeadInput, today: Date, calendar: Calendar) -> HomeLead? {
+        guard let on = input.nextOn, let card = input.nextCard else { return nil }
+        let day = calendar.startOfDay(for: on)
+        // **오늘 진료를 이미 기록했으면 오늘 배너를 띄우지 않는다.**
+        let recorded = input.lastVisitedOn.map { calendar.isDate($0, inSameDayAs: today) } ?? false
+        if calendar.isDate(day, inSameDayAs: today), !recorded {
+            return .todayVisit(
+                clinic: input.nextClinicLabel,
+                cardId: card.id,
+                cardTitle: card.title,
+                clinicName: input.nextClinicName
+            )
+        }
+        if let tomorrow = calendar.date(byAdding: .day, value: 1, to: today),
+           calendar.isDate(day, inSameDayAs: tomorrow) {
+            return .tomorrowVisit(time: input.nextTime, clinic: input.nextClinicLabel, cardId: card.id)
+        }
+        return nil
+    }
+
+    private func cardReady(_ summary: HomeSummary) async -> HomeLead? {
+        guard let latest = summary.recentCards.first, !latest.visited,
+              let id = Int64(latest.id),
+              case .success(let probe) = await client.send(.get("api/cards/\(id)"), as: HomeCardProbe.self),
+              probe.appointment == nil
+        else { return nil }
+        return .cardReady(cardId: id, symptom: latest.title)
     }
 
     private func card(from card: HomeResponse.Card) -> HomeCard {
@@ -42,7 +115,7 @@ struct HomeRepository: Sendable {
     }
 
     private func schedule(from appointment: HomeResponse.Appointment) -> HomeSchedule {
-        let date = appointment.date.flatMap(Self.date(from:))
+        let date = Self.date(from: appointment.scheduledOn)
         // 제목은 서버가 주지 않는다. 병원 · 진료과 · 목적을 앱이 조합한다.
         let title = [appointment.department, appointment.purpose]
             .compactMap { $0?.isEmpty == false ? $0 : nil }
@@ -52,7 +125,7 @@ struct HomeRepository: Sendable {
             id: appointment.appointmentId,
             month: date.map { "\(calendar.component(.month, from: $0))월" } ?? "",
             day: date.map { String(calendar.component(.day, from: $0)) } ?? "",
-            meta: [appointment.clinicName, weekdayAndTime(date: date, time: appointment.time)]
+            meta: [appointment.clinicName, weekdayAndTime(date: date, time: appointment.scheduledTime)]
                 .compactMap { $0?.isEmpty == false ? $0 : nil }
                 .joined(separator: " · "),
             title: title.isEmpty ? (appointment.clinicName ?? "") : title,
