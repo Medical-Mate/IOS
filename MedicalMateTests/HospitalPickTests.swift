@@ -11,8 +11,7 @@ struct HospitalPickTests {
 
     // MARK: - 응답 옮기기
 
-    @Test("totalCount가 없으면 받은 수로 센다")
-    func countsReceivedWhenTotalMissing() {
+    @Test func totalCount가_없으면_받은_수로_센다() {
         let mapped = HospitalRepository.result(from: HospitalSearchResponse(
             hospitals: [HospitalResponse(name: "서울OO병원 내과", address: "서울 관악구")],
             totalCount: nil
@@ -21,14 +20,12 @@ struct HospitalPickTests {
         #expect(!mapped.isTruncated)
     }
 
-    @Test("받은 것보다 전체가 많으면 잘린 것이다")
-    func moreTotalMeansTruncated() {
+    @Test func 받은_것보다_전체가_많으면_잘린_것이다() {
         let found = result(["하나", "둘"], total: 4321)
         #expect(found.isTruncated)
     }
 
-    @Test("같은 이름의 다른 지점은 주소로 갈린다")
-    func sameNameSplitsByAddress() {
+    @Test func 같은_이름의_다른_지점은_주소로_갈린다() {
         let a = Hospital(name: "서울OO병원", address: "서울 관악구 남부순환로 1820, 3층")
         let b = Hospital(name: "서울OO병원", address: "서울 관악구 남부순환로 1820, 4층")
         #expect(a.id != b.id)
@@ -36,8 +33,7 @@ struct HospitalPickTests {
 
     // MARK: - 결과 줄
 
-    @Test("결과 줄은 찾는 중 실패 없음 잘림 개수 순으로 갈린다")
-    func resultLabelPrecedence() {
+    @Test func 결과_줄은_찾는_중_실패_없음_잘림_개수_순으로_갈린다() {
         let found = result(["하나", "둘"])
         #expect(HospitalRepository.resultLabel(isSearching: true, hasFailed: false, result: found) == "찾는 중이에요")
         #expect(HospitalRepository.resultLabel(isSearching: false, hasFailed: true, result: found)
@@ -46,8 +42,7 @@ struct HospitalPickTests {
         #expect(HospitalRepository.resultLabel(isSearching: false, hasFailed: false, result: found) == "검색 결과 2곳")
     }
 
-    @Test("받은 것보다 많으면 좁히라고 적는다")
-    func asksToNarrowWhenTruncated() {
+    @Test func 받은_것보다_많으면_좁히라고_적는다() {
         // 부분 일치라 "서울"이면 4천 건이 넘는다. 그때 필요한 것은 목록을 더 보는 것이
         // 아니라 검색어를 좁히는 것이다.
         let found = result(["하나", "둘"], total: 4321)
@@ -57,29 +52,25 @@ struct HospitalPickTests {
 
     // MARK: - 기다리는 동안 먼저 좁히기
 
-    @Test("답을 기다리는 동안 화면에서 먼저 좁힌다")
-    func narrowsLocallyWhileWaiting() {
+    @Test func 답을_기다리는_동안_화면에서_먼저_좁힌다() {
         let found = result(["서울OO병원 내과", "서울OO병원 이비인후과", "OO정형외과의원"])
         let narrowed = HospitalRepository.narrow(found, by: "이비인후과")
         #expect(narrowed.hospitals.map(\.name) == ["서울OO병원 이비인후과"])
         #expect(narrowed.total == 1)
     }
 
-    @Test("좁혀서 하나도 안 남으면 줄이지 않는다")
-    func keepsListWhenNarrowingEmpties() {
+    @Test func 좁혀서_하나도_안_남으면_줄이지_않는다() {
         // 빈 목록을 잠깐 보이는 것보다 낡은 목록을 두는 편이 덜 혼란스럽다.
         let found = result(["서울OO병원 내과"])
         #expect(HospitalRepository.narrow(found, by: "치과") == found)
     }
 
-    @Test("빈 검색어로는 좁히지 않는다")
-    func emptyQueryDoesNotNarrow() {
+    @Test func 빈_검색어로는_좁히지_않는다() {
         let found = result(["하나", "둘"])
         #expect(HospitalRepository.narrow(found, by: "   ") == found)
     }
 
-    @Test("한 번에 받는 수는 20이고 검색은 300밀리초 뒤에 나간다")
-    func pageSizeAndDebounce() {
+    @Test func 한_번에_받는_수는_20이고_검색은_300밀리초_뒤에_나간다() {
         #expect(HospitalSearch.pageSize == 20)
         #expect(HospitalSearch.debounce == 0.3)
     }
@@ -92,8 +83,7 @@ struct HospitalPickModelTests {
         HospitalPickModel(repository: HospitalRepository(client: HospitalStub.client))
     }
 
-    @Test("검색어를 비우면 결과도 비운다")
-    func clearingQueryClearsResults() {
+    @Test func 검색어를_비우면_결과도_비운다() {
         let model = model()
         model.query = "서울"
         model.query = "   "
@@ -103,8 +93,7 @@ struct HospitalPickModelTests {
         model.cancel()
     }
 
-    @Test("고른 것을 다시 누르면 푼다")
-    func tappingPickedUnpicks() {
+    @Test func 고른_것을_다시_누르면_푼다() {
         // 진료받을 병원은 건너뛸 수 있다.
         let model = model()
         let hospital = Hospital(name: "서울OO병원 내과", address: nil)

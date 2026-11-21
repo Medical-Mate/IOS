@@ -23,21 +23,18 @@ struct RecordDetailTests {
         )
     }
 
-    @Test("어떤 날짜 표기가 와도 월일 두 자리로 줄인다")
-    func shortensAnyDateForm() {
+    @Test func 어떤_날짜_표기가_와도_월일_두_자리로_줄인다() {
         #expect(RecordDetailModel.shortDay("2026.09.04") == "09.04")
         #expect(RecordDetailModel.shortDay("9월 4일") == "09.04")
         #expect(RecordDetailModel.shortDay("09.12") == "09.12")
     }
 
-    @Test("숫자가 모자라면 원문을 그대로 둔다")
-    func keepsTextWhenNoDigits() {
+    @Test func 숫자가_모자라면_원문을_그대로_둔다() {
         // 못 읽은 날짜를 지어내지 않는다.
         #expect(RecordDetailModel.shortDay("미정") == "미정")
     }
 
-    @Test("머리글 둘째 줄은 병원과 진료일이다")
-    func clinicLineHasClinicAndDay() {
+    @Test func 머리글_둘째_줄은_병원과_진료일이다() {
         let line = RecordDetailModel.clinicLine(
             [visit(clinic: "서울OO병원 내과", on: "2026-09-12")],
             calendar: calendar
@@ -45,8 +42,7 @@ struct RecordDetailTests {
         #expect(line == "서울OO병원 내과 · 09.12 진료")
     }
 
-    @Test("여러 번이면 오래된 차례로 초진과 재방문을 적는다")
-    func clinicLineListsVisitsOldestFirst() {
+    @Test func 여러_번이면_오래된_차례로_초진과_재방문을_적는다() {
         // 타임라인은 최신이 위인데 이 줄만 반대다 — 흘러온 순서를 한 줄로 읽는 자리다.
         let line = RecordDetailModel.clinicLine(
             [
@@ -58,26 +54,22 @@ struct RecordDetailTests {
         #expect(line == "서울OO병원 내과 · 09.12 초진 · 09.26 재방문")
     }
 
-    @Test("병원도 날짜도 없으면 둘째 줄이 비어 있다")
-    func clinicLineIsEmptyWithoutData() {
+    @Test func 병원도_날짜도_없으면_둘째_줄이_비어_있다() {
         #expect(RecordDetailModel.clinicLine([visit(clinic: nil, on: nil)], calendar: calendar).isEmpty)
     }
 
-    @Test("배지는 진료 횟수를 말한다")
-    func badgeCountsVisits() {
+    @Test func 배지는_진료_횟수를_말한다() {
         #expect(RecordDetailModel.headBadge(visitCount: 1).text == "진료 완료")
         #expect(RecordDetailModel.headBadge(visitCount: 3).text == "진료 3회")
         #expect(RecordDetailModel.headBadge(visitCount: 1).tone == .success)
     }
 
-    @Test("접었을 때는 세 줄만 보인다")
-    func collapsedCardShowsThreeRows() {
+    @Test func 접었을_때는_세_줄만_보인다() {
         // 1j-3 시안이 부위 · 기간 · 양상 셋을 남긴다.
         #expect(RecordDetailModel.collapsedItemCount == 3)
     }
 
-    @Test("한 번만 진료했으면 몇 번째인지 붙이지 않는다")
-    func singleVisitHasNoOrdinal() {
+    @Test func 한_번만_진료했으면_몇_번째인지_붙이지_않는다() {
         let steps = RecordDetailModel.visitSteps(
             [visit(clinic: "서울OO병원", on: "2026-09-12")],
             calendar: calendar
@@ -87,8 +79,7 @@ struct RecordDetailTests {
         #expect(steps[0].kind == .visit(id: 5))
     }
 
-    @Test("여러 번이면 가장 오래된 것이 초진이다")
-    func oldestVisitIsFirstVisit() {
+    @Test func 여러_번이면_가장_오래된_것이_초진이다() {
         // 최신이 0이라 끝이 초진이다.
         let steps = RecordDetailModel.visitSteps(
             [
@@ -100,16 +91,14 @@ struct RecordDetailTests {
         #expect(steps.map(\.when) == ["09.26 · 진료 후 기록 · 재방문", "09.12 · 진료 후 기록 · 초진"])
     }
 
-    @Test("카드 칸은 작성일만 적는다")
-    func visitKindByPosition() {
+    @Test func 카드_칸은_작성일만_적는다() {
         // 진료실에서 보여 준 날은 바로 위 기록 칸이 이미 적는다.
         #expect(RecordDetailModel.visitKind(count: 1, index: 0) == nil)
         #expect(RecordDetailModel.visitKind(count: 2, index: 1) == "초진")
         #expect(RecordDetailModel.visitKind(count: 2, index: 0) == "재방문")
     }
 
-    @Test("잡아 둔 일정이 없으면 기록의 재방문 날짜를 세운다")
-    func followUpBecomesPendingStep() throws {
+    @Test func 잡아_둔_일정이_없으면_기록의_재방문_날짜를_세운다() throws {
         // 캘린더가 점을 찍는 값과 같아야 달력과 상세가 다른 날을 가리키지 않는다.
         let followUp = VisitFollowUp(
             date: try #require(HomeRepository.date(from: "2026-09-26")),
@@ -122,8 +111,7 @@ struct RecordDetailTests {
         #expect(step.notice?.message == "9월 26일 (토) 전후")
     }
 
-    @Test("카드 제목이 비면 목록의 제목으로 받친다")
-    func fallsBackToListedTitle() {
+    @Test func 카드_제목이_비면_목록의_제목으로_받친다() {
         let summary = VisitSummaryResponse(
             visitId: 5,
             cardId: 7,
@@ -140,8 +128,7 @@ struct RecordDetailTests {
         #expect(title == "복부 통증 · 3주")
     }
 
-    @Test("제목이 하나도 없으면 병원으로 받친다")
-    func fallsBackToClinicName() {
+    @Test func 제목이_하나도_없으면_병원으로_받친다() {
         let title = RecordDetailModel.title(
             card: nil,
             summaries: [],

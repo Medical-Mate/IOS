@@ -6,8 +6,7 @@ import Testing
 struct IntakeTests {
     // MARK: - 강도
 
-    @Test("강도요청은 화면에 보이는 낱말을 함께 보낸다")
-    func severityRequestCarriesLabel() {
+    @Test func 강도요청은_화면에_보이는_낱말을_함께_보낸다() {
         let request = IntakeRepository.severityRequest(level: 3)
         #expect(request.level == 3)
         // 낱말은 디자인 카피라 앱이 들고 보낸다. 서버가 들고 있으면 문구를 바꿀 때마다
@@ -15,16 +14,14 @@ struct IntakeTests {
         #expect(request.label == "꽤 아파요")
     }
 
-    @Test("강도는 1에서 5로 잘린다")
-    func severityIsClampedToFive() {
+    @Test func 강도는_1에서_5로_잘린다() {
         #expect(IntakeRepository.severityRequest(level: 0).label == MMSeverityLevel.of(1).title)
         #expect(IntakeRepository.severityRequest(level: 9).label == MMSeverityLevel.of(5).title)
     }
 
     // MARK: - 대화
 
-    @Test("대화는 seq 순으로 서고 역할이 갈린다")
-    func messagesOrderBySeq() {
+    @Test func 대화는_seq_순으로_서고_역할이_갈린다() {
         let messages = IntakeRepository.messages(from: [
             MessageResponse(seq: 2, role: "USER", text: "한 3주쯤 됐어요."),
             MessageResponse(seq: 1, role: "AI", text: "언제부터 그러셨어요?")
@@ -35,8 +32,7 @@ struct IntakeTests {
 
     // MARK: - 추천 질문
 
-    @Test("후보는 rank 순이다")
-    func candidatesFollowRank() {
+    @Test func 후보는_rank_순이다() {
         // 서버가 정렬해 주지만 순서를 믿지 않는다.
         let candidates = IntakeRepository.candidates(from: [
             QuestionCandidateResponse(text: "셋", rank: 3),
@@ -46,30 +42,26 @@ struct IntakeTests {
         #expect(candidates == ["하나", "둘", "셋"])
     }
 
-    @Test("환자가 손댄 줄은 서버 후보로 덮지 않는다")
-    func touchedRowsSurviveRefresh() {
+    @Test func 환자가_손댄_줄은_서버_후보로_덮지_않는다() {
         // 덮으면 지운 질문이 되살아나고 직접 적은 줄이 사라진다.
         let existing = [IntakeQuestionRow(text: "공복으로 가야 하나요?", isSelected: true, isOwn: true)]
         let rows = IntakeRepository.rows(candidates: ["검사를 받아야 하나요?"], existing: existing)
         #expect(rows == existing)
     }
 
-    @Test("비어 있을 때만 후보가 줄로 선다")
-    func candidatesFillOnlyWhenEmpty() {
+    @Test func 비어_있을_때만_후보가_줄로_선다() {
         let rows = IntakeRepository.rows(candidates: ["하나", "둘"], existing: [])
         #expect(rows.map(\.text) == ["하나", "둘"])
         #expect(rows.allSatisfy { !$0.isSelected && !$0.isOwn })
     }
 
-    @Test("다섯 개가 차면 빈 칸이 사라진다")
-    func blankRowHidesWhenFull() {
+    @Test func 다섯_개가_차면_빈_칸이_사라진다() {
         let full = (1...BriefCardQuestions.max).map { IntakeQuestionRow(text: "질문 \($0)", isSelected: true) }
         #expect(!IntakeRepository.showsBlankRow(full))
         #expect(IntakeRepository.showsBlankRow(Array(full.dropLast())))
     }
 
-    @Test("고른 줄만 화면 순서대로 간다")
-    func selectedRowsKeepScreenOrder() {
+    @Test func 고른_줄만_화면_순서대로_간다() {
         let rows = [
             IntakeQuestionRow(text: "하나", isSelected: true),
             IntakeQuestionRow(text: "둘", isSelected: false),
@@ -78,13 +70,11 @@ struct IntakeTests {
         #expect(IntakeRepository.selected(in: rows) == ["하나", "셋"])
     }
 
-    @Test("고른 것이 없으면 정리 문장이 서지 않는다")
-    func noSummaryWithoutSelection() {
+    @Test func 고른_것이_없으면_정리_문장이_서지_않는다() {
         #expect(IntakeRepository.summary(rows: [IntakeQuestionRow(text: "하나")]) == nil)
     }
 
-    @Test("정리 문장은 고른 수를 세고 직접 적은 것이 있으면 마무리로 바뀐다")
-    func summaryCountsAndSwitchesTail() {
+    @Test func 정리_문장은_고른_수를_세고_직접_적은_것이_있으면_마무리로_바뀐다() {
         let suggested = [
             IntakeQuestionRow(text: "하나", isSelected: true),
             IntakeQuestionRow(text: "둘", isSelected: true)
@@ -101,24 +91,21 @@ struct IntakeTests {
 
     // MARK: - 말로 넘기기
 
-    @Test("문답이 끝나면 다음이라고 말해 넘어간다")
-    func sayingNextAdvances() {
+    @Test func 문답이_끝나면_다음이라고_말해_넘어간다() {
         #expect(IntakeVoiceCommand.isNext("다음"))
         // 받아쓰기가 마침표를 붙여 올 때가 있다.
         #expect(IntakeVoiceCommand.isNext("다음."))
         #expect(!IntakeVoiceCommand.isNext("다음에 할게요"))
     }
 
-    @Test("받아쓰기는 1초에 보내고 5초에 닫는다")
-    func dictationTimings() {
+    @Test func 받아쓰기는_1초에_보내고_5초에_닫는다() {
         #expect(DictationTiming.send == 1)
         #expect(DictationTiming.close == 5)
     }
 
     // MARK: - 조사
 
-    @Test("부위 이름의 받침에 따라 조사가 갈린다")
-    func particleFollowsFinalConsonant() {
+    @Test func 부위_이름의_받침에_따라_조사가_갈린다() {
         #expect(KoreanParticle.subject(after: "복부") == "가")
         #expect(KoreanParticle.subject(after: "손목") == "이")
         // 한글이 아닌 글자로 끝나면 읽는 소리를 추측하지 않는다.
@@ -135,8 +122,7 @@ struct IntakeModelTests {
         return model
     }
 
-    @Test("직접 적은 질문은 적자마자 체크된 채로 선다")
-    func ownQuestionArrivesChecked() {
+    @Test func 직접_적은_질문은_적자마자_체크된_채로_선다() {
         let model = model()
         model.addOwn("  공복으로 가야 하나요?  ")
         #expect(model.rows.count == 1)
@@ -146,15 +132,13 @@ struct IntakeModelTests {
         #expect(!model.isWritingOwn)
     }
 
-    @Test("빈 글은 줄이 되지 않는다")
-    func blankTextMakesNoRow() {
+    @Test func 빈_글은_줄이_되지_않는다() {
         let model = model()
         model.addOwn("   ")
         #expect(model.rows.isEmpty)
     }
 
-    @Test("다섯 개가 차면 더 체크되지 않는다")
-    func cannotCheckBeyondFive() {
+    @Test func 다섯_개가_차면_더_체크되지_않는다() {
         let model = model(rows: (1...BriefCardQuestions.max).map { IntakeQuestionRow(text: "질문 \($0)") })
         #expect(model.isFull)
 
@@ -168,8 +152,7 @@ struct IntakeModelTests {
         #expect(!model.isFull)
     }
 
-    @Test("받아쓰기를 끄면 켜기 전 글로 되돌린다")
-    func cancellingDictationRestoresText() {
+    @Test func 받아쓰기를_끄면_켜기_전_글로_되돌린다() {
         let model = model()
         model.draft = "적다 만 글"
         model.rememberDraftBeforeVoice()
@@ -179,8 +162,7 @@ struct IntakeModelTests {
         #expect(model.draft == "적다 만 글")
     }
 
-    @Test("빈 칸 번호는 줄 다음이다")
-    func blankRowNumberFollowsRows() {
+    @Test func 빈_칸_번호는_줄_다음이다() {
         let model = model(rows: [IntakeQuestionRow(text: "하나"), IntakeQuestionRow(text: "둘")])
         #expect(model.blankNumber == 3)
     }
