@@ -295,7 +295,11 @@ struct CalendarDayView: View {
                 onCancel: { model.isDeleteRequested = false },
                 onConfirm: {
                     Task {
-                        if await model.delete() { onDeleted() }
+                        if await model.delete() {
+                            // 일정이 사라졌으니 걸린 알림도 다시 맞춘다.
+                            await app.reminders.refresh()
+                            onDeleted()
+                        }
                     }
                 }
             )

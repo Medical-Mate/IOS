@@ -18,6 +18,8 @@ final class AppEnvironment {
     let hospitals: HospitalRepository
     let visits: VisitRepository
     let appointments: AppointmentRepository
+    /// 다가오는 일정으로 기기 알림을 다시 거는 쪽.
+    let reminders: VisitReminders
     let session: SessionModel
 
     init(kakao: any KakaoLoginClient = UnavailableKakaoLoginClient()) {
@@ -48,12 +50,18 @@ final class AppEnvironment {
         self.intake = IntakeRepository(client: client)
         self.hospitals = HospitalRepository(client: client)
         self.visits = VisitRepository(client: client)
-        self.appointments = AppointmentRepository(client: client)
+        let appointments = AppointmentRepository(client: client)
+        self.appointments = appointments
+        self.reminders = VisitReminders(
+            appointments: appointments,
+            settings: SettingsRepository(client: client),
+            scheduler: VisitReminderScheduler()
+        )
 
         let remote = AuthRemote(client: client)
         let auth = AuthRepository(remote: remote, kakao: kakao, tokens: tokens)
         self.auth = auth
-        let session = SessionModel(tokens: tokens, auth: auth)
+        let session = SessionModel(tokens: tokens, auth: auth, reminders: self.reminders)
         self.session = session
         sessionHolder.session = session
     }

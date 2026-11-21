@@ -29,7 +29,11 @@ struct MyProfileView: View {
         }
         .task {
             if model == nil {
-                model = MyProfileModel(health: app.healthProfile, settings: app.settings)
+                model = MyProfileModel(
+                    health: app.healthProfile,
+                    settings: app.settings,
+                    reminderScheduling: app.reminders
+                )
             }
             await model?.load()
         }

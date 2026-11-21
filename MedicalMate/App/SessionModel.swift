@@ -20,10 +20,13 @@ final class SessionModel {
 
     private let tokens: TokenStore
     private let auth: AuthRepository
+    /// 로그인·로그아웃에 맞춰 기기 알림을 맞추는 쪽.
+    private let reminders: VisitReminders?
 
-    init(tokens: TokenStore, auth: AuthRepository) {
+    init(tokens: TokenStore, auth: AuthRepository, reminders: VisitReminders? = nil) {
         self.tokens = tokens
         self.auth = auth
+        self.reminders = reminders
     }
 
     /// 앱이 뜰 때 한 번 부른다.
@@ -37,6 +40,9 @@ final class SessionModel {
 
     func logIn(onboardingRequired: Bool) {
         state = onboardingRequired ? .needsOnboarding : .ready
+        // **들어오면 다가오는 일정으로 알림을 맞춘다.** 다른 기기에서 잡은 일정도
+        // 여기서 걸린다.
+        Task { await reminders?.refresh() }
     }
 
     func completeOnboarding() {
@@ -45,6 +51,8 @@ final class SessionModel {
 
     func logOut() async {
         await auth.logout()
+        // **걸린 것을 지운다** — 다음 사람의 기기에 앞 사람의 진료가 뜨면 안 된다.
+        await reminders?.clear()
         state = .loggedOut
     }
 
@@ -58,6 +66,7 @@ final class SessionModel {
     func sessionExpired() async {
         guard SessionModel.endsSession(from: state) else { return }
         await tokens.clear()
+        await reminders?.clear()
         state = .loggedOut
     }
 

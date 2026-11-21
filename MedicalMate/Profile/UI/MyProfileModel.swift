@@ -26,9 +26,17 @@ final class MyProfileModel {
     private let health: HealthProfileRepository
     private let settings: SettingsRepository
 
-    init(health: HealthProfileRepository, settings: SettingsRepository) {
+    /// 설정이 바뀌면 걸린 알림을 다시 맞추는 쪽.
+    private let reminderScheduling: VisitReminders?
+
+    init(
+        health: HealthProfileRepository,
+        settings: SettingsRepository,
+        reminderScheduling: VisitReminders? = nil
+    ) {
         self.health = health
         self.settings = settings
+        self.reminderScheduling = reminderScheduling
         self.isWakeWordOn = WakeWordSetting.isOn
     }
 
@@ -41,6 +49,7 @@ final class MyProfileModel {
     /// 토글은 누르는 순간 반영된다. **실패하면 되돌린다** — 꺼진 줄 알고 나갔는데
     /// 서버가 켜진 채라면 알림이 간다.
     func setBeforeVisit(_ isOn: Bool) async {
+        if isOn { await askNotificationPermission() }
         let previous = reminders.beforeVisit
         reminders.beforeVisit = isOn
         await apply { await settings.update(beforeVisit: isOn) } revert: {
@@ -49,6 +58,7 @@ final class MyProfileModel {
     }
 
     func setAfterVisit(_ isOn: Bool) async {
+        if isOn { await askNotificationPermission() }
         let previous = reminders.afterVisit
         reminders.afterVisit = isOn
         await apply { await settings.update(afterVisit: isOn) } revert: {
@@ -66,9 +76,14 @@ final class MyProfileModel {
         case .success(let settings):
             reminders = settings
             errorMessage = nil
+            // **저장이 끝나야 다시 건다.** 끄면 걸린 것이 지워지고 켜면 다가오는
+            // 일정으로 다시 걸린다.
+            await reminderScheduling?.refresh()
         case .rejected, .networkUnavailable:
             revert()
             errorMessage = "설정을 바꾸지 못했어요."
+            // **실패하면 예약을 건드리지 않는다.** 서버 값이 그대로이므로 걸린 것도
+            // 그대로가 맞다.
         }
     }
 
@@ -114,6 +129,17 @@ final class MyProfileModel {
     /// "진료 2시간 뒤, 미정이면 당일 오후 7시".
     nonisolated static func afterVisitDescription(_ time: ReminderTime) -> String {
         "진료 2시간 뒤, 미정이면 당일 \(time.words)"
+    }
+
+    /// 켤 때 한 번 묻는다.
+    ///
+    /// **앱을 열자마자 묻지 않는다.** 왜 필요한지 모르는 채로 보는 권한 창은 거절되기
+    /// 쉽고, 한 번 거절하면 설정에서 직접 켜야 한다. 토글을 켜는 순간이 그 까닭이 가장
+    /// 분명한 자리다. 이미 정해진 뒤에는 시스템이 창을 띄우지 않는다.
+    private func askNotificationPermission() async {
+        _ = try? await UNUserNotificationCenter.current()
+            .requestAuthorization(options: [.alert, .sound])
+        isSystemNotificationOff = await Self.isSystemNotificationOff()
     }
 
     private static func isSystemNotificationOff() async -> Bool {

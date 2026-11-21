@@ -235,7 +235,11 @@ struct ScheduleAddView: View {
 
             MMButton("저장하기") {
                 Task {
-                    if let id = await model.save() { onSaved(id) }
+                    if let id = await model.save() {
+                        // 일정이 생겼으니 걸린 알림을 다시 맞춘다.
+                        await app.reminders.refresh()
+                        onSaved(id)
+                    }
                 }
             }
             .disabled(!model.canSave)
