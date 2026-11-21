@@ -50,7 +50,7 @@ struct MMNavBar: View {
                 .foregroundStyle(MMColor.fgDefault)
                 .lineLimit(1)
                 .truncationMode(.tail)
-                .padding(.horizontal, actionTitle == nil ? NavBarMetrics.titleInset : NavBarMetrics.titleInsetWithAction)
+                .padding(.horizontal, titleInset)
                 .frame(maxWidth: .infinity)
         }
         .frame(height: MMSize.navBarHeight)
@@ -63,6 +63,11 @@ struct MMNavBar: View {
                 .fill(MMColor.borderSubtle)
                 .frame(height: NavBarMetrics.hairline)
         }
+    }
+
+    /// 제목 좌우 여백. 오른쪽 액션이 있으면 더 비운다.
+    private var titleInset: CGFloat {
+        actionTitle == nil ? NavBarMetrics.titleInset : NavBarMetrics.titleInsetWithAction
     }
 
     @ViewBuilder

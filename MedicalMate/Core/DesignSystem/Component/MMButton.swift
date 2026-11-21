@@ -153,7 +153,15 @@ extension MMButton.Size {
 // 아이콘 없이 쓰는 경우가 대부분이라 기본 생성자를 따로 둔다.
 extension MMButton where Leading == EmptyView, Trailing == EmptyView {
     init(_ title: String, kind: Kind = .primary, size: Size = .l, fill: Bool = true, action: @escaping () -> Void) {
-        self.init(title: title, kind: kind, size: size, fill: fill, action: action, leading: { EmptyView() }, trailing: { EmptyView() })
+        self.init(
+            title: title,
+            kind: kind,
+            size: size,
+            fill: fill,
+            action: action,
+            leading: { EmptyView() },
+            trailing: { EmptyView() }
+        )
     }
 }
 

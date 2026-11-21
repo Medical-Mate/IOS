@@ -123,7 +123,13 @@ struct MMComponentGallery: View {
                 }
 
                 section("Dialog · 312:845 / Tooltip · 542:1295") {
-                    MMDialog(title: "이 기록을 삭제할까요?", message: "삭제하면 되돌릴 수 없어요.", confirmTitle: "삭제", onCancel: {}, onConfirm: {})
+                    MMDialog(
+                        title: "이 기록을 삭제할까요?",
+                        message: "삭제하면 되돌릴 수 없어요.",
+                        confirmTitle: "삭제",
+                        onCancel: {},
+                        onConfirm: {}
+                    )
                     HStack(alignment: .top) {
                         MMTooltip(isPresented: $tooltipOpen, label: "브리핑 카드란")
                         if tooltipOpen { MMTooltipBubble(text: "여기에 짧은 설명이 들어갑니다") }

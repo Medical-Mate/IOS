@@ -11,6 +11,11 @@ struct CardListTests {
         return calendar
     }
 
+    /// 배지·요약만 보는 줄. 나머지 값은 비운다.
+    private func item(_ kind: CardListItem.Kind) -> CardListItem {
+        CardListItem(kind: kind, title: "", meta: "", summary: nil, month: "", writtenOn: .now)
+    }
+
     private func repository(today: String = "2026-09-18") -> CardRepository {
         CardRepository(
             client: Stub.client,
@@ -53,10 +58,10 @@ struct CardListTests {
 
     @Test("배지는 네 가지다 (FEATURE-SPEC 2.4)")
     func badges() {
-        let before = CardListItem(kind: .card(id: 1, visited: false), title: "", meta: "", summary: nil, month: "", writtenOn: .now)
-        let done = CardListItem(kind: .card(id: 2, visited: true), title: "", meta: "", summary: nil, month: "", writtenOn: .now)
-        let writing = CardListItem(kind: .openIntake(sessionId: 3, tempSaved: false, step: 1, total: 3), title: "", meta: "", summary: nil, month: "", writtenOn: .now)
-        let saved = CardListItem(kind: .openIntake(sessionId: 4, tempSaved: true, step: 3, total: 3), title: "", meta: "", summary: nil, month: "", writtenOn: .now)
+        let before = item(.card(id: 1, visited: false))
+        let done = item(.card(id: 2, visited: true))
+        let writing = item(.openIntake(sessionId: 3, tempSaved: false, step: 1, total: 3))
+        let saved = item(.openIntake(sessionId: 4, tempSaved: true, step: 3, total: 3))
 
         #expect(before.badge.text == "진료 전")
         #expect(done.badge.text == "진료 완료")
@@ -78,8 +83,8 @@ struct CardListTests {
 
     @Test("이어서 할 것은 요약 줄이 warning이다 (3663:7130)")
     func summaryTone() {
-        let intake = CardListItem(kind: .openIntake(sessionId: 1, tempSaved: false, step: 1, total: 3), title: "", meta: "", summary: nil, month: "", writtenOn: .now)
-        let card = CardListItem(kind: .card(id: 1, visited: false), title: "", meta: "", summary: nil, month: "", writtenOn: .now)
+        let intake = item(.openIntake(sessionId: 1, tempSaved: false, step: 1, total: 3))
+        let card = item(.card(id: 1, visited: false))
         #expect(intake.summaryTone == .warning)
         #expect(card.summaryTone == .subtle)
     }
