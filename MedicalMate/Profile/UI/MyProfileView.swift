@@ -16,7 +16,9 @@ struct MyProfileView: View {
     var onEditHealth: () -> Void = {}
     var onEditReminderTime: () -> Void = {}
     var onLogout: () -> Void = {}
-    var onWithdraw: () -> Void = {}
+    /// 탈퇴. **되는지 돌려받는다** — 서버가 거절하면 아무 일도 안 일어난 것처럼
+    /// 보이고, 환자는 계정이 사라졌는지 아닌지 알 수 없다(Android `account_withdraw_failed`).
+    var onWithdraw: () async -> Bool = { true }
     var onOpenTerms: () -> Void = {}
     var onOpenPrivacy: () -> Void = {}
 
@@ -66,7 +68,9 @@ struct MyProfileView: View {
                     onCancel: { askingWithdraw = false },
                     onConfirm: {
                         askingWithdraw = false
-                        onWithdraw()
+                        Task {
+                            if await onWithdraw() == false { model.withdrawFailed() }
+                        }
                     }
                 )
             }

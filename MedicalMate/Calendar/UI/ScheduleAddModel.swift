@@ -47,11 +47,15 @@ final class ScheduleAddModel {
     /// 들어왔다고 다 재방문은 아니다. 이 값이 참일 때만 `visitFollowUp`으로 만든다
     /// (Android `#245`).
     private let isFollowUp: Bool
+    /// 고치러 들어온 일정. **시간 미정으로 저장하고 나면 그 값을 채울 자리가 여기뿐이다**
+    /// (Android `#230`). 새로 만들면 같은 일정이 둘이 된다.
+    private let appointmentId: Int64?
 
     init(
         initialDate: Date?,
         cardId: Int64? = nil,
         isFollowUp: Bool = false,
+        appointmentId: Int64? = nil,
         repository: AppointmentRepository,
         cards cardsRepository: CardRepository,
         calendar: Calendar = .current,
@@ -59,6 +63,7 @@ final class ScheduleAddModel {
     ) {
         self.cardId = cardId
         self.isFollowUp = isFollowUp
+        self.appointmentId = appointmentId
         self.repository = repository
         self.cardsRepository = cardsRepository
         self.calendar = calendar
@@ -102,6 +107,9 @@ final class ScheduleAddModel {
 
     func isPicked(_ id: Int64) -> Bool { pickedCardIds.contains(id) }
 
+    /// 이미 있는 일정을 고치는 중인지.
+    var isEditing: Bool { appointmentId != nil }
+
     /// 재진인 일정인지. **재방문을 확정하러 들어왔거나, 이미 진료를 마친 카드를
     /// 골랐으면** 재진이다(Android `#245` · `#272`).
     ///
@@ -135,6 +143,27 @@ final class ScheduleAddModel {
         // 골라진 것으로 보여서, 정해 놓고 들어온 사람이 같은 카드를 다시 찾아 누른다.
         // Android `load()`도 받은 `cardId`를 고른 것에 더한다(#239).
         if let cardId { pickedCardIds.insert(cardId) }
+        await loadAppointment()
+    }
+
+    /// 고치러 들어왔으면 그 일정의 값을 채운다.
+    ///
+    /// **서버에 일정 하나를 id로 읽는 경로가 없어 그 날의 목록에서 찾는다**(Android도
+    /// 같다). 못 찾으면 값을 비운 채로 둔다 — 빈 화면이 뜨는 것보다 낫고, 저장은
+    /// 그래도 그 일정으로 나간다.
+    private func loadAppointment() async {
+        guard let appointmentId, let on else { return }
+        let day = VisitMapping.day(on, calendar: calendar)
+        guard case .success(let list) = await repository.appointments(date: day),
+              let found = list.compactMap(AppointmentMapping.appointment(from:))
+                  .first(where: { $0.id == appointmentId })
+        else { return }
+        time = found.time
+        todos = found.todos
+        pickedCardIds.formUnion(found.cards.map(\.id))
+        if let name = found.clinic, !name.isEmpty {
+            clinic = BriefCardHospital(name: name, address: nil)
+        }
     }
 
     // MARK: - 고르기
@@ -240,14 +269,36 @@ final class ScheduleAddModel {
             todos: AppointmentMapping.cleaned(todos)
         )
 
-        switch await repository.create(request) {
+        // **고치러 들어왔으면 새로 만들지 않는다.** 새로 만들면 같은 일정이 둘이 된다
+        // (Android `#230`).
+        let result: ApiResult<AppointmentResponse>
+        if let appointmentId {
+            result = await repository.update(id: appointmentId, ScheduleAddModel.updateRequest(from: request))
+        } else {
+            result = await repository.create(request)
+        }
+        switch result {
         case .success(let response):
-            return response.appointmentId
+            return appointmentId ?? response.appointmentId
         case .rejected(let error):
             errorMessage = error.message ?? "일정을 저장하지 못했어요."
         case .networkUnavailable:
             errorMessage = "연결이 끊어졌어요."
         }
         return nil
+    }
+
+    /// 만들 때 쓰는 요청을 고칠 때 쓰는 요청으로 옮긴다.
+    ///
+    /// **출처(`origin`)는 보내지 않는다** — 이미 저장된 일정이 어디서 왔는지는 고친다고
+    /// 바뀌지 않는다. 카드와 할 일은 통째로 갈아끼운다(지운 줄이 남지 않게).
+    nonisolated static func updateRequest(from request: CreateAppointmentRequest) -> UpdateAppointmentRequest {
+        UpdateAppointmentRequest(
+            clinicName: request.clinicName,
+            scheduledOn: request.scheduledOn,
+            scheduledTime: request.scheduledTime,
+            cardIds: request.cardIds,
+            todos: request.todos
+        )
     }
 }

@@ -14,6 +14,8 @@ struct ScheduleAddView: View {
     /// 재방문을 확정하러 들어왔으면 그 카드. 손으로 만들 때는 `nil`이다.
     var cardId: Int64?
     var isFollowUp = false
+    /// 고치러 들어온 일정(`Android #230`). 시간 미정으로 저장한 일정의 시각을 채운다.
+    var appointmentId: Int64?
     let onBack: () -> Void
     let onSaved: (Int64) -> Void
     var onNewCard: () -> Void = {}
@@ -52,6 +54,7 @@ struct ScheduleAddView: View {
                 initialDate: initialDate,
                 cardId: cardId,
                 isFollowUp: isFollowUp,
+                appointmentId: appointmentId,
                 repository: app.appointments,
                 cards: app.cards
             )

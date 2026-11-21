@@ -147,6 +147,12 @@ final class MyProfileModel {
             .authorizationStatus
         return status == .denied
     }
+
+    /// 탈퇴가 거절됐다. **계정이 그대로라는 것을 적는다** — 아무 말이 없으면 지워졌는지
+    /// 아닌지 알 수 없다. 되돌릴 수 없는 동작이라 더더욱 그렇다.
+    func withdrawFailed() { errorMessage = MyProfileModel.withdrawFailedMessage }
+
+    nonisolated static let withdrawFailedMessage = "탈퇴하지 못했어요. 계정은 그대로 있어요"
 }
 
 /// "헤이 메이트로 부르기"의 값. **기기 설정이라 서버에 두지 않는다.**

@@ -180,16 +180,21 @@ struct MainTabView: View {
                     onConfirmNextEvent: { day, cardId in
                         path.append(Route.scheduleAdd(date: Self.wire(day), cardId: cardId, isFollowUp: true))
                     },
+                    // **시간 미정으로 저장한 일정을 눌러서 고친다**(Android `#230`).
+                    onEditSchedule: { id in
+                        path.append(Route.scheduleAdd(date: date, appointmentId: id))
+                    },
                     onDeleted: { path.removeLast() }
                 )
                 .toolbar(.hidden, for: .navigationBar)
             }
 
-        case .scheduleAdd(let date, let cardId, let isFollowUp):
+        case .scheduleAdd(let date, let cardId, let isFollowUp, let appointmentId):
             ScheduleAddView(
                 initialDate: date.flatMap(HomeRepository.date(from:)),
                 cardId: cardId,
                 isFollowUp: isFollowUp,
+                appointmentId: appointmentId,
                 onBack: { path.removeLast() },
                 onSaved: { _ in path.removeLast() }
             )
@@ -246,7 +251,7 @@ struct MainTabView: View {
                 onEditHealth: { path.append(Route.healthEdit) },
                 onEditReminderTime: { path.append(Route.reminderTime) },
                 onLogout: { Task { await app.session.logOut() } },
-                onWithdraw: { Task { _ = await app.session.withdraw() } }
+                onWithdraw: { await app.session.withdraw() }
             )
             .toolbar(.hidden, for: .navigationBar)
 

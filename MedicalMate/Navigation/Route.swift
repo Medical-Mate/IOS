@@ -32,7 +32,14 @@ enum Route: Hashable, Sendable {
     /// 재방문을 확정하러 들어온 것인지**다. 둘은 다른 뜻이라 따로 든다 — 카드를 들고
     /// 들어가는 길(카드만 있는 날 시트 · 홈 배너 · 브리핑 카드)은 재방문이 아니다.
     /// Android `ScheduleAddDestination`도 `cardId`와 `followUp`을 따로 둔다(#239 · #245).
-    case scheduleAdd(date: String?, cardId: Int64? = nil, isFollowUp: Bool = false)
+    /// `appointmentId`가 있으면 **이미 저장된 일정을 고치러** 들어온 것이다
+    /// (Android `#230`). 시간 미정으로 저장한 일정의 시각을 채울 자리가 여기뿐이다.
+    case scheduleAdd(
+        date: String?,
+        cardId: Int64? = nil,
+        isFollowUp: Bool = false,
+        appointmentId: Int64? = nil
+    )
 
     // 진료 후 기록
     /// 병원 찾기(`1m-B`). **카드를 들고 간다** — 고른 병원을 그 카드에 적는다.

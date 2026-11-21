@@ -27,6 +27,9 @@ struct CalendarDayView: View {
     var onOpenRecord: (Int64) -> Void = { _ in }
     /// 뽑아 둔 재방문을 확정하러 간다. 날짜와 카드를 들고 간다.
     var onConfirmNextEvent: (Date, Int64?) -> Void = { _, _ in }
+    /// **시각이 없는 일정만** 눌러서 고치러 간다(Android `#230`). 시간 미정으로 저장하고
+    /// 나면 그 값을 채울 자리가 여기뿐이고, 시각이 정해진 일정을 열면 고칠 것이 없다.
+    var onEditSchedule: (Int64) -> Void = { _ in }
     var onDeleted: () -> Void = {}
 
     @State private var model: CalendarDayModel?
@@ -138,6 +141,16 @@ struct CalendarDayView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(MMColor.bgPrimaryFaint)
         .clipShape(RoundedRectangle(cornerRadius: MMRadius.lg))
+        .modifier(ScheduleEditTap(id: CalendarDayView.editableId(model.appointment), onEdit: onEditSchedule))
+    }
+
+    /// 눌렀을 때 무엇을 하는지. Android의 `calendar_day_schedule_edit`과 같은 말이다.
+    nonisolated static let scheduleEditHint = "시간 정하기"
+
+    /// 눌러서 고칠 수 있는 일정인지. **시각이 비어 있을 때만이다.**
+    nonisolated static func editableId(_ appointment: Appointment?) -> Int64? {
+        guard let appointment, appointment.time == nil else { return nil }
+        return appointment.id
     }
 
     private func cardRows(_ model: CalendarDayModel) -> some View {
@@ -322,4 +335,23 @@ private enum NextEventMetrics {
 private enum CalendarDayMetrics {
     /// 첫 구간 머리는 위 여백이 24가 아니라 8이다(`3663:15399`).
     static let firstHeaderTop: CGFloat = -16
+}
+
+/// 시각이 없는 일정 카드에만 붙는 누름. **`id`가 없으면 아무것도 붙이지 않는다** —
+/// 고칠 것이 없는 카드가 눌리는 것처럼 보이면 안 된다.
+private struct ScheduleEditTap: ViewModifier {
+    let id: Int64?
+    let onEdit: (Int64) -> Void
+
+    func body(content: Content) -> some View {
+        if let id {
+            content
+                .contentShape(Rectangle())
+                .onTapGesture { onEdit(id) }
+                .accessibilityAddTraits(.isButton)
+                .accessibilityHint(CalendarDayView.scheduleEditHint)
+        } else {
+            content
+        }
+    }
 }

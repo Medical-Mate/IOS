@@ -128,3 +128,12 @@ struct HealthEditDraftTests {
         #expect(HealthEditModel.isNew("메밀", extras: ["땅콩"]))
     }
 }
+
+/// 탈퇴가 거절됐을 때(Android `account_withdraw_failed`).
+struct WithdrawFailureTests {
+    @Test func 계정이_그대로라는_것을_적는다() {
+        // 아무 말이 없으면 지워졌는지 아닌지 알 수 없다. 되돌릴 수 없는 동작이라
+        // 더더욱 그렇다.
+        #expect(MyProfileModel.withdrawFailedMessage == "탈퇴하지 못했어요. 계정은 그대로 있어요")
+    }
+}

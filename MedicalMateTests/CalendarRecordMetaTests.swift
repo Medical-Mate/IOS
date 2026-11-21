@@ -116,3 +116,55 @@ struct ScheduleRevisitTests {
         #expect(!ScheduleAddModel.isVisitedAndPicked(intake, picked: [9]))
     }
 }
+
+/// 시간 미정으로 저장한 일정을 나중에 고치는 길(Android `#230`).
+struct ScheduleEditTests {
+    private func appointment(time: AppointmentTime?) -> Appointment {
+        Appointment(
+            id: 7,
+            title: "서울OO병원 내과",
+            clinic: "서울OO병원 내과",
+            on: fixtureDay("2026-09-26"),
+            time: time,
+            status: .scheduled,
+            origin: .manual,
+            cards: [],
+            todos: []
+        )
+    }
+
+    @Test func 시각이_없는_일정만_눌러서_고친다() {
+        // 시간 미정으로 저장하고 나면 그 값을 채울 자리가 여기뿐이다.
+        #expect(CalendarDayView.editableId(appointment(time: nil)) == 7)
+    }
+
+    @Test func 시각이_정해진_일정은_눌리지_않는다() {
+        // 열어도 고칠 것이 없는 화면이 뜬다.
+        #expect(CalendarDayView.editableId(appointment(time: AppointmentTime(hour: 10, minute: 30))) == nil)
+    }
+
+    @Test func 일정이_없으면_눌리지_않는다() {
+        #expect(CalendarDayView.editableId(nil) == nil)
+    }
+
+    @Test func 고칠_때는_출처를_보내지_않는다() {
+        // 이미 저장된 일정이 어디서 왔는지는 고친다고 바뀌지 않는다. 날짜·시각·카드·할
+        // 일만 간다.
+        let create = CreateAppointmentRequest(
+            clinicName: "서울OO병원 내과",
+            department: nil,
+            purpose: nil,
+            scheduledOn: "2026-09-26",
+            scheduledTime: "10:30",
+            cardIds: [3],
+            origin: AppointmentOrigin.visitFollowUp.wire,
+            todos: []
+        )
+        let update = ScheduleAddModel.updateRequest(from: create)
+        #expect(update.scheduledOn == "2026-09-26")
+        #expect(update.scheduledTime == "10:30")
+        #expect(update.cardIds == [3])
+        #expect(update.clinicName == "서울OO병원 내과")
+        #expect(update.status == nil)
+    }
+}
