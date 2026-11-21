@@ -210,6 +210,7 @@ swiftlint --strict
 | 서버 연결 | `auth` · `health-profile` · `home` · `cards`(목록·상세·편집·삭제) · `sessions` · `hospitals` · `visits` · `appointments` · `settings` 아홉이 붙었습니다. 나머지 API는 쓰는 화면에서 붙입니다. **에러 봉투는 `{"error":{"code","message","retryable","details"}}`입니다** — 맨 위의 `message`를 찾고 있어서 서버가 준 말이 한 번도 화면에 닿지 않던 것을 2026-11-21에 고쳤습니다 |
 | 홈 배너 | **다섯 장이 다 섭니다.** 4초마다 넘어가고 끝에서 첫 장으로 돕니다. 손으로 넘기는 동안과 Reduce Motion에서는 저절로 넘기지 않습니다. 첫 장의 **네 갈래를 다 가릅니다**(처음 · 오늘 진료 · 내일 진료 · 일정 없는 카드). 안드로이드와 같은 규칙이고 `GET /api/me/home`의 `lastVisitedOn` · `nextAppointment.cards`로 가릅니다 — 전에 "가를 값이 없다"고 적어 둔 것은 홈 DTO가 서버 계약과 달랐던 탓입니다. 2~5장(예약 문자 · 일정 알림 · 카드 저장 · 헤이 메이트)은 차례가 고정이고, 첫 장을 가를 값이 없으면 그 넷 중 하나가 첫 장에 섭니다 — 규칙은 FEATURE-SPEC 2.9 |
 | 캘린더 점 | **두 가지가 서로 다른 곳에서 옵니다.** 기록 점은 카드를 쓴 날과 진료 후 기록을 남긴 날, 예정 점은 잡아 둔 일정과 **아직 확정하지 않은 재방문**입니다(지난 날은 빼고 이 달만). 전에 "H 섹션이 들어온 뒤에 켠다"고 적어 두고 빈 집합을 넘기던 것을 2026-11-21에 켰습니다 |
+| 알림 | **토글과 알림 시각은 서 있고 서버에도 저장되는데 알림이 울리지 않습니다** — 기기에 거는 코드가 없습니다(`UNUserNotificationCenter`를 권한 상태 읽는 데만 씁니다). Android는 WorkManager로 걸고 규칙을 `planVisitReminders`가 정합니다. 옮길 규칙과 문구는 [#9](https://github.com/Medical-Mate/IOS/issues/9) |
 | 알려진 자국 | 없습니다. 1s-1의 잔상은 `LazyVStack`으로 풀었습니다. **툴팁 말풍선이 세 가지로 가려지던 것**(카드에 잘림 · 두 줄이 한 줄로 눌림 · 뒤 상자에 덮임)은 2026-11-21에 고쳤습니다 — 1q-1 · 1e-1을 시뮬레이터로 눌러 보고서야 보인 자리입니다. COMPONENT-MAP 5장 |
 | 받아쓰기 | `DictationController`. **`requiresOnDeviceRecognition = true`로 고정**했고 온디바이스를 못 하는 기기에서는 마이크를 아예 그리지 않습니다 — 몰래 서버로 보내지 않습니다 |
 | 카카오 SDK | 미연결. `UnavailableKakaoLoginClient`가 자리를 잡고 있습니다 ([#7](https://github.com/Medical-Mate/IOS/issues/7)) |
