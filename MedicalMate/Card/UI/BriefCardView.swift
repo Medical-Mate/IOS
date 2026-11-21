@@ -208,7 +208,7 @@ struct BriefCardView: View {
                 .foregroundStyle(MMColor.fgSubtle)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            MMTooltip(isPresented: $model.isTooltipOpen, label: "이 카드가 어떻게 만들어졌는지")
+            MMTooltip(isPresented: $model.isTooltipOpen, label: "AI가 어떻게 정리했는지 보기")
         }
         .overlay(alignment: .topTrailing) {
             if model.isTooltipOpen {

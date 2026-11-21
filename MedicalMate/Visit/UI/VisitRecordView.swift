@@ -127,11 +127,11 @@ struct VisitRecordView: View {
                 .foregroundStyle(MMColor.fgSubtle)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            MMTooltip(isPresented: $model.isTooltipOpen, label: "이 기록이 어떻게 만들어졌는지")
+            MMTooltip(isPresented: $model.isTooltipOpen, label: "분류 기준 설명")
         }
         .overlay(alignment: .topTrailing) {
             if model.isTooltipOpen {
-                MMTooltipBubble(text: "들으신 말을 항목별로 나눴어요. 원문도 함께 남아요")
+                MMTooltipBubble(text: "소견·검사·약·재방문으로 나눴어요.\n원문 메모도 함께 남아요")
                     .offset(y: RecordMetrics.tooltipOffset)
             }
         }
