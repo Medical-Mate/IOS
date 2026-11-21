@@ -155,17 +155,21 @@ struct MMKVEditRow: View {
         VStack(spacing: 0) {
             Group {
                 if isEditable {
-                    TextField("", text: $value, axis: .vertical)
-                        .mmTextStyle(MMFont.bodyL)
-                        .foregroundStyle(MMColor.fgDefault)
-                        .textFieldStyle(.plain)
-                        // **글자를 다 지운 줄은 비어 보이지 않는다**(`1e-1-E2`). 지우는
-                        // 것과 비우는 것은 다른 일이라 줄은 남고, 남은 줄이 아무 말도
-                        // 하지 않으면 무엇이 저장될지 알 수 없다. `prompt`를 쓰지 않는
-                        // 것은 색과 글자를 토큰으로 못 박기 위해서다.
-                        .overlay(alignment: .topLeading) {
-                            if value.isEmpty { hint.allowsHitTesting(false) }
-                        }
+                    // **글자를 다 지운 줄은 비어 보이지 않는다**(`1e-1-E2`). 지우는 것과
+                    // 비우는 것은 다른 일이라 줄은 남고, 남은 줄이 아무 말도 하지 않으면
+                    // 무엇이 저장될지 알 수 없다.
+                    //
+                    // 안내를 `overlay`가 아니라 **아래에 깔아 줄 높이를 잡게 한다** —
+                    // 겹쳐 두면 한 줄 높이에 갇혀 "…표시되지 않…"으로 잘린다. 시안의
+                    // 그 줄은 80으로 두 줄이다. `prompt`를 쓰지 않는 것은 색과 글자를
+                    // 토큰으로 못 박기 위해서다.
+                    ZStack(alignment: .topLeading) {
+                        if value.isEmpty { hint.allowsHitTesting(false) }
+                        TextField("", text: $value, axis: .vertical)
+                            .mmTextStyle(MMFont.bodyL)
+                            .foregroundStyle(MMColor.fgDefault)
+                            .textFieldStyle(.plain)
+                    }
                 } else {
                     if value.isEmpty {
                         hint
@@ -189,6 +193,7 @@ struct MMKVEditRow: View {
         Text(MMKVEditRow.emptyHint)
             .mmTextStyle(MMFont.bodyL)
             .foregroundStyle(MMColor.fgSubtle)
+            .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
