@@ -242,3 +242,120 @@ struct CalendarDayCopyTests {
         #expect(CalendarDayView.recordMeta(record) == "위염 초기")
     }
 }
+
+/// `1r-1`의 점 두 가지와 `1r-1-S`(카드만 있는 날 시트).
+struct CalendarDotsAndCardSheetTests {
+    private var seoul: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
+        return calendar
+    }
+
+    private func appointment(id: Int64, on day: String, cards: [Int64] = []) -> Appointment {
+        Appointment(
+            id: id, title: "", clinic: nil,
+            on: fixtureDay(day),
+            time: nil,
+            status: .scheduled, origin: .manual,
+            cards: cards.map { AppointmentCard(id: $0, title: nil) },
+            todos: []
+        )
+    }
+
+    private func dayCard(id: Int64, on day: String, visited: Bool = false) throws -> CalendarDayCard {
+        try #require(CalendarDayCard(
+            from: CardSummaryResponse(
+                cardId: id,
+                title: "복부 통증 · 3주",
+                chiefComplaint: nil,
+                visited: visited,
+                clinicName: "서울OO병원 내과",
+                createdAt: day,
+                axes: ["부위", "기간", "양상", "강도", "동반 증상"]
+            ),
+            calendar: seoul
+        ))
+    }
+
+    @Test func 기록_점은_카드를_쓴_날과_기록을_남긴_날이다() throws {
+        let month = CalendarMonth(year: 2026, month: 9)
+        let visits = [
+            CalendarVisitDay(visitedOn: fixtureDay("2026-09-12"), followUpOn: nil),
+            // 다른 달의 기록은 찍지 않는다.
+            CalendarVisitDay(visitedOn: fixtureDay("2026-08-30"), followUpOn: nil)
+        ]
+        let days = CalendarModel.recordDays(
+            cards: [try dayCard(id: 1, on: "2026-09-04")],
+            visits: visits,
+            month: month,
+            calendar: seoul
+        )
+        #expect(days == [4, 12])
+    }
+
+    @Test func 예정_점은_잡아_둔_일정과_확정하지_않은_재방문을_합친다() {
+        let month = CalendarMonth(year: 2026, month: 9)
+        let appointment = appointment(id: 1, on: "2026-09-25")
+        // 아직 일정으로 만들지 않은 재방문도 찍는다 — 안 보이면 확정하러 갈 길이 없다.
+        let visits = [CalendarVisitDay(visitedOn: fixtureDay("2026-09-12"), followUpOn: fixtureDay("2026-09-26"))]
+        let days = CalendarModel.plannedDays(
+            appointments: [appointment],
+            visits: visits,
+            month: month,
+            today: fixtureDay("2026-09-18"),
+            calendar: seoul
+        )
+        #expect(days == [25, 26])
+    }
+
+    @Test func 지난_날은_예정으로_찍지_않는다() {
+        let days = CalendarModel.plannedDays(
+            appointments: [appointment(id: 1, on: "2026-09-04")],
+            visits: [],
+            month: CalendarMonth(year: 2026, month: 9),
+            today: fixtureDay("2026-09-18"),
+            calendar: seoul
+        )
+        #expect(days.isEmpty)
+    }
+
+    @Test func 그_날_쓴_카드가_시트에_선다() throws {
+        let card = CalendarModel.card(
+            on: 4,
+            cards: [try dayCard(id: 7, on: "2026-09-04")],
+            appointments: [],
+            calendar: seoul
+        )
+        #expect(card?.id == 7)
+        // 일정이 없으면 만들러 간다.
+        #expect(card?.scheduled == nil)
+    }
+
+    @Test func 이미_만든_일정이_있으면_보러가기가_된다() throws {
+        // 14일 카드로 16일 일정을 만든 뒤 14일을 다시 눌러도 또 만들라고 하면 안 된다.
+        let scheduled = appointment(id: 3, on: "2026-09-16", cards: [7])
+        let card = CalendarModel.card(
+            on: 4,
+            cards: [try dayCard(id: 7, on: "2026-09-04")],
+            appointments: [scheduled],
+            calendar: seoul
+        )
+        #expect(card?.scheduled?.id == 3)
+    }
+
+    @Test func 시트의_안내와_버튼이_일정_유무로_갈린다() throws {
+        var card = try dayCard(id: 7, on: "2026-09-04")
+        let sheet = CalendarCardSheet(dayTitle: "9월 4일 (금)", card: card, calendar: seoul)
+        #expect(sheet.hint == "이 카드를 가져갈 일정을 만들 수 있어요")
+        #expect(sheet.buttonTitle == "이 카드로 일정 만들기")
+
+        card.scheduled = appointment(id: 3, on: "2026-09-16", cards: [7])
+        let scheduled = CalendarCardSheet(dayTitle: "9월 4일 (금)", card: card, calendar: seoul)
+        #expect(scheduled.hint == "이 카드로 만들어진 일정이 있어요")
+        #expect(scheduled.buttonTitle == "일정 보러가기")
+    }
+
+    @Test func 시트의_줄은_작성일과_항목_수를_적는다() throws {
+        #expect(try dayCard(id: 7, on: "2026-09-04").meta(calendar: seoul) == "2026.09.04 작성 · 5항목")
+    }
+}

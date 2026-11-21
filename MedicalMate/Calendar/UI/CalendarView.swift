@@ -9,6 +9,7 @@ struct CalendarView: View {
 
     var onOpenDay: (Date) -> Void = { _ in }
     var onAddSchedule: (Date?) -> Void = { _ in }
+    var onOpenCard: (Int64) -> Void = { _ in }
 
     @State private var model: CalendarModel?
 
@@ -22,13 +23,56 @@ struct CalendarView: View {
         }
         .task {
             guard model == nil else { return }
-            let created = CalendarModel(repository: app.appointments)
+            let created = CalendarModel(
+                repository: app.appointments,
+                cards: app.cards,
+                visits: app.visits
+            )
             model = created
             await created.load()
         }
     }
 
     private func content(_ model: CalendarModel) -> some View {
+        ZStack {
+            screen(model)
+            cardSheet(model)
+        }
+    }
+
+    /// `1r-1-S`. 일정이 없고 카드만 쓴 날을 눌렀을 때 뜬다.
+    @ViewBuilder
+    private func cardSheet(_ model: CalendarModel) -> some View {
+        if let card = model.cardSheet {
+            MMOverlayScrim { model.dismissCardSheet() }
+            VStack {
+                Spacer(minLength: 0)
+                CalendarCardSheet(
+                    dayTitle: model.selectedTitle,
+                    card: card,
+                    calendar: model.gridCalendar,
+                    // **시트를 닫고 옮긴다.** 닫지 않고 가면 돌아왔을 때 시트가 그대로 서
+                    // 있어 지나온 화면으로 또 보내려는 것처럼 보인다.
+                    onOpenCard: { id in
+                        model.dismissCardSheet()
+                        onOpenCard(id)
+                    },
+                    onSchedule: {
+                        model.dismissCardSheet()
+                        // 이미 만든 일정이 있으면 그 날로 간다. 없을 때만 만들러 간다.
+                        if let scheduled = card.scheduled {
+                            onOpenDay(scheduled.on)
+                        } else {
+                            onAddSchedule(model.selectedDate)
+                        }
+                    }
+                )
+            }
+            .ignoresSafeArea(edges: .bottom)
+        }
+    }
+
+    private func screen(_ model: CalendarModel) -> some View {
         VStack(spacing: 0) {
             MMNavBar(title: "캘린더", leading: .none)
 

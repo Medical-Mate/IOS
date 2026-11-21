@@ -51,6 +51,9 @@ struct MainTabView: View {
                 },
                 onAddSchedule: { day in
                     path.append(Route.scheduleAdd(date: day.map(Self.wire)))
+                },
+                onOpenCard: { id in
+                    path.append(Route.briefCard(cardId: id))
                 }
             )
         case .home:
