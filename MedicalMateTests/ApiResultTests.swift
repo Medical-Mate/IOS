@@ -63,3 +63,27 @@ struct ApiErrorEnvelopeTests {
         #expect(CardRepository.latestCardId(error(#"{"error":{"code":"CARD_ALREADY_EDITED"}}"#)) == nil)
     }
 }
+
+/// 로그인이 어디서 막혔는지에 따라 다른 말을 한다.
+struct LoginFailureTests {
+    private func error(_ code: String?) -> ApiError {
+        ApiError(statusCode: 500, message: nil, code: code)
+    }
+
+    @Test func 서버가_상위_서비스에_닿지_못한_것은_연결_갈래다() {
+        // 앱 잘못이 아니고 할 일이 "잠시 뒤 다시"라 서버 거절과 다른 말을 해야 한다.
+        #expect(LoginFailure.of(error("UPSTREAM_ERROR")) == .network)
+        #expect(LoginFailure.of(error("UPSTREAM_TIMEOUT")) == .network)
+    }
+
+    @Test func 그_밖의_거절은_서버_갈래다() {
+        #expect(LoginFailure.of(error("UNAUTHORIZED")) == .server)
+        #expect(LoginFailure.of(error(nil)) == .server)
+    }
+
+    @Test func 갈래마다_다른_안내를_적는다() {
+        #expect(LoginFailure.kakao.message == "카카오 로그인에 실패했어요. 다시 시도해주세요")
+        #expect(LoginFailure.network.message == "인터넷 연결을 확인해주세요")
+        #expect(LoginFailure.server.message == "로그인에 실패했어요. 잠시 후 다시 시도해주세요")
+    }
+}

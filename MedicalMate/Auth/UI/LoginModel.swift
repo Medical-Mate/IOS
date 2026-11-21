@@ -30,9 +30,10 @@ final class LoginModel {
             session.logIn(onboardingRequired: onboardingRequired)
         case .cancelled:
             isWorking = false
-        case .failed(let message):
+        case .failed(let failure, let message):
             isWorking = false
-            errorMessage = message ?? "로그인하지 못했습니다. 잠시 후 다시 시도해주세요."
+            // 서버가 준 말이 있으면 그것을 쓰고, 없으면 갈래에 맞는 안내를 적는다.
+            errorMessage = message ?? failure.message
         }
     }
 }
