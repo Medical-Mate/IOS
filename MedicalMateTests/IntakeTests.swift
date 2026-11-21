@@ -123,8 +123,17 @@ struct IntakeTests {
     @Test func 부위_이름의_받침에_따라_조사가_갈린다() {
         #expect(KoreanParticle.subject(after: "복부") == "가")
         #expect(KoreanParticle.subject(after: "손목") == "이")
-        // 한글이 아닌 글자로 끝나면 읽는 소리를 추측하지 않는다.
+        // 한글이 하나도 없으면 읽는 소리를 추측하지 않는다.
         #expect(KoreanParticle.subject(after: "MRI") == "가")
+    }
+
+    @Test func 괄호로_끝나는_이름은_마지막_한글_음절로_조사를_정한다() {
+        // 온톨로지의 부위 이름이 괄호로 끝난다. 맨 끝 글자만 보면 늘 "가"가 붙어
+        // "목 안(목구멍)가"가 된다.
+        #expect(KoreanParticle.subject(after: "목 안(목구멍)") == "이")
+        #expect(KoreanParticle.subject(after: "윗배(명치)") == "가")
+        #expect(KoreanParticle.subject(after: "가슴 옆(갈비)") == "가")
+        #expect(KoreanParticle.object(after: "목 안(목구멍)") == "을")
     }
 }
 
