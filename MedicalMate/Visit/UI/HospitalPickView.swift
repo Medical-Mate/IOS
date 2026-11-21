@@ -96,11 +96,28 @@ struct HospitalPickView: View {
         .background(MMColor.bgSurface)
     }
 
-    /// 결과 줄의 색. 개수는 `fg/primary`, 없음·실패·안내는 `fg/subtle`이다(`3663:7318` · `7309`).
+    /// 결과 줄의 색. **개수는 `fg/primary`, 없음·실패·안내는 `fg/subtle`이다**
+    /// (`3663:7318` · `7309`).
+    ///
+    /// **시안 두 장이 서로 달랐다.** `1m-B`(`3663:7311`)는 파랑인데 `1m`(`3663:14329`)은
+    /// 회색이고, 상태는 둘 다 "검색 결과 4곳"으로 같다. 2026-11-21에 **`1m-B` 쪽(파랑)으로
+    /// 정했다.** 두 화면이 같은 규칙을 쓰고, 진료 전과 진료 후가 다르게 보이지 않는다.
+    /// Android는 언제나 `fgSubtle`이라 그쪽이 맞춰 와야 한다(COMPONENT-MAP 5장 #29).
     private func labelColor(_ model: HospitalPickModel) -> Color {
-        model.result.hospitals.isEmpty || model.isSearching || model.hasFailed || model.result.isTruncated
-            ? MMColor.fgSubtle
-            : MMColor.fgPrimary
+        HospitalPickView.showsCount(
+            isSearching: model.isSearching,
+            hasFailed: model.hasFailed,
+            result: model.result
+        ) ? MMColor.fgPrimary : MMColor.fgSubtle
+    }
+
+    /// 결과 줄이 **개수를 말하고 있는지.** 개수일 때만 파랑이다.
+    nonisolated static func showsCount(
+        isSearching: Bool,
+        hasFailed: Bool,
+        result: HospitalSearchResult
+    ) -> Bool {
+        !result.hospitals.isEmpty && !isSearching && !hasFailed && !result.isTruncated
     }
 
     /// **병원 아이콘이다.** 시안의 인스턴스가 `search-off`를 `hospital`로 바꿔 놓았다.

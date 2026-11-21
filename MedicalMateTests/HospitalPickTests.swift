@@ -42,6 +42,20 @@ struct HospitalPickTests {
         #expect(HospitalRepository.resultLabel(isSearching: false, hasFailed: false, result: found) == "검색 결과 2곳")
     }
 
+    @Test func 개수를_말할_때만_파랑이다() {
+        // 시안 두 장이 서로 달랐던 자리다 — 1m-B는 파랑, 1m은 회색인데 상태가 같다.
+        // 2026-11-21에 **1m-B 쪽(파랑)으로 정했다.** 두 화면이 같은 규칙을 쓴다.
+        let found = result(["하나", "둘"])
+        #expect(HospitalPickView.showsCount(isSearching: false, hasFailed: false, result: found))
+        #expect(!HospitalPickView.showsCount(isSearching: true, hasFailed: false, result: found))
+        #expect(!HospitalPickView.showsCount(isSearching: false, hasFailed: true, result: found))
+        #expect(!HospitalPickView.showsCount(isSearching: false, hasFailed: false, result: .empty))
+        // 좁히라는 안내는 개수가 아니다.
+        #expect(!HospitalPickView.showsCount(
+            isSearching: false, hasFailed: false, result: result(["하나", "둘"], total: 4321)
+        ))
+    }
+
     @Test func 받은_것보다_많으면_좁히라고_적는다() {
         // 부분 일치라 "서울"이면 4천 건이 넘는다. 그때 필요한 것은 목록을 더 보는 것이
         // 아니라 검색어를 좁히는 것이다.
