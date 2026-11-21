@@ -14,13 +14,16 @@ struct HomeTests {
         return HomeRepository(client: AppEnvironmentStub.client, calendar: calendar, today: { date })
     }
 
-    @Test("D-day는 남은 날로 적고 당일은 D-DAY다")
+    @Test("D-day는 남은 날로 적고 지난 것은 배지를 달지 않는다")
     func dday() {
         let repo = repository(today: "2026-09-18")
         #expect(repo.dday(for: fixtureDay("2026-09-25")) == "D-7")
-        #expect(repo.dday(for: fixtureDay("2026-09-18")) == "D-DAY")
-        // 지난 일정도 홈에 남을 수 있다. 음수로 적는다.
-        #expect(repo.dday(for: fixtureDay("2026-09-15")) == "D+3")
+        // **대문자 D-DAY가 아니다.** 시안의 `Card / Schedule` 설명이 "D-day"라고 적고
+        // Android의 `ddayLabel`도 같다.
+        #expect(repo.dday(for: fixtureDay("2026-09-18")) == "D-day")
+        // **지난 것은 배지가 없다.** "D+3"은 남은 날을 세는 말이 아니라서
+        // 앞으로 할 일을 가리키는 자리에 서면 안 된다. Android도 days >= 0에서만 부른다.
+        #expect(repo.dday(for: fixtureDay("2026-09-15")) == nil)
     }
 
     @Test("병원이 없으면 '카드만 작성됨'으로 적는다 (3663:7014)")

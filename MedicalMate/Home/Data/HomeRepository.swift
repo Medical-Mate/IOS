@@ -138,7 +138,7 @@ struct HomeRepository: Sendable {
                 .compactMap { $0?.isEmpty == false ? $0 : nil }
                 .joined(separator: " · "),
             title: title.isEmpty ? (appointment.clinicName ?? "") : title,
-            dday: date.map(dday(for:))
+            dday: date.flatMap(dday(for:))
         )
     }
 
@@ -150,13 +150,22 @@ struct HomeRepository: Sendable {
         return "\(weekday) \(parsed)"
     }
 
-    /// "D-7" · "D-DAY" · 지난 것은 "D+3".
-    func dday(for date: Date) -> String {
+    /// "D-7" · 당일은 **"D-day"**.
+    ///
+    /// **지난 것은 배지를 달지 않는다.** "D+3"은 남은 날을 세는 말이 아니라 지난 날을
+    /// 세는 말이라, 앞으로 할 일을 가리키는 자리에 서면 안 된다. Android도 같다
+    /// (`ddayLabel`을 `days >= 0`에서만 부른다).
+    func dday(for date: Date) -> String? {
         let start = calendar.startOfDay(for: today())
         let target = calendar.startOfDay(for: date)
-        let days = calendar.dateComponents([.day], from: start, to: target).day ?? 0
-        if days == 0 { return "D-DAY" }
-        return days > 0 ? "D-\(days)" : "D+\(-days)"
+        return HomeRepository.dday(days: calendar.dateComponents([.day], from: start, to: target).day ?? 0)
+    }
+
+    /// 대문자 `D-DAY`가 아니라 **`D-day`**다 — 시안의 `Card / Schedule` 설명이 그렇게
+    /// 적고 Android도 같다.
+    nonisolated static func dday(days: Int) -> String? {
+        guard days >= 0 else { return nil }
+        return days == 0 ? "D-day" : "D-\(days)"
     }
 
     // MARK: - 글 꾸미기

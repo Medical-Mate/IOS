@@ -83,8 +83,7 @@ final class CalendarDayModel {
         let start = calendar.startOfDay(for: today())
         let target = calendar.startOfDay(for: next.on)
         let days = calendar.dateComponents([.day], from: start, to: target).day ?? 0
-        if days == 0 { return "D-DAY" }
-        return days > 0 ? "D-\(days)" : "D+\(-days)"
+        return HomeRepository.dday(days: days) ?? ""
     }
 
     /// 확정된 재방문의 둘째 줄. "9월 26일 (토) 오전 10:30".
@@ -104,8 +103,9 @@ final class CalendarDayModel {
         let start = calendar.startOfDay(for: today())
         let target = calendar.startOfDay(for: appointment.on)
         let days = calendar.dateComponents([.day], from: start, to: target).day ?? 0
-        if days == 0 { return "D-DAY" }
-        return days > 0 ? "D-\(days)" : "D+\(-days)"
+        // **지난 날은 배지를 비운다.** 진료를 마쳤으면 위에서 "진료 완료"가 서고, 아직
+        // 기록이 없으면 셀 남은 날이 없다.
+        return HomeRepository.dday(days: days) ?? ""
     }
 
     /// 일정 카드의 둘째 줄과 셋째 줄.
