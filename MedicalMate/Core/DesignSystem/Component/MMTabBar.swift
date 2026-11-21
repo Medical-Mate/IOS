@@ -49,7 +49,11 @@ struct MMTabBar: View {
         } label: {
             VStack(spacing: MMSpace.s4) {
                 (isActive ? tab.filledIcon : tab.icon).view()
-                Text(tab.title).mmTextStyle(MMFont.labelS)
+                // 활성 라벨만 SemiBold다. 채움 전환 · 색과 함께 세 가지가 겹친다 —
+                // 색만으로 구분하지 않는다(COMPONENT-MAP 3장 #6).
+                Text(tab.title)
+                    .mmTextStyle(MMFont.labelS)
+                    .fontWeight(isActive ? .semibold : nil)
             }
             .foregroundStyle(isActive ? MMColor.fgPrimary : MMColor.fgSubtle)
             .frame(maxWidth: .infinity)

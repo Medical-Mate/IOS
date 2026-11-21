@@ -36,11 +36,12 @@ struct ComponentSpecTests {
         #expect(MMRadius.xs == CGFloat(8))
     }
 
-    @Test("Label/S는 Regular다 (311:834 · 293:656)")
-    func labelSmallIsRegular() {
-        // Figma 스타일 정의가 Pretendard Regular 400이다. Android는 Medium으로 들고
-        // 있어 두 플랫폼이 갈린다 — 디자인 트랙 확인 대기.
-        #expect(MMFont.labelS.weight == .regular)
+    @Test("Label/S는 Medium이다 (311:834 · 293:656)")
+    func labelSmallIsMedium() {
+        // Figma 스타일 정의는 Regular 400인데 컴포넌트 설명과 Android Type.kt가
+        // Medium이다. 두 플랫폼이 갈려 있던 자리라 안드로이드에 맞췄다
+        // (COMPONENT-MAP 3장 #1).
+        #expect(MMFont.labelS.weight == .medium)
     }
 
     @Test("Label/S 자간 2%는 11pt에서 0.22pt다 (311:834)")
@@ -163,7 +164,7 @@ struct ComponentSpecTests {
 
     @Test("KV Row / Editing 키 폭은 52, 지우기 자리는 30 (597:4801)")
     func kvEditRow() {
-        // 읽는 KV Row(60)와 다른 컴포넌트다.
+        // 읽는 KV Row(72)와 다른 컴포넌트다.
         #expect(KVEditMetrics.key == CGFloat(52))
         #expect(KVEditMetrics.deleteGutter == CGFloat(30))
     }
@@ -175,6 +176,13 @@ struct ComponentSpecTests {
         #expect(MMRadius.sheetTop == CGFloat(28))
     }
 
+    @Test("KV Row 키 열은 72다 (333:1100)")
+    func kvRowKeyColumn() {
+        // 마스터의 기하는 60인데 컴포넌트 설명과 Android Rows.kt가 72다. 키 폭을
+        // 고정하는 까닭이 값의 세로 정렬이라 두 플랫폼이 갈리면 안 된다
+        // (COMPONENT-MAP 3장 #4).
+        #expect(MMKVRowSpec.keyWidth == CGFloat(72))
+    }
 }
 
 extension MMCalendarDay.DayKind: @retroactive Equatable {}

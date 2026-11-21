@@ -170,20 +170,25 @@ Hospital Card는 1e-1, Picker Field·Card Pick·Add Row는 1r-4, Todo Row는 1r-
 참조 구현이 규칙이나 낱말을 이미 정해 둔 것이 있고, 수치가 양쪽 같은 것도 있다. 그래서
 디자인 트랙에 묻기 전에 Android를 먼저 본다.
 
-**그 가운데 넷(1 · 4 · 6 · 8)은 두 플랫폼이 실제로 갈린 자리다.** 마스터와 설명이
-어긋나는 곳에서 이쪽은 마스터를, Android는 설명을 따랐다. 네 건 모두 값을 함께 적어
-두었으니 디자인 트랙이 한 번에 정하면 된다. 남은 **스무 건이 확인 대기**다.
+**넷(1 · 4 · 6 · 8)은 두 플랫폼이 갈려 있던 자리이고 안드로이드에 맞췄다.** 마스터의
+기하·스타일 정의와 컴포넌트 설명이 어긋나는 곳인데, 설명도 Figma가 적어 둔 값이고
+Android가 그쪽을 따랐다. **두 플랫폼이 다르게 보이는 것이 둘 다 Figma 안에 있는 값을
+고르는 것보다 나쁘다**고 보고 맞췄다. 남은 **열여섯 건이 확인 대기**다.
+
+> 마스터와 설명이 어긋날 때의 기본은 여전히 **마스터**다(1장). 안드로이드가 설명 쪽을
+> 이미 구현해 둔 자리에서만 그쪽으로 간다 — 그때는 고르는 문제가 아니라 두 플랫폼을
+> 맞추는 문제다.
 
 | # | 자리 | 설명 | 마스터 | 택한 것 |
 | -- | -- | -- | -- | -- |
-| 1 | `Label/S` 굵기 | — | `Pretendard Regular 400` | **두 플랫폼이 갈린다.** 여기는 마스터대로 **Regular**이고 Android `Type.kt`는 `Medium 11/16, 자간 2.0`이다. 탭바 · 배지 · 카드가 쓰는 글자라 눈에 띄는 자리다 — 디자인 트랙 확인 필요 |
+| 1 | `Label/S` 굵기 | — | `Pretendard Regular 400` | **닫혔다. Medium으로 맞췄다.** 마스터의 스타일 정의는 Regular인데 컴포넌트 설명과 Android `Type.kt`가 `Medium 11/16, 자간 2.0`이다. 두 플랫폼이 갈려 있던 자리라 안드로이드에 맞췄다 |
 | 2 | `Chip / Selected` | "면 + 테두리 + **체크** 셋을 겹친다" | 체크 레이어가 없다 | 면 + 1.5px 테두리. 선택은 접근성 특성으로도 읽힌다 |
 | 3 | `Text Field` 반경 | 14 | 16 | **닫혔다.** 양쪽 다 16이다 — Android도 `MedicalMateRadius.md`(16)를 쓰고 "Text Field v2의 radius 16"이라고 적어 두었다. 설명의 14가 옛 값이다 |
-| 4 | `KV Row` 키 폭 | 72 | 60 | **두 플랫폼이 갈린다.** 여기는 마스터대로 **60**이고 Android `Rows.kt`는 설명대로 `KeyColumnWidth = 72`다. 브리핑 카드의 값 정렬이 두 플랫폼에서 다르게 보인다 — 디자인 트랙 확인 필요 |
+| 4 | `KV Row` 키 폭 | 72 | 60 | **닫혔다. 72로 맞췄다.** 마스터의 기하는 60인데 설명과 Android `Rows.kt`(`KeyColumnWidth = 72`)가 72다. 키 폭을 고정하는 까닭이 값의 세로 정렬이라 두 플랫폼이 갈리면 안 된다 |
 | 5 | `Dialog` 취소 버튼 | Outline | Tonal | **닫혔다.** 양쪽 다 Tonal이다 — Android `Dialog.kt`도 `MedicalMateButtonType.TONAL`을 쓴다 |
-| 6 | `Tab Bar` 라벨 | 활성이면 무게가 Medium→SemiBold | 활성·비활성 모두 `Label/S` | **두 플랫폼이 갈린다.** 여기는 마스터대로 같은 무게이고 Android `TabBar.kt`는 설명대로 활성만 `SemiBold`다. 채움 전환과 색은 양쪽이 같다 — 디자인 트랙 확인 필요 |
+| 6 | `Tab Bar` 라벨 | 활성이면 무게가 Medium→SemiBold | 활성·비활성 모두 `Label/S` | **닫혔다. 활성만 SemiBold로 맞췄다.** Android `TabBar.kt`와 같다. 채움 전환 · 색과 함께 세 가지가 겹쳐 색만으로 구분하지 않는다 |
 | 7 | `Date Cell` 크기 | 46×46 | 42×42 | **닫혔다.** 양쪽 다 42다 — Android `DateCell.kt`의 `MedicalMateDateCellSize = 42.dp`. 터치 영역은 부모 격자에서 확보한다 |
-| 8 | `Callout` 질문 pill | 흰 75% 반투명 | `bg/surface`(불투명) | **두 플랫폼이 갈린다.** 여기는 마스터대로 불투명이고 Android `Callout.kt`는 설명대로 `bgSurface.copy(alpha = 0.75)`다 — 디자인 트랙 확인 필요 |
+| 8 | `Callout` 질문 pill | 흰 75% 반투명 | `bg/surface`(불투명) | **닫혔다. 75%로 맞췄다.** Android `Callout.kt`의 `QUESTION_PILL_ALPHA = 0.75f`와 같다. 아래 `bg/info` 면이 비쳐 묶음 안의 줄로 읽힌다 |
 | 9 | `Social Login Button` 폭 | — | 350(캔버스 390 시절) | fill-width. 색·높이·반경은 마스터 그대로 |
 | 10 | `1j-4`의 카드 배지 | FEATURE-SPEC 2.4가 **네 가지**(작성 중 · 임시 저장 · 진료 전 · 진료 완료)를 적었다 | 세 줄 모두 기본 인스턴스 "진료 전"이다 | **닫혔다.** 데이터로 가른다. Android `RecordStatus.kt`가 같은 네 가지를 `Badge` 마스터의 변이 이름(Neutral 작성 중 · Warning 임시 저장 · Brand 진료 전 · Success 진료 완료)으로 쓰고, **시안 1j-4는 임시 저장이 생기기 전 것**이라고 적어 두었다. 문구 · 톤이 양쪽이 같다 |
 | 11 | `1c-D1`과 `1c-D4`의 마무리 문장 | — | 둘째 줄이 다르다 — D1은 "더 묻고 싶은 게 있으면 빈 칸에 적어주세요", D4는 "진료실에서 순서대로 물어보세요" | **닫혔다.** 직접 적은 줄이 있는지로 가른다 — Android `IntakeQuestionRows.kt`가 같은 규칙이다. **고른 것이 아니라 줄 전체를 본다**(적어 넣고 체크를 푼 줄도 직접 적은 것이다) |

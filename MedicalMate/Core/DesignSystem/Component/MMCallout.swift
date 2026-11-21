@@ -90,7 +90,9 @@ struct MMCallout: View {
         .padding(.leading, MMSpace.s12)
         .padding(.trailing, MMSpace.s14)
         .padding(.vertical, MMSpace.s12)
-        .background(MMColor.bgSurface)
+        // 질문 pill은 **흰 75% 반투명**이다. 아래 `bg/info` 면이 비쳐 묶음 안의 줄로
+        // 읽힌다(COMPONENT-MAP 3장 #8).
+        .background(MMColor.bgSurface.opacity(CalloutMetrics.pillOpacity))
         .clipShape(RoundedRectangle(cornerRadius: MMRadius.sm))
     }
 
@@ -112,6 +114,8 @@ private enum CalloutMetrics {
     static let numRadius: CGFloat = 10
     /// 빈 칸의 글자와 밑줄 사이.
     static let fieldGap: CGFloat = 5
+    /// 질문 pill의 흰 면 불투명도. Android `Callout.kt`의 `QUESTION_PILL_ALPHA`와 같다.
+    static let pillOpacity: Double = 0.75
 }
 
 #Preview {

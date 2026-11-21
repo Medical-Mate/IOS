@@ -9,7 +9,8 @@ import SwiftUI
 /// > 않는다** — 전부 강조하면 아무것도 강조되지 않는다. `Type=Link`는 눌러서 원문이나
 /// > 상세로 들어가는 행이다.
 ///
-/// 설명은 키 폭을 72로 적었는데 마스터는 60이다. 마스터를 따랐다.
+/// 키 폭은 **72**다. 마스터의 기하는 60인데 컴포넌트 설명과 Android `Rows.kt`가 72라서
+/// 두 플랫폼이 갈려 있었고, 안드로이드에 맞췄다(COMPONENT-MAP 3장 #4).
 struct MMKVRow: View {
     enum Kind { case `default`, emphasis, link }
 
@@ -47,8 +48,13 @@ struct MMKVRow: View {
     }
 }
 
+/// 테스트가 읽는 `KV Row`의 수치.
+enum MMKVRowSpec {
+    static let keyWidth = KVRowMetrics.keyWidth
+}
+
 private enum KVRowMetrics {
-    static let keyWidth: CGFloat = 60
+    static let keyWidth: CGFloat = 72
 }
 
 /// 디자인 시스템 `Avatar` (Figma `311:839`).
