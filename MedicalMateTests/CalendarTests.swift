@@ -144,3 +144,30 @@ struct AppointmentMappingTests {
         #expect(AppointmentMapping.badge(canceled) == nil)
     }
 }
+
+/// 일정 추가가 무엇을 보내는지.
+struct ScheduleAddTests {
+    @Test func 열두시간_표기를_스물네시간으로_옮긴다() {
+        // 오전 12시는 0시, 오후 12시는 12시다.
+        #expect(AppointmentMapping.time(isMorning: true, hour: 10, minute: 30) == AppointmentTime(hour: 10, minute: 30))
+        #expect(AppointmentMapping.time(isMorning: false, hour: 2, minute: 0) == AppointmentTime(hour: 14, minute: 0))
+        #expect(AppointmentMapping.time(isMorning: true, hour: 12, minute: 0) == AppointmentTime(hour: 0, minute: 0))
+        #expect(AppointmentMapping.time(isMorning: false, hour: 12, minute: 0) == AppointmentTime(hour: 12, minute: 0))
+    }
+
+    @Test func 서버가_받는_시각은_두_자리로_간다() {
+        #expect(AppointmentTime(hour: 9, minute: 5).wire == "09:05")
+    }
+
+    @Test func 적지_않은_빈_할_일은_보내지_않는다() {
+        // 추가만 누르고 안 적은 칸이다.
+        let todos = [
+            AppointmentTodo(text: "복용 중인 약 챙기기"),
+            AppointmentTodo(text: "   "),
+            AppointmentTodo(text: "", isDone: true),
+        ]
+        let cleaned = AppointmentMapping.cleaned(todos)
+        #expect(cleaned.count == 1)
+        #expect(cleaned.first?.text == "복용 중인 약 챙기기")
+    }
+}

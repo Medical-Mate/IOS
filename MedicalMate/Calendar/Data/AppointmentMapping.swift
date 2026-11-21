@@ -66,4 +66,22 @@ enum AppointmentMapping {
         case .canceled: nil
         }
     }
+
+    /// 12시간 표기를 24시간으로. **오전 12시는 0시, 오후 12시는 12시다.**
+    static func time(isMorning: Bool, hour: Int, minute: Int) -> AppointmentTime {
+        let base = hour % 12
+        return AppointmentTime(hour: isMorning ? base : base + 12, minute: minute)
+    }
+
+    /// 빈 줄은 보내지 않는다. **추가만 누르고 안 적은 칸이다.**
+    static func cleaned(_ todos: [AppointmentTodo]) -> [TodoResponse] {
+        todos
+            .map { todo in
+                TodoResponse(
+                    text: todo.text.trimmingCharacters(in: .whitespacesAndNewlines),
+                    done: todo.isDone
+                )
+            }
+            .filter { !$0.text.isEmpty }
+    }
 }

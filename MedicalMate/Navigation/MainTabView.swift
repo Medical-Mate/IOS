@@ -80,6 +80,14 @@ struct MainTabView: View {
             )
             .toolbar(.hidden, for: .navigationBar)
 
+        case .scheduleAdd(let date):
+            ScheduleAddView(
+                initialDate: date.flatMap(HomeRepository.date(from:)),
+                onBack: { path.removeLast() },
+                onSaved: { _ in path.removeLast() }
+            )
+            .toolbar(.hidden, for: .navigationBar)
+
         case .clinicConfirm(let cardId):
             VisitFlowView(
                 cardId: cardId,
