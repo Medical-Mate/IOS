@@ -112,7 +112,23 @@ extension CardRepository {
         clinic: ClinicRequest? = nil
     ) async -> ApiResult<CardResponse> {
         let body = UpdateCardRequest(axes: axes, questions: questions, clinic: clinic)
-        return await client.send(.patch("api/cards/\(cardId)", body: body), as: CardResponse.self)
+        let first = await client.send(.patch("api/cards/\(cardId)", body: body), as: CardResponse.self)
+        // **이미 고친 카드라고 막히면 최신 카드로 갈아타고 한 번만 다시 보낸다.**
+        // 그대로 두면 버전이 가지를 치고, 그 가지에 넣은 편집은 어느 화면에도 나오지
+        // 않는다. 서버가 갈아탈 카드를 알려주므로 고친 값을 잃지 않는다.
+        //
+        // **한 번만 따라간다.** 계속 따라가면 어디서 멈출지 알 수 없고, 다른 데서 고치고
+        // 있는 중이라면 그 편집을 덮어쓰기를 반복하게 된다.
+        guard case .rejected(let error) = first, let latest = CardRepository.latestCardId(error) else {
+            return first
+        }
+        return await client.send(.patch("api/cards/\(latest)", body: body), as: CardResponse.self)
+    }
+
+    /// 갈아탈 카드. `CARD_ALREADY_EDITED`일 때만 온다.
+    nonisolated static func latestCardId(_ error: ApiError) -> Int64? {
+        guard error.code == "CARD_ALREADY_EDITED" else { return nil }
+        return error.details["latestCardId"]?.intValue
     }
 }
 

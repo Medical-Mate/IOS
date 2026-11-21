@@ -139,7 +139,7 @@ actor ApiClient {
         }
 
         guard (200..<300).contains(http.statusCode) else {
-            return .rejected(ApiError(statusCode: http.statusCode, message: serverMessage(from: data)))
+            return .rejected(ApiClient.error(statusCode: http.statusCode, body: data, decoder: decoder))
         }
 
         // 본문이 없거나 쓰지 않는 응답. 빈 바디를 디코딩하려다 실패하지 않게 막는다.
@@ -186,8 +186,41 @@ actor ApiClient {
         return urlRequest
     }
 
-    private func serverMessage(from data: Data) -> String? {
-        struct ErrorBody: Decodable { let message: String? }
-        return try? decoder.decode(ErrorBody.self, from: data).message
+    /// 서버의 공통 에러 봉투를 푼다.
+    ///
+    /// **전에는 맨 위의 `message`를 찾았는데 그 자리에는 없다.** 그래서 서버가 준 말이
+    /// 한 번도 화면에 닿지 않았고, 모든 화면이 제 기본 문구로 받치고 있었다.
+    nonisolated static func error(statusCode: Int, body: Data, decoder: JSONDecoder) -> ApiError {
+        guard let envelope = try? decoder.decode(ApiErrorEnvelope.self, from: body),
+              let error = envelope.error
+        else {
+            return ApiError(statusCode: statusCode, message: nil)
+        }
+        return ApiError(
+            statusCode: statusCode,
+            message: error.message,
+            code: error.code,
+            isRetryable: error.retryable ?? false,
+            details: error.details ?? [:]
+        )
     }
+}
+
+/// 백엔드의 공통 에러 봉투.
+///
+/// 스키마 목록에 없고 실제 응답으로 확인한 형태다.
+///
+/// ```json
+/// {"error":{"code":"UNAUTHORIZED","message":"...","retryable":false},
+///  "meta":{"requestId":"req_61c3205bdfee"}}
+/// ```
+private struct ApiErrorEnvelope: Decodable {
+    struct Body: Decodable {
+        let code: String?
+        let message: String?
+        let retryable: Bool?
+        let details: [String: ApiErrorDetail]?
+    }
+
+    let error: Body?
 }

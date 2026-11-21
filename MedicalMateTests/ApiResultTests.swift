@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import MedicalMate
 
@@ -24,5 +25,41 @@ struct ApiResultTests {
     func unauthorized() {
         #expect(ApiError(statusCode: 401, message: nil).isUnauthorized)
         #expect(!ApiError(statusCode: 403, message: nil).isUnauthorized)
+    }
+}
+
+/// 서버의 공통 에러 봉투. `{"error":{...},"meta":{...}}`다.
+struct ApiErrorEnvelopeTests {
+    private func error(_ json: String, statusCode: Int = 409) -> ApiError {
+        ApiClient.error(statusCode: statusCode, body: Data(json.utf8), decoder: JSONDecoder())
+    }
+
+    @Test func 봉투_안의_말이_화면까지_온다() {
+        // **전에는 맨 위의 `message`를 찾았다.** 그 자리에는 없어서 서버가 준 말이 한 번도
+        // 닿지 않았고 모든 화면이 제 기본 문구로 받치고 있었다.
+        let parsed = error(#"{"error":{"code":"INVALID_REQUEST","message":"날짜를 확인해주세요"}}"#)
+        #expect(parsed.message == "날짜를 확인해주세요")
+        #expect(parsed.code == "INVALID_REQUEST")
+        #expect(parsed.isRetryable == false)
+    }
+
+    @Test func 다시_해_볼_여지가_있는지는_서버가_말한다() {
+        #expect(error(#"{"error":{"code":"UPSTREAM","retryable":true}}"#).isRetryable)
+    }
+
+    @Test func 봉투가_아니면_말을_지어내지_않는다() {
+        #expect(error("not json").message == nil)
+        #expect(error(#"{"message":"맨 위에 있는 말"}"#).message == nil)
+    }
+
+    @Test func 이미_고친_카드는_갈아탈_카드를_알려준다() {
+        let parsed = error(#"{"error":{"code":"CARD_ALREADY_EDITED","details":{"latestCardId":20}}}"#)
+        #expect(CardRepository.latestCardId(parsed) == 20)
+    }
+
+    @Test func 다른_이유로_거절되면_갈아타지_않는다() {
+        #expect(CardRepository.latestCardId(error(#"{"error":{"code":"NOT_FOUND"}}"#)) == nil)
+        // 코드는 맞는데 갈아탈 카드를 안 알려주면 다시 보내지 않는다.
+        #expect(CardRepository.latestCardId(error(#"{"error":{"code":"CARD_ALREADY_EDITED"}}"#)) == nil)
     }
 }
