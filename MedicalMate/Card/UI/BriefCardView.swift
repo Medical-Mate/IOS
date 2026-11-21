@@ -84,6 +84,10 @@ struct BriefCardView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: MMSpace.s14) {
                     briefCard(card, model: model)
+                        // 툴팁 말풍선은 카드 밖으로 흘러나온다(`1e-1-T` `3663:7496`).
+                        // **뒤에 오는 알러지 경고가 그 위에 그려지면 글이 가려진다** —
+                        // 열려 있는 동안만 카드를 위로 올린다.
+                        .zIndex(model.isTooltipOpen ? 1 : 0)
 
                     // 알러지는 카드 밖 경고다. **처방을 바꾸는 값이라 다른 정보와 같은
                     // 무게로 두지 않는다.** 편집 중에는 숨는다(마스터가 끈다).
