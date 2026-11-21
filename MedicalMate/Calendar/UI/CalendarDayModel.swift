@@ -12,6 +12,8 @@ final class CalendarDayModel {
     private(set) var cards: [BriefCardLink] = []
     /// 이 날 남긴 진료 후 기록.
     private(set) var record: VisitListItem?
+    /// 기록 줄의 둘째 줄. 상세에서 채운다.
+    private(set) var recordMeta: String = ""
     /// 이 진료에서 나온 재방문 일정(`1r-2-A` · `1r-2-A2`).
     private(set) var nextEvent: Appointment?
     /// 진료 후 기록을 시작할 수 있는지.
@@ -195,7 +197,41 @@ final class CalendarDayModel {
         record = list
             .compactMap(VisitMapping.listItem(from:))
             .first { calendar.isDate($0.visitedOn, inSameDayAs: date) }
+        await loadRecordMeta()
     }
+
+    /// 기록 줄의 둘째 줄을 **상세에서** 채운다.
+    ///
+    /// 시안(`1r-2`)이 `위염 초기 · 2주 약 · 09.26 재방문`이라 **소견 · 약 · 재방문**
+    /// 셋이 필요한데 목록 응답에는 축이 없다. 전에는 "줄 하나를 위해 상세를 부르지
+    /// 않는다"고 적고 카드 제목과 재방문 날짜만 적었는데, **같은 줄이 두 기기에서 다른
+    /// 말을 했다** — Android `CalendarDayViewModel.filled()`가 상세를 불러 셋을 잇는다.
+    /// 카드 줄은 이미 목록을 한 번 더 부르고 있어서 까닭도 서지 않았다.
+    private func loadRecordMeta() async {
+        guard let record else {
+            recordMeta = ""
+            return
+        }
+        recordMeta = record.clinicName ?? ""
+        guard case .success(let response) = await visitsRepository.visit(id: record.id) else { return }
+        let joined = CalendarDayModel.recordMeta(VisitMapping.visit(from: response).items)
+        if !joined.isEmpty { recordMeta = joined }
+    }
+
+    /// **소견 · 약 · 재방문 셋만 그 차례로 잇는다**(Android `#262`). 검사처럼 결과가
+    /// 다음에 나오는 항목이나 AI가 늘린 축까지 붙이면 한 줄 메타가 넘친다.
+    /// **값의 첫 줄만** 쓴다 — 두 줄로 적힌 값을 통째로 넣으면 마찬가지다.
+    nonisolated static func recordMeta(_ items: [VisitItem]) -> String {
+        metaAxes
+            .compactMap { axis in items.first { $0.axis == axis } }
+            .map { $0.value.split(separator: "\n", omittingEmptySubsequences: false)[0]
+                .trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+            .joined(separator: " · ")
+    }
+
+    /// Android `RECORD_META_AXES`와 같다.
+    nonisolated static let metaAxes = [VisitAxis.findings, VisitAxis.medication, VisitAxis.followUp]
 
     /// 이 진료에서 나온 재방문. **출처가 `VISIT_FOLLOW_UP`인 것만** 본다.
     ///

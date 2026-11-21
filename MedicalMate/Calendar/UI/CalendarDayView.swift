@@ -188,24 +188,12 @@ struct CalendarDayView: View {
         if let record = model.record {
             MMListRow(
                 title: "진료 후 기록",
-                meta: CalendarDayView.recordMeta(record),
+                meta: model.recordMeta,
                 action: { onOpenRecord(record.id) }
             )
         } else {
             emptyRecord(model)
         }
-    }
-
-    /// 기록 줄의 둘째 줄. "위염 초기 · 1주 약 · 09.26 재방문".
-    ///
-    /// 목록 응답에는 축이 담기지 않아 **재방문 날짜만** 적는다. 축까지 적으려면 상세를
-    /// 한 건씩 불러야 하고, 줄 하나를 위해 그러지 않는다.
-    static func recordMeta(_ record: VisitListItem) -> String {
-        guard let followUp = record.followUp else { return record.cardTitle }
-        let calendar = Calendar.current
-        let parts = calendar.dateComponents([.month, .day], from: followUp.date)
-        let day = String(format: "%02d.%02d 재방문", parts.month ?? 0, parts.day ?? 0)
-        return [record.cardTitle, day].filter { !$0.isEmpty }.joined(separator: " · ")
     }
 
     @ViewBuilder

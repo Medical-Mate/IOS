@@ -251,22 +251,6 @@ struct CalendarDayCopyTests {
         #expect(CalendarDayModel.cardMeta(summary, isVisited: true, calendar: calendar) == "브리핑 카드 · 진료실에서 보여줌")
     }
 
-    @Test func 기록_줄은_재방문_날짜를_덧붙인다() {
-        let record = VisitListItem(
-            id: 5, cardId: 7, cardTitle: "위염 초기 · 2주 약", clinicName: nil,
-            visitedOn: fixtureDay("2026-09-18"),
-            followUp: VisitFollowUp(date: fixtureDay("2026-09-26"), text: nil, approximate: true)
-        )
-        #expect(CalendarDayView.recordMeta(record) == "위염 초기 · 2주 약 · 09.26 재방문")
-    }
-
-    @Test func 재방문이_없으면_카드_제목만_적는다() {
-        let record = VisitListItem(
-            id: 5, cardId: 7, cardTitle: "위염 초기", clinicName: nil,
-            visitedOn: fixtureDay("2026-09-18"), followUp: nil
-        )
-        #expect(CalendarDayView.recordMeta(record) == "위염 초기")
-    }
 }
 
 /// `1r-1`의 점 두 가지와 `1r-1-S`(카드만 있는 날 시트).
