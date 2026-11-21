@@ -91,9 +91,19 @@ final class ScheduleAddModel {
         pickedCardIds.isEmpty ? "선택 안 함" : "\(pickedCardIds.count)개"
     }
 
-    /// **날짜만 있으면 저장할 수 있다.** 시각과 카드는 선택이다 — 카드 없이
-    /// "다음 주 치과"만 적을 수 있어야 한다.
-    var canSave: Bool { on != nil && !isSaving }
+    /// **병원과 날짜가 차야 저장할 수 있다.** 시각은 선택이다(`1r-4`).
+    ///
+    /// 시안이 저장하기를 **병원이 차는 순간** 켠다 — `1r-4`(병원 · 날짜 둘 다 빔)는
+    /// 꺼져 있고 `1r-4-B`(병원만 참)는 켜져 있다. 날짜는 서버가 요구해서 함께 본다.
+    /// Android도 `hospital != null && date != null`이다.
+    ///
+    /// 병원 없이 저장하면 **일자 화면의 일정 제목이 빈 줄로 선다** — 제목을 병원 ·
+    /// 진료과 · 목적으로 짓기 때문이다.
+    ///
+    /// **카드는 여기서 묻지 않는다.** Android는 하나 이상을 요구하지만(`#312`) 그쪽은
+    /// 사람이 정한 값이고, 이 저장소에는 "카드 없이 다음 주 치과만 적을 수 있어야
+    /// 한다"가 적혀 있다 — 두 저장소가 갈린 채로 두고 COMPONENT-MAP 3장에 올린다.
+    var canSave: Bool { clinic != nil && on != nil && !isSaving }
 
     var sheetDays: [MMCalendarGrid.Day] {
         sheetMonth.days(

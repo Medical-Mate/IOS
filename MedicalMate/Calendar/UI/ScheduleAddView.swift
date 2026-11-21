@@ -278,8 +278,9 @@ struct ScheduleAddView: View {
     /// 두고 버튼을 40에 세운다(18 + 10). Android의 `MedicalMateFooter`도 `s10`이다.
     private func footer(_ model: ScheduleAddModel) -> some View {
         VStack(spacing: ScheduleMetrics.footerGap) {
-            // 병원을 아직 안 골랐을 때만 예약 문자 길을 알린다.
-            if !model.hasClinic {
+            // 병원을 아직 안 골랐을 때만 예약 문자 길을 알린다. **고치러 연 일정에는
+            // 두지 않는다** — 이미 저장된 일정을 문자로 채울 일이 없다(Android도 같다).
+            if !model.hasClinic, !model.isEditing {
                 Button { model.sheet = .shareGuide } label: {
                     MMHintRow(text: "예약 문자를 공유하면 바로 채워져요", icon: .export)
                         .frame(maxWidth: .infinity)

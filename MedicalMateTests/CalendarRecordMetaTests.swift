@@ -168,3 +168,35 @@ struct ScheduleEditTests {
         #expect(update.status == nil)
     }
 }
+
+/// 일정 추가의 저장 조건(`1r-4` · `1r-4-B`).
+@MainActor
+struct ScheduleSaveRuleTests {
+    private func model(date: Date?) -> ScheduleAddModel {
+        let env = AppEnvironment()
+        return ScheduleAddModel(
+            initialDate: date,
+            repository: AppointmentRepository(client: env.client),
+            cards: CardRepository(client: env.client)
+        )
+    }
+
+    @Test func 병원이_비면_저장할_수_없다() {
+        // 시안이 저장하기를 병원이 차는 순간 켠다. 병원 없이 저장하면 일자 화면의
+        // 일정 제목이 빈 줄로 선다 — 제목을 병원·진료과·목적으로 짓기 때문이다.
+        #expect(!model(date: fixtureDay("2026-09-26")).canSave)
+    }
+
+    @Test func 날짜가_비면_저장할_수_없다() {
+        let model = model(date: nil)
+        model.pick(clinic: Hospital(name: "서울OO병원 내과", address: nil))
+        #expect(!model.canSave)
+    }
+
+    @Test func 병원과_날짜가_차면_저장할_수_있다() {
+        // 시각과 카드는 선택이다.
+        let model = model(date: fixtureDay("2026-09-26"))
+        model.pick(clinic: Hospital(name: "서울OO병원 내과", address: nil))
+        #expect(model.canSave)
+    }
+}
