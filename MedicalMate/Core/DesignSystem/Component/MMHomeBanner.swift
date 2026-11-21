@@ -45,9 +45,9 @@ struct MMLinkOnImage: View {
 /// 중첩할 수 있어 ``MMElevation/onImageText``를 한 번 입히면 된다.
 ///
 /// 배너 사진은 Figma가 이미지 레이어에 건 필터(밝기 · 색온도)까지 적용된 내보내기다.
-/// **원본 사진은 훨씬 밝아 그대로 쓰면 흰 글자가 읽히지 않는다.** 지금 에셋에 들어온
-/// 것은 첫 홈(`1 오늘의 한 줄 · CTA=None`)의 사진 하나이고, 나머지 다섯 장은 디자인
-/// 트랙에서 받아야 한다(`docs/COMPONENT-MAP.md`).
+/// **원본 사진은 훨씬 밝아 그대로 쓰면 흰 글자가 읽히지 않는다.** 여섯 장이 다 들어와
+/// 있다 — Figma의 이미지 채움으로는 32×32만 닿아서 Android 저장소에 들어간 내보내기를
+/// 그대로 가져왔다(`docs/COMPONENT-MAP.md`).
 struct MMHomeBanner<Photo: View>: View {
     @Environment(\.mmSafeAreaTop) private var safeAreaTop
 
@@ -59,6 +59,9 @@ struct MMHomeBanner<Photo: View>: View {
     var initial: String
     var onNotification: () -> Void
     var onAvatar: () -> Void
+    /// 헤더를 그릴지. **넘기는 배너에서는 끈다** — 다섯 장이 같은 헤더를 들고 함께
+    /// 미끄러지면 로고와 아바타가 흔들린다. 자리는 그대로 비워 둬 글자 높이가 같다.
+    var showsHeader = true
     @ViewBuilder var photo: Photo
 
     var body: some View {
@@ -68,7 +71,11 @@ struct MMHomeBanner<Photo: View>: View {
                 .allowsHitTesting(false)
 
             VStack(alignment: .leading, spacing: 0) {
-                header
+                if showsHeader {
+                    header
+                } else {
+                    Color.clear.frame(height: MMSize.navBarHeight + safeAreaTop)
+                }
                 Spacer(minLength: 0)
                 content
             }
@@ -79,39 +86,7 @@ struct MMHomeBanner<Photo: View>: View {
     }
 
     private var header: some View {
-        HStack(spacing: 0) {
-            MMLogo.Lockup.monoLight.view(height: BannerMetrics.lockupHeight)
-                .foregroundStyle(MMColor.fgOnInverse)
-                .mmShadow(MMElevation.onImageIcon)
-
-            Spacer(minLength: 0)
-
-            Button(action: onNotification) {
-                MMIcon.bell.view()
-                    .foregroundStyle(MMColor.fgOnInverse)
-                    .frame(width: MMSize.controlMd, height: MMSize.controlMd)
-                    .contentShape(Rectangle())
-                    .mmShadow(MMElevation.onImageIcon)
-            }
-            .accessibilityLabel("알림")
-
-            Button(action: onAvatar) {
-                Text(initial)
-                    .mmTextStyle(MMFont.bodyMStrong)
-                    .foregroundStyle(MMColor.fgOnInverse)
-                    .frame(width: BannerMetrics.avatar, height: BannerMetrics.avatar)
-                    .background(MMColor.bgOnDark)
-                    .clipShape(Circle())
-                    .overlay { Circle().strokeBorder(MMColor.borderOnDark, lineWidth: 1) }
-                    .frame(width: MMSize.controlMd, height: MMSize.controlMd)
-                    .contentShape(Rectangle())
-            }
-            .accessibilityLabel("내 정보")
-        }
-        .padding(.horizontal, MMSize.gutter)
-        .frame(height: MMSize.navBarHeight)
-        // 시안에는 상태바가 없다. 기기에서는 그만큼 내려야 로고가 시계에 겹치지 않는다.
-        .padding(.top, safeAreaTop)
+        MMHomeHeader(initial: initial, onNotification: onNotification, onAvatar: onAvatar)
     }
 
     private var content: some View {
@@ -175,4 +150,57 @@ private enum BannerMetrics {
         }
     }
     .background(MMColor.bgCanvas)
+}
+
+/// 사진 배너 위에 얹는 헤더. 로고 · 알림 · 아바타.
+///
+/// **배너에서 떼어 두었다.** 넘기는 배너는 사진과 글만 미끄러지고 헤더는 제자리에 있어야
+/// 해서, 같은 모양을 두 곳에서 쓴다.
+struct MMHomeHeader: View {
+    @Environment(\.mmSafeAreaTop) private var safeAreaTop
+
+    var initial: String
+    var onNotification: () -> Void = {}
+    var onAvatar: () -> Void = {}
+
+    var body: some View {
+        HStack(spacing: 0) {
+            MMLogo.Lockup.monoLight.view(height: HomeHeaderMetrics.lockupHeight)
+                .foregroundStyle(MMColor.fgOnInverse)
+                .mmShadow(MMElevation.onImageIcon)
+
+            Spacer(minLength: 0)
+
+            Button(action: onNotification) {
+                MMIcon.bell.view()
+                    .foregroundStyle(MMColor.fgOnInverse)
+                    .frame(width: MMSize.controlMd, height: MMSize.controlMd)
+                    .contentShape(Rectangle())
+                    .mmShadow(MMElevation.onImageIcon)
+            }
+            .accessibilityLabel("알림")
+
+            Button(action: onAvatar) {
+                Text(initial)
+                    .mmTextStyle(MMFont.bodyMStrong)
+                    .foregroundStyle(MMColor.fgOnInverse)
+                    .frame(width: HomeHeaderMetrics.avatar, height: HomeHeaderMetrics.avatar)
+                    .background(MMColor.bgOnDark)
+                    .clipShape(Circle())
+                    .overlay { Circle().strokeBorder(MMColor.borderOnDark, lineWidth: 1) }
+                    .frame(width: MMSize.controlMd, height: MMSize.controlMd)
+                    .contentShape(Rectangle())
+            }
+            .accessibilityLabel("내 정보")
+        }
+        .padding(.horizontal, MMSize.gutter)
+        .frame(height: MMSize.navBarHeight)
+        // 시안에는 상태바가 없다. 기기에서는 그만큼 내려야 로고가 시계에 겹치지 않는다.
+        .padding(.top, safeAreaTop)
+    }
+}
+
+private enum HomeHeaderMetrics {
+    static let lockupHeight: CGFloat = BannerMetrics.lockupHeight
+    static let avatar: CGFloat = BannerMetrics.avatar
 }

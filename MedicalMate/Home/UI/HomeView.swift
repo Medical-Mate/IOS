@@ -60,37 +60,29 @@ struct HomeView: View {
     }
 
     /// 배너 링크가 하는 일.
-    private func onBannerLink(_ lead: HomeLead) {
-        switch lead {
-        case .todayVisit(_, let cardId, _, _): onRecordVisit(cardId)
-        case .tomorrowVisit(_, _, let cardId): onOpenCardId(cardId)
+    private func onBannerLink(_ page: HomeBannerPage) {
+        switch page {
+        case .today(_, let cardId, _, _): onRecordVisit(cardId)
+        case .tomorrow(_, _, let cardId): onOpenCardId(cardId)
         case .cardReady(let cardId, _): onScheduleCard(cardId)
-        case .firstVisit, .other: break
+        case .saveCard(let cardId):
+            // 카드가 없으면 목록으로 간다.
+            if let cardId { onOpenCardId(cardId) } else { onOpenCardList() }
+        case .schedule: onScheduleCard(0)
+        // 예약 문자 공유는 Share Extension이 서야 갈 곳이 생긴다(M4).
+        // "헤이 메이트"는 호출어가 정해져야 열린다(D1).
+        case .message, .mate, .welcome: break
         }
     }
 
     private func banner(_ model: HomeModel) -> some View {
-        let lead = model.lead
-        return MMHomeBanner(
-            title: HomeBannerCopy.title(lead),
-            message: HomeBannerCopy.message(lead),
-            link: HomeBannerCopy.link(lead).map { ($0.title, $0.counter, { onBannerLink(lead) }) },
+        HomeBannerCarousel(
+            pages: model.banners,
             initial: "김",
             onNotification: onNotification,
-            onAvatar: onProfile
-        ) {
-            // **첫 홈(334)의 사진만 에셋에 있다.** 마스터가 "단계별 사진 포함"이라
-            // 적어 둔 대로 장마다 사진이 다르고, 400짜리 갈래의 것은 아직 못 받았다.
-            // 그 자리는 `bg/inverse`로 둔다 — 가진 사진을 늘려 깔면 시안과 다른 그림이
-            // 된다(docs/COMPONENT-MAP.md 3장).
-            if lead == .firstVisit {
-                Image("home-banner-first")
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            } else {
-                Color.clear
-            }
-        }
+            onAvatar: onProfile,
+            onLink: onBannerLink
+        )
     }
 
     private func sheet(_ model: HomeModel) -> some View {

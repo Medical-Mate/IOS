@@ -61,18 +61,18 @@ struct HomeTests {
     @Test("아무것도 없으면 첫 홈 배너다 (3663:7007)")
     func emptyHomeBanner() {
         #expect(HomeSummary().isEmpty)
-        // 처음 온 사람에게는 링크도 장 수도 없다.
-        #expect(HomeBannerCopy.link(.firstVisit) == nil)
-        let today = HomeLead.todayVisit(clinic: nil, cardId: 1, cardTitle: "", clinicName: nil)
-        #expect(HomeBannerCopy.link(today)?.counter == "1 / 5")
+        let today = HomeBannerPage.today(clinic: nil, cardId: 1, cardTitle: "", clinicName: nil)
+        #expect(HomeBannerCopy.link(today, index: 0, total: 5)?.counter == "1 / 5")
     }
 
     @Test("오늘 진료 배너는 병원 이름을 글에 넣는다 (3663:7014)")
     func todayBannerClinic() {
-        let lead = HomeLead.todayVisit(clinic: "서울OO병원 내과", cardId: 7, cardTitle: "복부 통증", clinicName: "서울OO병원")
-        #expect(HomeBannerCopy.message(lead) == "서울OO병원 내과에서 들은 말을\n잊기 전에 남겨두세요.")
+        let page = HomeBannerPage.today(
+            clinic: "서울OO병원 내과", cardId: 7, cardTitle: "복부 통증", clinicName: "서울OO병원"
+        )
+        #expect(HomeBannerCopy.message(page) == "서울OO병원 내과에서 들은 말을\n잊기 전에 남겨두세요.")
         // 병원을 모르면 "진료실에서"로 받친다. 표본에 있던 이름을 그대로 적지 않는다.
-        let unknown = HomeLead.todayVisit(clinic: nil, cardId: 7, cardTitle: "복부 통증", clinicName: nil)
+        let unknown = HomeBannerPage.today(clinic: nil, cardId: 7, cardTitle: "복부 통증", clinicName: nil)
         #expect(HomeBannerCopy.message(unknown) == "진료실에서 들은 말을\n잊기 전에 남겨두세요.")
     }
 
@@ -121,6 +121,45 @@ struct HomeTests {
         // 기록도 "카드 다시 보기"도 카드가 있어야 갈 곳이 있다.
         let today = HomeRepository.date(from: "2026-09-12")!
         #expect(HomeRepository.timedLead(input, today: today, calendar: calendar) == nil)
+    }
+
+    @Test("처음 온 사람은 배너가 한 장이다 (3663:7007)")
+    func welcomeIsSingle() {
+        // 넘길 것도 장 수도 없다.
+        let pages = HomeBannerPage.pages(lead: .firstVisit, latestCardId: nil, restIndex: 0)
+        #expect(pages == [.welcome])
+        #expect(HomeBannerCopy.link(.welcome, index: 0, total: 1) == nil)
+    }
+
+    @Test("그 밖에는 다섯 장이고 첫 장만 상황에 따라 바뀐다 (3663:7014)")
+    func fivePages() {
+        let lead = HomeLead.tomorrowVisit(time: "오전 10:30", clinic: "서울OO병원 내과", cardId: 7)
+        let pages = HomeBannerPage.pages(lead: lead, latestCardId: 7, restIndex: 0)
+        #expect(pages.count == 5)
+        #expect(pages[0] == .tomorrow(time: "오전 10:30", clinic: "서울OO병원 내과", cardId: 7))
+        // 2~5장은 차례가 고정이다.
+        #expect(pages[1...].map(\.id) == ["message", "schedule", "saveCard", "mate"])
+    }
+
+    @Test("가를 값이 없으면 2~5장 가운데 하나를 첫 장에 올린다")
+    func otherPicksFromRest() {
+        let pages = HomeBannerPage.pages(lead: .other, latestCardId: nil, restIndex: 2)
+        #expect(pages[0] == .saveCard(cardId: nil))
+        #expect(pages.count == 5)
+    }
+
+    @Test("장 수는 1부터 센다")
+    func counter() {
+        #expect(HomeBannerCopy.counter(index: 0, total: 5) == "1 / 5")
+        #expect(HomeBannerCopy.counter(index: 4, total: 5) == "5 / 5")
+    }
+
+    @Test("배너마다 사진이 다르고 첫 장의 네 갈래는 한 장을 같이 쓴다")
+    func photos() {
+        #expect(HomeBannerPage.welcome.photo == "home-banner-first")
+        #expect(HomeBannerPage.tomorrow(time: nil, clinic: nil, cardId: 1).photo == "home-banner-today")
+        #expect(HomeBannerPage.cardReady(cardId: 1, symptom: "두통").photo == "home-banner-today")
+        #expect(HomeBannerPage.mate.photo == "home-banner-mate")
     }
 }
 
