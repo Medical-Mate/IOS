@@ -258,3 +258,21 @@ struct OpenIntakeBadgeTests {
         #expect(row(false, step: 2, total: 3).badge.text == "작성 중")
     }
 }
+
+/// 서버의 진행도를 그대로 찍지 않는다(Android `#176`).
+struct IntakeProgressTests {
+    @Test func 환자가_보는_단계는_셋이다() {
+        // `progressTotal`은 AI 문답의 왕복 수이고 상한이 20이다. 그대로 찍으면
+        // "20단계 중 7단계"가 된다.
+        #expect(IntakeProgress.total == 3)
+    }
+
+    @Test func 문답_중이면_둘까지_한_것이다() {
+        // 세션은 부위와 강도를 고른 뒤에 생기므로 늘 3단계에 있다.
+        #expect(IntakeProgress.done(questionsConfirmed: false) == 2)
+    }
+
+    @Test func 질문까지_골랐으면_셋을_다_마친_것이다() {
+        #expect(IntakeProgress.done(questionsConfirmed: true) == 3)
+    }
+}

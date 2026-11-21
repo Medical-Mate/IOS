@@ -23,8 +23,9 @@ struct HomeRepository: Sendable {
                     sessionId: $0.sessionId,
                     siteText: $0.siteText.flatMap { $0.isEmpty ? nil : $0 } ?? "정리 중인 증상",
                     questionsConfirmed: $0.questionsConfirmed ?? false,
-                    step: $0.progressCurrent ?? 0,
-                    total: $0.progressTotal ?? 3
+                    // **서버의 진행도를 그대로 찍지 않는다**(`IntakeProgress` · Android `#176`).
+                    step: IntakeProgress.done(questionsConfirmed: $0.questionsConfirmed ?? false),
+                    total: IntakeProgress.total
                 )
             },
             lead: leadInput(from: response)

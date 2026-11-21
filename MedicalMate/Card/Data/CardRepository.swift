@@ -55,12 +55,15 @@ struct CardRepository: Sendable {
 
     private func item(from intake: OpenIntakeResponse) -> CardListItem {
         let date = intake.startedAt.flatMap(HomeRepository.date(from:)) ?? today()
-        let step = intake.progressCurrent ?? 0
-        let total = intake.progressTotal ?? 3
+        // **서버의 진행도를 그대로 찍지 않는다** — 그것은 AI 문답의 왕복 수이고 상한이
+        // 20이다(`IntakeProgress` · Android `#176`).
+        let confirmed = intake.questionsConfirmed ?? false
+        let step = IntakeProgress.done(questionsConfirmed: confirmed)
+        let total = IntakeProgress.total
         return CardListItem(
             kind: .openIntake(
                 sessionId: intake.sessionId,
-                tempSaved: intake.questionsConfirmed ?? false,
+                tempSaved: confirmed,
                 step: step,
                 total: total
             ),
