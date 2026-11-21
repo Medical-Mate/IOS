@@ -179,11 +179,14 @@ struct BriefCardView: View {
 
     private func head(_ card: BriefCard, model: BriefCardModel) -> some View {
         VStack(alignment: .leading, spacing: MMSpace.s4) {
-            HStack(spacing: MMSpace.s8) {
+            HStack(alignment: .firstTextBaseline, spacing: MMSpace.s8) {
+                // **잘라내지 않는다.** 글자를 키워 쓰는 분에게 "복부 통…"으로 끊기면
+                // 진료실에서 보여 줄 카드의 제목이 사라진다. 기본 크기에서는 한 줄에
+                // 들어가 시안과 같고, 길어지면 줄이 는다. Android도 줄 수를 묶지 않는다.
                 Text(card.title)
                     .mmTextStyle(MMFont.headingM)
                     .foregroundStyle(MMColor.fgDefault)
-                    .lineLimit(1)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 MMBadge(text: card.badge.text, tone: card.badge.tone)
 
