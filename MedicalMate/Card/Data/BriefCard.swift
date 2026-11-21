@@ -19,7 +19,9 @@ struct BriefCard: Sendable, Equatable {
     let hospital: BriefCardHospital?
     let appointment: BriefCardAppointment?
     let status: String?
-    let visited: Bool
+    /// 진료를 마쳤는지. **상세 응답에 없을 수 있어** 목록에서 채워 넣는다
+    /// (Android `Backend#101`). 그래서 `var`다.
+    var visited: Bool
 
     /// 제목 옆 배지(FEATURE-SPEC 2.4).
     var badge: (text: String, tone: MMBadge.Tone) {

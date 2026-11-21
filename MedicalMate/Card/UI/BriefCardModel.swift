@@ -98,12 +98,24 @@ final class BriefCardModel {
         switch await repository.card(id: cardId) {
         case .success(let response):
             card = BriefCardMapping.card(from: response, calendar: calendar)
+            // **진료를 마쳤는지는 상세에 없을 수 있다**(Android `Backend#101`). 값이
+            // 비어 오면 목록에서 본다 — 그러지 않으면 `1e-1`의 배지가 다녀온 뒤에도
+            // 영영 "진료 전"이다. 고친 카드는 새 id를 받아서 옛 id로는 목록에 없을
+            // 수 있고, 그때는 "진료 전"으로 남는다(Android도 같다).
+            if response.visited == nil { await fillVisited() }
         case .rejected(let error):
             errorMessage = error.message ?? "카드를 불러오지 못했어요."
         case .networkUnavailable:
             errorMessage = "연결이 끊어졌어요."
         }
         isLoading = false
+    }
+
+    /// 목록에서 `visited`를 채운다. 못 받아도 조용히 둔다 — 카드는 이미 그려져 있다.
+    private func fillVisited() async {
+        guard let id = card?.id, case .success(let list) = await repository.cards() else { return }
+        guard let listed = list.first(where: { $0.cardId == id }) else { return }
+        card?.visited = listed.visited ?? false
     }
 
     // MARK: - 편집
