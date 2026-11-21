@@ -35,6 +35,9 @@ file_length:
 identifier_name:
   min_length: 1
   excluded: [id, x, y, s2, s4, s6, s8]
+  # 테스트 이름을 우리말로 적는다. 한글에는 대소문자가 없어 "소문자로 시작하라"를
+  # 지킬 방법이 없다. 사람이 정했다(2026-11-21).
+  validates_start_with_lowercase: off
 
 # 디자인 토큰은 Figma 값을 그대로 적는 자리라 숫자가 많다.
 number_separator:
