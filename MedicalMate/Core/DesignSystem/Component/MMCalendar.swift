@@ -125,6 +125,10 @@ struct MMCalendarGrid: View {
     /// 일요일부터 시작하는 칸 목록. 35칸이면 5주, 42칸이면 6주다.
     let days: [Day]
     var showsLegend: Bool = true
+    /// 날짜 선택 시트(`1r-4-D`)에서는 **그림자를 뺀다.** 시안의 인스턴스
+    /// (`3982:16243`)가 시트 면에 그대로 놓여 있고 Android도 `elevated = false`다.
+    /// 시트 자체가 이미 떠 있어서 그 위에 또 띄우면 면이 둘로 읽힌다.
+    var isElevated: Bool = true
     var onPick: ((Int) -> Void)?
 
     private var weeks: [[Day]] {
@@ -157,7 +161,7 @@ struct MMCalendarGrid: View {
         .padding(.vertical, MMSpace.s12)
         .background(MMColor.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: MMRadius.lg))
-        .mmShadow(MMElevation.card)
+        .mmShadow(isElevated ? MMElevation.card : [])
     }
 
     private var weekdayHeader: some View {
