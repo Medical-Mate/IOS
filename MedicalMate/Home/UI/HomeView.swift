@@ -22,6 +22,8 @@ struct HomeView: View {
     var onRecordVisit: (Int64) -> Void = { _ in }
     var onOpenCardId: (Int64) -> Void = { _ in }
     var onScheduleCard: (Int64) -> Void = { _ in }
+    /// 배너 5의 "메이트에게 말해보기". **호출어 없이 여는 길이다.**
+    var onTalkToMate: () -> Void = {}
 
     var body: some View {
         Group {
@@ -69,9 +71,11 @@ struct HomeView: View {
             // 카드가 없으면 목록으로 간다.
             if let cardId { onOpenCardId(cardId) } else { onOpenCardList() }
         case .schedule: onScheduleCard(0)
+        // **호출어 없이 메이트를 연다.** 배너는 호출어 모델을 받지 않은 사람에게도
+        // 보이고, 받아쓰기만으로 듣는다 — Android도 같은 자리다(#312).
+        case .mate: onTalkToMate()
         // 예약 문자 공유는 Share Extension이 서야 갈 곳이 생긴다(M4).
-        // "헤이 메이트"는 호출어가 정해져야 열린다(D1).
-        case .message, .mate, .welcome: break
+        case .message, .welcome: break
         }
     }
 

@@ -61,7 +61,8 @@ struct MainTabView: View {
                 onProfile: { path.append(Route.myProfile) },
                 onRecordVisit: { path.append(Route.clinicConfirm(cardId: $0)) },
                 onOpenCardId: { path.append(Route.briefCard(cardId: $0)) },
-                onScheduleCard: { _ in path.append(Route.scheduleAdd(date: nil)) }
+                onScheduleCard: { _ in path.append(Route.scheduleAdd(date: nil)) },
+                onTalkToMate: { Task { await mate?.open() } }
             )
         case .record:
             BriefCardListView(
