@@ -198,3 +198,46 @@ struct CalendarDayTests {
         #expect(AppointmentMapping.isEarlier(appointment(id: 1, hour: nil), than: appointment(id: 2, hour: nil)))
     }
 }
+
+/// 일자 상세가 카드 줄과 기록 줄에 무엇을 적는지.
+@MainActor
+struct CalendarDayCopyTests {
+    private var calendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
+        return calendar
+    }
+
+    private var summary: CardSummaryResponse {
+        CardSummaryResponse(
+            cardId: 7, title: nil, chiefComplaint: "복부 통증 · 3주", visited: nil,
+            clinicName: nil, createdAt: "2026-09-18",
+            axes: ["부위", "기간", "양상", "복용약", "기저질환"]
+        )
+    }
+
+    @Test func 진료_전에는_작성일과_항목_수를_적는다() {
+        #expect(CalendarDayModel.cardMeta(summary, isVisited: false, calendar: calendar) == "2026.09.18 · 5항목")
+    }
+
+    @Test func 진료를_마치면_무엇에_쓰는_카드인지를_적는다() {
+        #expect(CalendarDayModel.cardMeta(summary, isVisited: true, calendar: calendar) == "브리핑 카드 · 진료실에서 보여줌")
+    }
+
+    @Test func 기록_줄은_재방문_날짜를_덧붙인다() {
+        let record = VisitListItem(
+            id: 5, cardId: 7, cardTitle: "위염 초기 · 2주 약", clinicName: nil,
+            visitedOn: HomeRepository.date(from: "2026-09-18")!,
+            followUp: VisitFollowUp(date: HomeRepository.date(from: "2026-09-26")!, text: nil, approximate: true)
+        )
+        #expect(CalendarDayView.recordMeta(record) == "위염 초기 · 2주 약 · 09.26 재방문")
+    }
+
+    @Test func 재방문이_없으면_카드_제목만_적는다() {
+        let record = VisitListItem(
+            id: 5, cardId: 7, cardTitle: "위염 초기", clinicName: nil,
+            visitedOn: HomeRepository.date(from: "2026-09-18")!, followUp: nil
+        )
+        #expect(CalendarDayView.recordMeta(record) == "위염 초기")
+    }
+}

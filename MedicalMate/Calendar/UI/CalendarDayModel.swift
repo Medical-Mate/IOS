@@ -10,6 +10,10 @@ final class CalendarDayModel {
     let date: Date
     private(set) var appointment: Appointment?
     private(set) var cards: [BriefCardLink] = []
+    /// 이 날 남긴 진료 후 기록.
+    private(set) var record: VisitListItem?
+    /// 이 진료에서 나온 재방문 일정(`1r-2-A` · `1r-2-A2`).
+    private(set) var nextEvent: Appointment?
     private(set) var isLoading = true
     private(set) var errorMessage: String?
 
@@ -19,17 +23,23 @@ final class CalendarDayModel {
     var isDeleteRequested = false
 
     private let repository: AppointmentRepository
+    private let cardsRepository: CardRepository
+    private let visitsRepository: VisitRepository
     private let calendar: Calendar
     private let today: @Sendable () -> Date
 
     init(
         date: Date,
         repository: AppointmentRepository,
+        cards cardsRepository: CardRepository,
+        visits visitsRepository: VisitRepository,
         calendar: Calendar = .current,
         today: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.date = date
         self.repository = repository
+        self.cardsRepository = cardsRepository
+        self.visitsRepository = visitsRepository
         self.calendar = calendar
         self.today = today
     }
@@ -56,10 +66,41 @@ final class CalendarDayModel {
 
     var todos: [AppointmentTodo] { draft ?? appointment?.todos ?? [] }
 
-    /// 일정 카드 머리의 "D-5". **지난 일정은 "진료 완료"다.**
+    /// 진료를 마쳤는지. 구간 제목과 보이는 것이 갈린다.
+    var isVisited: Bool { appointment?.status == .done || record != nil }
+
+    /// 카드 구간의 제목. 진료 전에는 "가져갈", 끝난 뒤에는 그냥 "브리핑 카드"다.
+    var cardSectionTitle: String { isVisited ? "브리핑 카드" : "가져갈 브리핑 카드" }
+
+    /// 재방문 칸에 보일 날짜. "9월 26일 (토)".
+    var nextEventDateLabel: String {
+        nextEvent.map { CalendarMonth.dayTitle($0.on, calendar: calendar) } ?? ""
+    }
+
+    /// 확정된 재방문의 D-day.
+    var nextEventDayLabel: String {
+        guard let next = nextEvent else { return "" }
+        let start = calendar.startOfDay(for: today())
+        let target = calendar.startOfDay(for: next.on)
+        let days = calendar.dateComponents([.day], from: start, to: target).day ?? 0
+        if days == 0 { return "D-DAY" }
+        return days > 0 ? "D-\(days)" : "D+\(-days)"
+    }
+
+    /// 확정된 재방문의 둘째 줄. "9월 26일 (토) 오전 10:30".
+    var nextEventMeta: String {
+        guard let next = nextEvent else { return "" }
+        return [nextEventDateLabel, next.time?.label].compactMap(\.self).joined(separator: " ")
+    }
+
+    /// 시각이 정해졌는지. **안 정했으면 "시간 정하고 확정하기"가 선다** — 기록에서 나온
+    /// 날짜는 "2주 뒤"처럼 날짜까지라 시각이 비어 있다.
+    var isNextEventConfirmed: Bool { nextEvent?.time != nil }
+
+    /// 일정 카드 머리의 "D-5". **진료를 마쳤으면 "진료 완료"다.**
     var dayLabel: String {
         guard let appointment else { return "" }
-        if appointment.status == .done { return "진료 완료" }
+        if isVisited { return "진료 완료" }
         let start = calendar.startOfDay(for: today())
         let target = calendar.startOfDay(for: appointment.on)
         let days = calendar.dateComponents([.day], from: start, to: target).day ?? 0
@@ -87,15 +128,69 @@ final class CalendarDayModel {
                 .compactMap(AppointmentMapping.appointment(from:))
                 .filter { $0.status != .canceled }
                 .min { AppointmentMapping.isEarlier($0, than: $1) }
-            cards = appointment?.cards.map {
-                BriefCardLink(id: $0.id, title: $0.title ?? "")
-            } ?? []
+            await loadCards()
+            await loadRecord()
+            await loadNextEvent()
         case .rejected(let error):
             errorMessage = error.message ?? "일정을 불러오지 못했어요."
         case .networkUnavailable:
             errorMessage = "연결이 끊어졌어요."
         }
         isLoading = false
+    }
+
+
+    /// 카드 줄의 둘째 줄("2026.09.04 · 5항목")은 일정 응답에 없다. 카드 목록에서
+    /// 짝을 지어 채운다.
+    private func loadCards() async {
+        let links = appointment?.cards ?? []
+        guard !links.isEmpty else {
+            cards = []
+            return
+        }
+
+        var summaries: [Int64: CardSummaryResponse] = [:]
+        if case .success(let list) = await cardsRepository.cards() {
+            summaries = Dictionary(uniqueKeysWithValues: list.map { ($0.cardId, $0) })
+        }
+
+        cards = links.map { link in
+            BriefCardLink(
+                id: link.id,
+                title: link.title ?? summaries[link.id]?.chiefComplaint ?? "",
+                meta: CalendarDayModel.cardMeta(summaries[link.id], isVisited: isVisited, calendar: calendar)
+            )
+        }
+    }
+
+    /// 진료를 마친 뒤에는 날짜·항목 수 대신 무엇에 쓰는 카드인지를 적는다(`1r-2-A2`).
+    static func cardMeta(_ summary: CardSummaryResponse?, isVisited: Bool, calendar: Calendar) -> String {
+        if isVisited { return "브리핑 카드 · 진료실에서 보여줌" }
+        guard let summary else { return "" }
+        let day = summary.createdAt.flatMap(HomeRepository.date(from:)).map { date -> String in
+            let parts = calendar.dateComponents([.year, .month, .day], from: date)
+            return String(format: "%d.%02d.%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
+        }
+        let count = (summary.axes?.count).map { "\($0)항목" }
+        return [day, count].compactMap(\.self).joined(separator: " · ")
+    }
+
+    private func loadRecord() async {
+        guard case .success(let list) = await visitsRepository.visits() else { return }
+        record = list
+            .compactMap(VisitMapping.listItem(from:))
+            .first { calendar.isDate($0.visitedOn, inSameDayAs: date) }
+    }
+
+    /// 이 진료에서 나온 재방문. **출처가 `VISIT_FOLLOW_UP`인 것만** 본다.
+    private func loadNextEvent() async {
+        guard record != nil || appointment?.status == .done else { return }
+        guard case .success(let list) = await repository.upcoming() else { return }
+        let linked = Set((appointment?.cards ?? []).map(\.id))
+        nextEvent = list
+            .compactMap(AppointmentMapping.appointment(from:))
+            .filter { $0.origin == .visitFollowUp && $0.on > date }
+            .first { next in linked.isEmpty || next.cards.contains { linked.contains($0.id) } }
     }
 
     // MARK: - 할 일
@@ -183,4 +278,5 @@ final class CalendarDayModel {
 struct BriefCardLink: Sendable, Equatable, Identifiable {
     let id: Int64
     let title: String
+    var meta: String = ""
 }

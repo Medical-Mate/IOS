@@ -13,6 +13,8 @@ struct CalendarDayView: View {
     let onBack: () -> Void
     var onOpenCard: (Int64) -> Void = { _ in }
     var onRecordVisit: (Int64) -> Void = { _ in }
+    var onOpenRecord: (Int64) -> Void = { _ in }
+    var onConfirmNextEvent: (Int64) -> Void = { _ in }
     var onDeleted: () -> Void = {}
 
     @State private var model: CalendarDayModel?
@@ -27,7 +29,12 @@ struct CalendarDayView: View {
         }
         .task {
             guard model == nil else { return }
-            let created = CalendarDayModel(date: date, repository: app.appointments)
+            let created = CalendarDayModel(
+                date: date,
+                repository: app.appointments,
+                cards: app.cards,
+                visits: app.visits
+            )
             model = created
             await created.load()
         }
@@ -53,15 +60,23 @@ struct CalendarDayView: View {
                             scheduleCard(model)
 
                             if !model.cards.isEmpty {
-                                MMSectionHeader(title: "가져갈 브리핑 카드")
+                                MMSectionHeader(title: model.cardSectionTitle)
                                 cardRows(model)
                             }
 
-                            MMSectionHeader(title: "진료 전 할 일")
-                            todoRows(model)
+                            // 진료가 끝난 날에는 할 일을 보이지 않는다 — 지난 준비물이다.
+                            if !model.isVisited, !model.todos.isEmpty || model.isEditing {
+                                MMSectionHeader(title: "진료 전 할 일")
+                                todoRows(model)
+                            }
 
                             MMSectionHeader(title: "이 날 기록")
                             recordSection(model)
+
+                            if model.nextEvent != nil {
+                                MMSectionHeader(title: "다음 일정")
+                                nextEventCard(model)
+                            }
                         }
 
                         if let message = model.errorMessage {
@@ -91,9 +106,10 @@ struct CalendarDayView: View {
     /// `Card / Brand` — `bg/primary-faint` 면에 D-day · 제목 · 시각.
     private func scheduleCard(_ model: CalendarDayModel) -> some View {
         VStack(alignment: .leading, spacing: MMSpace.s6) {
+            // 진료를 마친 날은 머리 글자가 `fg/success`다(`3663:15486`).
             Text(model.dayLabel)
                 .mmTextStyle(MMFont.labelS)
-                .foregroundStyle(MMColor.fgSubtle)
+                .foregroundStyle(model.isVisited ? MMColor.fgSuccess : MMColor.fgSubtle)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Text(model.appointment?.title ?? "")
                 .mmTextStyle(MMFont.headingS)
@@ -116,7 +132,7 @@ struct CalendarDayView: View {
             ForEach(model.cards) { card in
                 MMListRow(
                     title: card.title,
-                    meta: "",
+                    meta: card.meta,
                     action: { onOpenCard(card.id) }
                 )
             }
@@ -159,6 +175,31 @@ struct CalendarDayView: View {
 
     @ViewBuilder
     private func recordSection(_ model: CalendarDayModel) -> some View {
+        if let record = model.record {
+            MMListRow(
+                title: "진료 후 기록",
+                meta: CalendarDayView.recordMeta(record),
+                action: { onOpenRecord(record.id) }
+            )
+        } else {
+            emptyRecord(model)
+        }
+    }
+
+    /// 기록 줄의 둘째 줄. "위염 초기 · 1주 약 · 09.26 재방문".
+    ///
+    /// 목록 응답에는 축이 담기지 않아 **재방문 날짜만** 적는다. 축까지 적으려면 상세를
+    /// 한 건씩 불러야 하고, 줄 하나를 위해 그러지 않는다.
+    static func recordMeta(_ record: VisitListItem) -> String {
+        guard let followUp = record.followUp else { return record.cardTitle }
+        let calendar = Calendar.current
+        let parts = calendar.dateComponents([.month, .day], from: followUp.date)
+        let day = String(format: "%02d.%02d 재방문", parts.month ?? 0, parts.day ?? 0)
+        return [record.cardTitle, day].filter { !$0.isEmpty }.joined(separator: " · ")
+    }
+
+    @ViewBuilder
+    private func emptyRecord(_ model: CalendarDayModel) -> some View {
         // 진료 전에는 기록이 없다. **액션이 면 없는 링크다**(마스터의 Tonal을 인스턴스가
         // 바꿔 놓았다).
         MMEmptyState(
@@ -170,6 +211,61 @@ struct CalendarDayView: View {
             onAction: { model.cards.first.map { onRecordVisit($0.id) } }
         )
         .frame(maxWidth: .infinity)
+    }
+
+    /// `Next Event` — 재방문 일정(`1r-2-A` · `1r-2-A2`).
+    ///
+    /// **시각이 없으면 제안, 있으면 확정이다.** 기록에서 나온 날짜는 "2주 뒤"처럼
+    /// 날짜까지라 시각이 비어 있고, 그때는 시간을 정하라고 청한다.
+    private func nextEventCard(_ model: CalendarDayModel) -> some View {
+        VStack(alignment: .leading, spacing: MMSpace.s6) {
+            Text(model.isNextEventConfirmed ? model.nextEventDayLabel : model.nextEventDateLabel)
+                .mmTextStyle(MMFont.labelM)
+                .foregroundStyle(MMColor.fgPrimary)
+                .padding(.horizontal, NextEventMetrics.chipH)
+                .padding(.vertical, NextEventMetrics.chipV)
+                .background(MMColor.bgSurface)
+                .clipShape(RoundedRectangle(cornerRadius: MMRadius.xs))
+
+            Text(model.isNextEventConfirmed ? (model.nextEvent?.title ?? "") : "재방문 예정")
+                .mmTextStyle(MMFont.headingS)
+                .foregroundStyle(MMColor.fgOnPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Text(
+                model.isNextEventConfirmed
+                    ? model.nextEventMeta
+                    : "진료 후 기록에서 자동으로 만들었어요\n시간을 정하면 하루 전에 알려드려요"
+            )
+            .mmTextStyle(MMFont.bodyS)
+            .foregroundStyle(MMColor.fgOnPrimary.opacity(NextEventMetrics.bodyOpacity))
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            if !model.isNextEventConfirmed {
+                Color.clear.frame(height: MMSpace.s4)
+                Button { model.nextEvent.map { onConfirmNextEvent($0.id) } } label: {
+                    HStack(spacing: MMSpace.s6) {
+                        MMIcon.clock.view(size: MMSize.iconSm)
+                        Text("시간 정하고 확정하기").mmTextStyle(MMFont.bodyMStrong)
+                    }
+                    .foregroundStyle(MMColor.fgOnPrimary)
+                    .padding(.vertical, NextEventMetrics.actionV)
+                    .frame(maxWidth: .infinity)
+                    .background(MMColor.bgOnDark)
+                    .clipShape(RoundedRectangle(cornerRadius: MMRadius.sm))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: MMRadius.sm)
+                            .strokeBorder(MMColor.borderOnDark, lineWidth: 1)
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(NextEventMetrics.inset)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(MMColor.bgPrimary)
+        .clipShape(RoundedRectangle(cornerRadius: MMRadius.lg))
     }
 
     // MARK: - 아래 칸
@@ -205,6 +301,15 @@ struct CalendarDayView: View {
             .padding(.horizontal, MMSize.gutter)
         }
     }
+}
+
+private enum NextEventMetrics {
+    static let inset: CGFloat = 18
+    static let chipH: CGFloat = 9
+    static let chipV: CGFloat = 3
+    static let actionV: CGFloat = 11
+    /// 본문의 흰 글자 투명도. 마스터가 82%다.
+    static let bodyOpacity: Double = 0.82
 }
 
 private enum CalendarDayMetrics {

@@ -87,6 +87,8 @@ struct MainTabView: View {
                     onBack: { path.removeLast() },
                     onOpenCard: { path.append(Route.briefCard(cardId: $0)) },
                     onRecordVisit: { path.append(Route.clinicConfirm(cardId: $0)) },
+                    onOpenRecord: { path.append(Route.visitDetail(visitId: "\($0)")) },
+                    onConfirmNextEvent: { _ in path.append(Route.scheduleAdd(date: nil)) },
                     onDeleted: { path.removeLast() }
                 )
                 .toolbar(.hidden, for: .navigationBar)
