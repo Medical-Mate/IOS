@@ -10,6 +10,7 @@ struct MyProfileView: View {
     @Environment(\.appEnvironment) private var app
     @State private var model: MyProfileModel?
     @State private var askingWithdraw = false
+    @Environment(\.scenePhase) private var scenePhase
 
     var onBack: () -> Void = {}
     var onEditHealth: () -> Void = {}
@@ -36,6 +37,13 @@ struct MyProfileView: View {
                 )
             }
             await model?.load()
+        }
+        // **앱으로 돌아올 때마다 다시 읽는다.** 휴대폰 알림은 **기기 설정에서** 끄고
+        // 켤 수 있는데, 그러고 돌아와도 `task`는 다시 돌지 않는다 — "알림이 꺼져
+        // 있어요" 줄이 사실과 어긋난 채로 남는다. Android도 보일 때마다 읽는다.
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            Task { await model?.load() }
         }
     }
 
