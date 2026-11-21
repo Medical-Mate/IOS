@@ -10,14 +10,14 @@ struct RecordDetailTests {
         return calendar
     }
 
-    private func visit(clinic: String?, on day: String?) -> Visit {
+    private func visit(id: Int64 = 5, clinic: String?, on day: String?, followUp: VisitFollowUp? = nil) -> Visit {
         Visit(
-            id: 5,
+            id: id,
             cardId: 7,
             clinicName: clinic,
             visitedOn: day.flatMap { HomeRepository.date(from: $0) },
             items: [],
-            followUp: nil,
+            followUp: followUp,
             patientNotes: [],
             rawNote: nil
         )
@@ -34,27 +34,28 @@ struct RecordDetailTests {
         #expect(RecordDetailModel.shortDay("미정") == "미정")
     }
 
-    @Test func 머리의_메타는_병원과_진료일이다() {
-        let meta = RecordDetailModel.headMeta(
-            visit(clinic: "서울OO병원 내과", on: "2026-09-12"),
-            visitCount: 1,
+    @Test func 머리글_둘째_줄은_병원과_진료일이다() {
+        let line = RecordDetailModel.clinicLine(
+            [visit(clinic: "서울OO병원 내과", on: "2026-09-12")],
             calendar: calendar
         )
-        #expect(meta == "서울OO병원 내과 · 09.12 진료")
+        #expect(line == "서울OO병원 내과 · 09.12 진료")
     }
 
-    @Test func 여러_번_진료면_첫_진료를_초진으로_적는다() {
-        let meta = RecordDetailModel.headMeta(
-            visit(clinic: "서울OO병원 내과", on: "2026-09-12"),
-            visitCount: 2,
+    @Test func 여러_번이면_오래된_차례로_초진과_재방문을_적는다() {
+        // 타임라인은 최신이 위인데 이 줄만 반대다 — 흘러온 순서를 한 줄로 읽는 자리다.
+        let line = RecordDetailModel.clinicLine(
+            [
+                visit(id: 6, clinic: "서울OO병원 내과", on: "2026-09-26"),
+                visit(id: 5, clinic: "서울OO병원 내과", on: "2026-09-12"),
+            ],
             calendar: calendar
         )
-        #expect(meta == "서울OO병원 내과 · 09.12 초진")
+        #expect(line == "서울OO병원 내과 · 09.12 초진 · 09.26 재방문")
     }
 
-    @Test func 병원도_날짜도_없으면_메타가_비어_있다() {
-        let meta = RecordDetailModel.headMeta(visit(clinic: nil, on: nil), visitCount: 1, calendar: calendar)
-        #expect(meta.isEmpty)
+    @Test func 병원도_날짜도_없으면_둘째_줄이_비어_있다() {
+        #expect(RecordDetailModel.clinicLine([visit(clinic: nil, on: nil)], calendar: calendar).isEmpty)
     }
 
     @Test func 배지는_진료_횟수를_말한다() {
@@ -68,14 +69,71 @@ struct RecordDetailTests {
         #expect(RecordDetailModel.collapsedItemCount == 3)
     }
 
-    @Test func 한_번만_진료했으면_재방문을_붙이지_않는다() {
+    @Test func 한_번만_진료했으면_몇_번째인지_붙이지_않는다() {
         let steps = RecordDetailModel.visitSteps(
-            current: visit(clinic: "서울OO병원", on: "2026-09-12"),
-            history: [],
+            [visit(clinic: "서울OO병원", on: "2026-09-12")],
             calendar: calendar
         )
         #expect(steps.count == 1)
         #expect(steps[0].when == "09.12 · 진료 후 기록")
         #expect(steps[0].kind == .visit(id: 5))
+    }
+
+    @Test func 여러_번이면_가장_오래된_것이_초진이다() {
+        // 최신이 0이라 끝이 초진이다.
+        let steps = RecordDetailModel.visitSteps(
+            [
+                visit(id: 6, clinic: "서울OO병원", on: "2026-09-26"),
+                visit(id: 5, clinic: "서울OO병원", on: "2026-09-12"),
+            ],
+            calendar: calendar
+        )
+        #expect(steps.map(\.when) == ["09.26 · 진료 후 기록 · 재방문", "09.12 · 진료 후 기록 · 초진"])
+    }
+
+    @Test func 카드_칸은_작성일만_적는다() {
+        // 진료실에서 보여 준 날은 바로 위 기록 칸이 이미 적는다.
+        #expect(RecordDetailModel.visitKind(count: 1, index: 0) == nil)
+        #expect(RecordDetailModel.visitKind(count: 2, index: 1) == "초진")
+        #expect(RecordDetailModel.visitKind(count: 2, index: 0) == "재방문")
+    }
+
+    @Test func 잡아_둔_일정이_없으면_기록의_재방문_날짜를_세운다() {
+        // 캘린더가 점을 찍는 값과 같아야 달력과 상세가 다른 날을 가리키지 않는다.
+        let followUp = VisitFollowUp(
+            date: HomeRepository.date(from: "2026-09-26")!,
+            text: nil,
+            approximate: true
+        )
+        let step = RecordDetailModel.pending(followUp, calendar: calendar)
+        #expect(step.when == "09.26 예정")
+        #expect(step.notice?.title == "재방문 예정이에요")
+        #expect(step.notice?.message == "9월 26일 (토) 전후")
+    }
+
+    @Test func 카드_제목이_비면_목록의_제목으로_받친다() {
+        let summary = VisitSummaryResponse(
+            visitId: 5,
+            cardId: 7,
+            cardTitle: "복부 통증 · 3주",
+            clinicName: "서울OO병원",
+            visitedOn: "2026-09-12",
+            followUp: nil
+        )
+        let title = RecordDetailModel.title(
+            card: nil,
+            summaries: [summary],
+            newest: visit(clinic: "서울OO병원", on: "2026-09-12")
+        )
+        #expect(title == "복부 통증 · 3주")
+    }
+
+    @Test func 제목이_하나도_없으면_병원으로_받친다() {
+        let title = RecordDetailModel.title(
+            card: nil,
+            summaries: [],
+            newest: visit(clinic: "서울OO병원", on: "2026-09-12")
+        )
+        #expect(title == "서울OO병원")
     }
 }
