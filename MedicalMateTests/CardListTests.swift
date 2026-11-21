@@ -129,18 +129,21 @@ struct RecordListTests {
         )
     }
 
-    @Test func 기록_줄은_진료_완료_배지를_단다() {
+    @Test("기록 줄은 진료 완료 배지를 단다")
+    func visitRowHasDoneBadge() {
         let item = repository().item(from: visit(id: 5, cardId: 7, on: "2026-09-12"))
         #expect(item?.badge.text == "진료 완료")
         #expect(item?.meta == "09.12 진료 · 서울OO병원 내과")
     }
 
-    @Test func 재방문이_있으면_셋째_줄에_적는다() {
+    @Test("재방문이 있으면 셋째 줄에 적는다")
+    func followUpShowsOnThirdLine() {
         let item = repository().item(from: visit(id: 5, cardId: 7, on: "2026-09-12", followUp: "2026-09-26"))
         #expect(item?.summary == "09.26 재방문")
     }
 
-    @Test func 기록이_있는_카드는_기록_줄로만_선다() {
+    @Test("기록이 있는 카드는 기록 줄로만 선다")
+    func cardWithRecordShowsOnlyRecord() {
         // 같은 진료가 두 줄이 되면 안 된다.
         let sections = repository().sections(
             cards: [card(id: 7, on: "2026-09-04"), card(id: 2, on: "2026-09-21")],
@@ -153,7 +156,8 @@ struct RecordListTests {
         #expect(ids.contains("card-2"))
     }
 
-    @Test func 달로_묶고_최신이_위다() {
+    @Test("달로 묶고 최신이 위다")
+    func groupsByMonthNewestFirst() {
         let sections = repository().sections(
             cards: [card(id: 2, on: "2026-09-21")],
             visits: [visit(id: 6, cardId: 8, on: "2026-07-18")],

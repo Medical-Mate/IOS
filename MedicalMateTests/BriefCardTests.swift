@@ -16,7 +16,8 @@ struct BriefCardTests {
 
     // MARK: - 축
 
-    @Test func 아직_묻지_않았거나_건너뛴_축은_줄이_되지_않는다() {
+    @Test("아직 묻지 않았거나 건너뛴 축은 줄이 되지 않는다")
+    func unaskedAxesMakeNoRow() {
         // 8축이 늘 자리를 차지하고 1턴째는 대부분 NOT_ASKED다. 그대로 그리면 빈 줄
         // 여덟 개가 먼저 보인다.
         let items = BriefCardMapping.items(from: [
@@ -27,18 +28,21 @@ struct BriefCardTests {
         #expect(items.map(\.key) == ["부위"])
     }
 
-    @Test func 잘_모르겠다는_답은_남긴다() {
+    @Test("잘 모르겠다는 답은 남긴다")
+    func unknownAnswerIsKept() {
         // 확인하지 못했다는 것이 의사에게는 정보다.
         let items = BriefCardMapping.items(from: ["onset": axis("UNKNOWN")])
         #expect(items.map(\.value) == ["잘 모르겠어요"])
     }
 
-    @Test func 확실하지_않은_값은_그_사실을_함께_적는다() {
+    @Test("확실하지 않은 값은 그 사실을 함께 적는다")
+    func ambiguousValueSaysSo() {
         let items = BriefCardMapping.items(from: ["onset": axis("AMBIGUOUS", "3주 전")])
         #expect(items.map(\.value) == ["3주 전 (확실하지 않아요)"])
     }
 
-    @Test func 축은_서버_순서가_아니라_읽는_차례로_선다() {
+    @Test("축은 서버 순서가 아니라 읽는 차례로 선다")
+    func axesFollowReadingOrder() {
         let items = BriefCardMapping.items(from: [
             "character": axis("FILLED", "쓰림"),
             "site": axis("FILLED", "복부"),
@@ -47,19 +51,22 @@ struct BriefCardTests {
         #expect(items.map(\.key) == ["부위", "기간", "양상"])
     }
 
-    @Test func 모르는_축은_id를_그대로_보인다() {
+    @Test("모르는 축은 id를 그대로 보인다")
+    func unknownAxisKeepsItsId() {
         // 서버가 축을 늘려도 줄이 사라지지 않게.
         #expect(BriefCardMapping.label(for: "new_axis") == "new_axis")
     }
 
     // MARK: - 강도
 
-    @Test func 강도는_앞의_숫자만_읽는다() {
+    @Test("강도는 앞의 숫자만 읽는다")
+    func severityReadsLeadingDigits() {
         // 낱말은 화면이 단계에서 가져온다. 문자열을 맞춰 보면 서버가 표현을 바꿀 때마다 갈린다.
         #expect(BriefCardMapping.severity(from: axis("FILLED", "3 (꽤 아파요)")) == 3)
     }
 
-    @Test func 범위_밖이거나_숫자가_없으면_눈금을_그리지_않는다() {
+    @Test("범위 밖이거나 숫자가 없으면 눈금을 그리지 않는다")
+    func severityOutOfRangeIsDropped() {
         #expect(BriefCardMapping.severity(from: axis("FILLED", "7 (심함)")) == nil)
         #expect(BriefCardMapping.severity(from: axis("FILLED", "꽤 아파요")) == nil)
         #expect(BriefCardMapping.severity(from: axis("UNKNOWN", "3")) == nil)
@@ -67,7 +74,8 @@ struct BriefCardTests {
 
     // MARK: - 건강 정보
 
-    @Test func 상태가_빠져_와도_값이_있으면_줄을_만든다() {
+    @Test("상태가 빠져 와도 값이 있으면 줄을 만든다")
+    func valueWithoutStatusStillCounts() {
         // 기기 로그에서 status 없이 오는 것을 봤다. 상태만 보고 자르면 값이 있는데도
         // 줄이 사라진다.
         let patient = PatientResponse(
@@ -78,7 +86,8 @@ struct BriefCardTests {
         #expect(BriefCardMapping.healthRows(patient).map(\.key) == ["복용약"])
     }
 
-    @Test func 없다고_답했거나_비면_카드에_적지_않는다() {
+    @Test("없다고 답했거나 비면 카드에 적지 않는다")
+    func absentHealthIsNotWritten() {
         let patient = PatientResponse(
             name: nil, age: nil, sex: nil, allergies: nil,
             medications: CardListFieldResponse(status: "NONE", items: []),
@@ -87,7 +96,8 @@ struct BriefCardTests {
         #expect(BriefCardMapping.healthRows(patient).isEmpty)
     }
 
-    @Test func 건강_정보_줄은_축이_없다() {
+    @Test("건강 정보 줄은 축이 없다")
+    func healthRowsHaveNoAxis() {
         // 고쳐도 보낼 곳이 없는 줄이다.
         let patient = PatientResponse(
             name: nil, age: nil, sex: nil, allergies: nil,
@@ -99,7 +109,8 @@ struct BriefCardTests {
         #expect(row?.value == "혈압약 · 진통제")
     }
 
-    @Test func 알러지는_쉼표로_나눈다() {
+    @Test("알러지는 쉼표로 나눈다")
+    func allergiesSplitOnComma() {
         let field = CardTextFieldResponse(status: "KNOWN", text: "페니실린, 아스피린 ")
         #expect(BriefCardMapping.allergies(field) == ["페니실린", "아스피린"])
         #expect(BriefCardMapping.allergies(CardTextFieldResponse(status: "NONE", text: "")).isEmpty)
@@ -119,23 +130,27 @@ struct BriefCardTests {
         )
     }
 
-    @Test func 환자_줄은_이름_나이_성별_작성일이다() {
+    @Test("환자 줄은 이름 나이 성별 작성일이다")
+    func patientLineHasNameAgeSexDate() {
         #expect(BriefCardMapping.patientLine(response(), calendar: calendar) == "김OO · 32세 여 · 2026.09.18 작성")
     }
 
-    @Test func 가린_줄은_성만_남기고_나이를_뺀다() {
+    @Test("가린 줄은 성만 남기고 나이를 뺀다")
+    func maskedLineKeepsSurnameOnly() {
         // 숫자를 바꿔 적으면 틀린 정보가 찍힌다.
         #expect(BriefCardMapping.maskedPatientLine(response(), calendar: calendar) == "김OO · 여 · 2026.09.18 작성")
     }
 
     // MARK: - 병원 · 일정
 
-    @Test func 이름_없는_병원은_없는_것으로_본다() {
+    @Test("이름 없는 병원은 없는 것으로 본다")
+    func clinicWithoutNameIsNil() {
         #expect(BriefCardMapping.hospital(from: ClinicResponse(name: "", address: "서울")) == nil)
         #expect(BriefCardMapping.hospital(from: nil) == nil)
     }
 
-    @Test func 하단_버튼은_일정으로_갈리고_당일은_기록하기다() {
+    @Test("하단 버튼은 일정으로 갈리고 당일은 기록하기다")
+    func footerActionSplitsBySchedule() {
         let today = fixtureDay("2026-09-18")
         func card(on day: String?) -> BriefCard {
             BriefCard(
@@ -164,7 +179,8 @@ struct BriefCardEditTests {
         BriefCardItem(key: key, value: value, axis: axis)
     }
 
-    @Test func 고친_축만_간다() {
+    @Test("고친 축만 간다")
+    func onlyChangedAxesAreSent() {
         let original = [item("부위", "복부", axis: "site"), item("시작", "3주 전", axis: "onset")]
         var edited = original
         edited[1].value = "한 달 전"
@@ -175,7 +191,8 @@ struct BriefCardEditTests {
         #expect(axes?.first?.value == "한 달 전")
     }
 
-    @Test func 지운_줄은_빈_값으로_보낸다() {
+    @Test("지운 줄은 빈 값으로 보낸다")
+    func deletedRowSendsEmptyValue() {
         // 서버에 "줄을 지운다"는 요청이 없다. 값을 비우면 축이 UNKNOWN으로 내려온다.
         let original = [item("부위", "복부", axis: "site")]
         let axes = BriefCardMapping.changedAxes(from: original, to: [])
@@ -183,17 +200,20 @@ struct BriefCardEditTests {
         #expect(axes?.first?.value == "")
     }
 
-    @Test func 축이_없는_줄은_보내지_않는다() {
+    @Test("축이 없는 줄은 보내지 않는다")
+    func rowsWithoutAxisAreSkipped() {
         let original = [item("복용약", "혈압약", axis: nil)]
         #expect(BriefCardMapping.changedAxes(from: original, to: []) == nil)
     }
 
-    @Test func 고친_것이_없으면_축을_보내지_않는다() {
+    @Test("고친 것이 없으면 축을 보내지 않는다")
+    func noChangesSendNoAxes() {
         let original = [item("부위", "복부", axis: "site")]
         #expect(BriefCardMapping.changedAxes(from: original, to: original) == nil)
     }
 
-    @Test func 적지_않은_빈_질문은_보내지_않는다() {
+    @Test("적지 않은 빈 질문은 보내지 않는다")
+    func blankQuestionsAreDropped() {
         #expect(BriefCardMapping.cleaned(["검사를 받아야 하나요?", "  ", ""]) == ["검사를 받아야 하나요?"])
     }
 }
@@ -205,7 +225,8 @@ struct BriefCardModelTests {
         BriefCardModel(cardId: 1, repository: CardRepository(client: BriefCardStub.client))
     }
 
-    @Test func 편집_전에는_액션이_편집이다() {
+    @Test("편집 전에는 액션이 편집이다")
+    func actionIsEditBeforeEditing() {
         let model = model()
         #expect(model.actionTitle == "편집")
         #expect(!model.isEditing)
@@ -218,13 +239,15 @@ private enum BriefCardStub {
 
 /// `onset`의 줄 이름.
 struct BriefCardAxisLabelTests {
-    @Test func onset은_기간이라고_적는다() {
+    @Test("onset은 기간이라고 적는다")
+    func onsetIsLabelledDuration() {
         // Android는 "시작"인데 1e-1의 마스터가 "기간"이고 값도 "3주 전 시작 · 최근 악화"라
         // 기간으로 읽힌다. 화면 문구는 Figma를 따른다 — COMPONENT-MAP 3장 14번.
         #expect(BriefCardMapping.label(for: "onset") == "기간")
     }
 
-    @Test func 하단_버튼은_세_상태가_모양이_다르다() {
+    @Test("하단 버튼은 세 상태가 모양이 다르다")
+    func footerKindDiffersByState() {
         // 시안이 일정 잡기는 채운 면(3663:7335), 일정 보기는 테두리(3663:7393),
         // 진료 후 기록은 옅은 면(3663:7428)으로 그린다.
         #expect(BriefCardFooterAction.schedule.kind == .primary)
