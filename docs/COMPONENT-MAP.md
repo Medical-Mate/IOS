@@ -389,6 +389,46 @@ grep -rhoE 'fun `[^`]+`' aos/app/src/test | sed 's/fun `//; s/`$//'
 **네 번째 자리(`1b-3-T` 알러지 툴팁)는 멀쩡했다.** 말풍선을 카드가 아니라 화면 전체의
 `overlay`에 얹어 두어서다 — 자를 것도, 덮을 것도 없다. 띄워서 확인했다.
 
+### 글자를 키워 쓰면 보이는 것 둘 (2026-11-21)
+
+**기본 글자 크기로만 보면 멀쩡하다.** 시뮬레이터를 `accessibility-extra-large`로
+올리고 띄워서야 보였다(`xcrun simctl ui <udid> content_size accessibility-extra-large`).
+
+먼저 확인한 것: **글자는 양쪽 다 커진다.** Android가 `sp`를 쓰고 iOS는 동적 타입을
+따르므로 어긋남이 아니다. 어긋난 것은 **줄 수를 묶어 둔 자리**다.
+
+| 자리 | 무엇이 어긋났나 | Android |
+| -- | -- | -- |
+| `1e-1` 브리핑 카드 제목 | `.lineLimit(1)`이라 **"복부 통…"으로 끊겼다.** 진료실에서 의사에게 보여 줄 카드의 제목이 사라진다 | `BriefCardBlock`에 `maxLines`가 없다 |
+| `1j-3` 기록 상세 제목 | 같은 자리, 같은 까닭 | `RecordDetailScreen.Head`에 `maxLines`가 없다 |
+| `1r-4` 고르는 칸 | 긴 병원 이름이 끊겼다 | `PickerField.PickerRow`가 `maxLines` 없이 `heightIn(min=)`으로 는다 |
+
+둘 다 `.fixedSize(horizontal: false, vertical: true)`로 바꿨다. **기본 크기에서는 여전히
+한 줄이라 시안과 같고**, 길어질 때만 줄이 는다. 배지가 첫 줄에 붙도록 `HStack`을
+`.firstTextBaseline`으로 맞췄다.
+
+**묶어 둔 나머지는 그대로 둔다.** `MMListRow`의 제목(한 줄 · 넘치면 줄임)과 요약은
+마스터(`335:1114`)가 `whitespace-nowrap` · `text-ellipsis`로 그려 두었고 Android도
+`maxLines = 1`이다(#294). 홈 카드 · 나브 바 · 배지 · 칩도 양쪽이 같다.
+
+### `fg/muted`는 글자에 쓰지 않는다 (2026-11-21)
+
+토큰 자체의 설명이 못박는다:
+
+> **3.78:1 — 글자에 쓰지 않습니다. 비활성 아이콘·장식 획 전용. 플레이스홀더와 캡션은
+> fg/subtle을 씁니다**(이 앱에서는 그것들이 유일한 안내라 장식이 아닙니다)
+
+**시안 쪽이 그 말을 어기고 있던 자리가 둘이었다.** `1r-4`의 고르는 칸 안내 문구
+(`3663:14777`)와 로그인 고지가 `fg/muted`로 그려져 있다. Android는 둘 다 `fg/subtle`로
+구현해 두었고(`PickerField.kt` · `LoginScreen.kt`) 그쪽에 맞췄다 — 3장 1 · 4 · 6 · 8번과
+같은 판단이다(**설명도 Figma가 적어 둔 값이고, 두 플랫폼이 갈리는 쪽이 더 나쁘다**).
+2장이 이미 "로그인 화면의 다른 안내는 반드시 기준을 넘는 색으로 둔다"고 적어 둔
+것과도 맞는다.
+
+**남은 `fg/muted`는 전부 설명이 허락한 쓰임이고 Android와 같다** — 시간 바퀴의 옆 줄
+(`TimeWheel.kt:127`) · 내보내기 미리보기(`ExportPreview.kt:103`) · 질문 더하기 줄
+(`QuestionRow.kt:123`) · 메이트 말풍선의 받아쓰는 중(`Bubble.kt:52`).
+
 ### 바탕값은 두 저장소가 똑같다 (2026-11-21 확인)
 
 문구만 보면 화면이 같아 보여도 바탕값이 밀려 있으면 레이아웃이 어긋난다. 그래서 두
@@ -407,9 +447,9 @@ grep -rhoE 'fun `[^`]+`' aos/app/src/test | sed 's/fun `//; s/`$//'
 
 iOS 쪽 값은 `DesignTokenTests`가 못박고 있어 이쪽이 밀리면 CI가 잡는다.
 
-### Android 저장소에 올릴 것 여덟
+### Android 저장소에 올릴 것 아홉
 
-여덟 자리 모두 **Figma가 값을 들고 있는데 Android가 다른 말을 쓴다.** 이쪽은 시안을
+아홉 자리 모두 **Figma가 값을 들고 있는데 Android가 다른 말을 쓴다.** 이쪽은 시안을
 따랐으니 그쪽을 맞추면 두 플랫폼이 같아진다. (이 저장소에서 고치지 않는다 —
 `CLAUDE.md` 6장 4번.)
 
@@ -425,6 +465,7 @@ iOS 쪽 값은 `DesignTokenTests`가 못박고 있어 이쪽이 밀리면 CI가 
 | 34 | `1e-1-DC` 삭제 확인 본문(`3663:7690`) | **연결된 진료 기록은 남고 카드만 사라져요.** | `brief_card_delete_body`의 `"…이 카드는 사라져요."` |
 | 35 | `1r-4` 저장 버튼(`3663:14772`) | **값이 비면 버튼이 꺼져 있다**(인라인 오류 글 없음) | `schedule_add_hospital_required` · `schedule_add_date_required`를 칸 아래에 적고 버튼은 켜 둔다 |
 | 29 | 병원 찾기 결과 줄의 색 | **`1m-B`(`3663:7311`)의 `fg/primary`(파랑)로 정했다**(2026-11-21). `1m`(`3663:14329`)이 `fg/subtle`로 그려 둔 것과 갈렸던 자리다 | `HospitalPickScreen.kt`가 언제나 `fgSubtle`이다 |
+| 37 | `List Row`의 chevron 색 | `Icon/chevron-right`(`302:725`) 설명이 **"획 색은 fg/default 바인딩"**이다 | `Rows.kt:258`이 `fgMuted`로 칠한다. 3.78:1이라 토큰 설명이 글자에 금한 색이고, 아이콘이어도 눌리는 행의 유일한 표시다 |
 
 ### 둘 다 시안과 다른 자리 둘
 

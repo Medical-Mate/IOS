@@ -132,10 +132,17 @@ struct ScheduleAddView: View {
     private func picker(_ title: String, icon: MMIcon, isFilled: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: MMSpace.s6) {
+                // **안내 문구는 `fg/subtle`이다.** 시안(`3663:14777`)은 `fg/muted`로
+                // 그렸지만 그 토큰의 설명이 **"3.78:1 — 글자에 쓰지 않습니다 …
+                // 플레이스홀더와 캡션은 fg/subtle을 씁니다"**라고 못박는다. Android도
+                // 설명 쪽을 구현해 두었다(`PickerField.kt`). 두 기기를 맞춘다.
+                //
+                // **잘라내지 않는다.** 긴 병원 이름이 들어오는 칸이고 Android의
+                // `PickerRow`도 `maxLines` 없이 `heightIn(min=)`으로 는다.
                 Text(title)
                     .mmTextStyle(MMFont.bodyL)
-                    .foregroundStyle(isFilled ? MMColor.fgDefault : MMColor.fgMuted)
-                    .lineLimit(1)
+                    .foregroundStyle(isFilled ? MMColor.fgDefault : MMColor.fgSubtle)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 icon.view(size: MMSize.iconMd)
                     .foregroundStyle(MMColor.fgDefault)

@@ -121,3 +121,21 @@
 **바꿀 것**: 날짜가 없으면 저장 버튼을 끈다. 병원은 선택으로 두고
 `schedule_add_hospital_required`는 지운다. `schedule_add_date_required`도 자리가 없어지면
 함께 지운다.
+
+---
+
+## #37 · `List Row`의 chevron이 `fg/muted`다
+
+**시안**: `Icon/chevron-right`(`302:725`)의 컴포넌트 설명이 **"24×24 격자 · 라이브 20 ·
+획 1.75 · 라운드 캡/조인 · 획 색은 `fg/default` 바인딩"**이다. `List Row`
+마스터(`335:1114`)의 chevron도 그 인스턴스다.
+**지금**: `core/designsystem/component/Rows.kt:258` — `tint = colors.fgMuted`.
+
+`fg/muted` 토큰 자신의 설명이 **"3.78:1 — 글자에 쓰지 않습니다. 비활성 아이콘·장식 획
+전용"**이다. 이 chevron은 비활성도 장식도 아니다 — **그 행이 눌린다는 유일한 표시**이고,
+마스터가 `Type=Plain`(눌리지 않는 행)에서는 아예 떼어 낸다. 색으로 눌림을 말하는
+자리라 대비가 낮으면 그 말이 전달되지 않는다.
+
+iOS `MMListRow`는 `MMColor.fgDefault`다.
+
+**바꿀 것**: `Rows.kt:258`의 `tint`를 `colors.fgDefault`로.

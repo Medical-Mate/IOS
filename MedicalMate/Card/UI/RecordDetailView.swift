@@ -65,11 +65,14 @@ struct RecordDetailView: View {
 
     private func head(_ model: RecordDetailModel) -> some View {
         VStack(alignment: .leading, spacing: MMSpace.s6) {
-            HStack(spacing: MMSpace.s6) {
+            HStack(alignment: .firstTextBaseline, spacing: MMSpace.s6) {
+                // **잘라내지 않는다.** 브리핑 카드 제목과 같은 자리다 — 글자를 키워 쓰는
+                // 분에게 끊기면 이 기록이 무엇인지가 사라진다. Android의 `Head`도
+                // `maxLines`를 두지 않는다.
                 Text(model.title)
                     .mmTextStyle(MMFont.headingL)
                     .foregroundStyle(MMColor.fgDefault)
-                    .lineLimit(1)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 if let badge = model.badge {
                     // 이 자리의 배지는 Badge 마스터보다 크다(Label/M · py 3).

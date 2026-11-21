@@ -79,7 +79,10 @@ struct LoginView: View {
     private var legal: some View {
         Text("진료메이트가 정리한 내용은 진료를 돕기 위한 참고 자료예요.\n진단이나 처방이 아니니 최종 판단은 의료진과 상의해 주세요.")
             .mmTextStyle(LoginMetrics.legal)
-            .foregroundStyle(MMColor.fgMuted)
+            // **`fg/subtle`이다.** `fg/muted`는 3.78:1이라 토큰 설명이 글자에 쓰지
+            // 말라고 못박았고, 캡션은 `fg/subtle`을 쓰라고 적었다. 11pt로 가장 작은
+            // 글자라 더욱 그렇다. Android의 `LoginScreen`도 `fgSubtle`이다.
+            .foregroundStyle(MMColor.fgSubtle)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
