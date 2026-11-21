@@ -129,15 +129,27 @@ struct MMKVEditRow: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .overlay(alignment: .trailing) {
-            Button(action: onDelete) {
-                MMIcon.close.view(size: MMSize.iconSm)
-                    .foregroundStyle(MMColor.fgDefault)
-                    .frame(width: MMSize.iconLg, height: MMSize.iconLg)
-                    .contentShape(Rectangle())
+            // **값이 비면 지우기도 없다**(`1e-1-E2` `3663:7586`). 빈 줄은 이미
+            // "카드에 표시되지 않아요"라고 적고 있고, 줄을 없애는 것과 값을 비우는 것은
+            // 저장에서 같은 요청이 된다(`BriefCardMapping.changedAxes`).
+            if !value.isEmpty {
+                Button(action: onDelete) {
+                    MMIcon.close.view(size: MMSize.iconSm)
+                        .foregroundStyle(MMColor.fgDefault)
+                        .frame(width: MMSize.iconLg, height: MMSize.iconLg)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityLabel("\(key) 지우기")
             }
-            .accessibilityLabel("\(key) 지우기")
         }
     }
+
+    /// 값이 빈 줄의 안내(`1e-1-E2` `3663:7584`).
+    ///
+    /// **시안은 `fg/muted`인데 `fg/subtle`로 세운다** — 토큰 설명이 "3.78:1 · 글자에 쓰지
+    /// 않습니다 … 플레이스홀더와 캡션은 fg/subtle을 씁니다"라고 못박았고, 이미 두 자리를
+    /// 같은 이유로 옮겼다(COMPONENT-MAP 3장 · 안내 글의 색).
+    nonisolated static let emptyHint = "비어 있음 — 카드에 표시되지 않아요"
 
     private var field: some View {
         VStack(spacing: 0) {
@@ -147,11 +159,22 @@ struct MMKVEditRow: View {
                         .mmTextStyle(MMFont.bodyL)
                         .foregroundStyle(MMColor.fgDefault)
                         .textFieldStyle(.plain)
+                        // **글자를 다 지운 줄은 비어 보이지 않는다**(`1e-1-E2`). 지우는
+                        // 것과 비우는 것은 다른 일이라 줄은 남고, 남은 줄이 아무 말도
+                        // 하지 않으면 무엇이 저장될지 알 수 없다. `prompt`를 쓰지 않는
+                        // 것은 색과 글자를 토큰으로 못 박기 위해서다.
+                        .overlay(alignment: .topLeading) {
+                            if value.isEmpty { hint.allowsHitTesting(false) }
+                        }
                 } else {
-                    Text(value)
-                        .mmTextStyle(MMFont.bodyL)
-                        .foregroundStyle(MMColor.fgDefault)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    if value.isEmpty {
+                        hint
+                    } else {
+                        Text(value)
+                            .mmTextStyle(MMFont.bodyL)
+                            .foregroundStyle(MMColor.fgDefault)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
             }
 
@@ -160,6 +183,13 @@ struct MMKVEditRow: View {
                 .frame(height: 1)
         }
         .frame(maxWidth: .infinity)
+    }
+
+    private var hint: some View {
+        Text(MMKVEditRow.emptyHint)
+            .mmTextStyle(MMFont.bodyL)
+            .foregroundStyle(MMColor.fgSubtle)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

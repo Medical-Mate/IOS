@@ -208,6 +208,13 @@ struct ComponentSpecTests {
         #expect(KVEditMetrics.deleteGutter == CGFloat(30))
     }
 
+    @Test("값이 빈 편집 줄은 카드에 서지 않는다고 적는다 (3663:7584)")
+    func kvEditRowEmptyHint() {
+        // `1e-1-E2`의 둘째 줄. 글자를 다 지워도 줄은 남으므로, 남은 줄이 무엇이
+        // 저장될지를 말한다.
+        #expect(MMKVEditRow.emptyHint == "비어 있음 — 카드에 표시되지 않아요")
+    }
+
     @Test("Bottom Sheet 손잡이는 36×4, 위 모서리는 28 (3663:7479)")
     func bottomSheet() {
         #expect(SheetMetrics.handle.width == CGFloat(36))
