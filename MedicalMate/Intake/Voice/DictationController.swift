@@ -2,6 +2,7 @@ import AVFoundation
 import Foundation
 import Observation
 import Speech
+import UIKit
 
 /// 말을 글로 바꾸는 자리.
 ///
@@ -33,6 +34,8 @@ final class DictationController {
     private var request: SFSpeechAudioBufferRecognitionRequest?
     private var task: SFSpeechRecognitionTask?
     private var silence: Task<Void, Never>?
+    /// 앱이 앞에서 물러나는 것을 지켜보는 자리.
+    private var resignObserver: (any NSObjectProtocol)?
 
     /// 이 기기에서 받아쓰기를 내줄 수 있는지.
     ///
@@ -63,7 +66,25 @@ final class DictationController {
         }
 
         isListening = true
+        watchForeground()
         arm(heardSpeech: false)
+    }
+
+    /// **앱이 앞에서 물러나면 듣기를 멈춘다.**
+    ///
+    /// 화면을 나가는 것은 `onDisappear`가 잡지만 **앱이 뒤로 가는 것은 잡지 못한다** —
+    /// 그대로 두면 사용자가 다른 앱에 가 있는 동안 마이크가 계속 열려 있다. 녹음을
+    /// 저장하지 않더라도 켜 둔 채 잊은 마이크는 그 자체가 문제다. 받아쓴 글은 남고,
+    /// 돌아와 마이크를 다시 누르면 이어서 적는다. Android도 같은 자리를 막아 두었다.
+    private func watchForeground() {
+        guard resignObserver == nil else { return }
+        resignObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.willResignActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.stop() }
+        }
     }
 
     /// 받아쓰기만 끈다. **화면을 나가지 않는다.**
@@ -79,6 +100,10 @@ final class DictationController {
             engine.inputNode.removeTap(onBus: 0)
         }
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        if let resignObserver {
+            NotificationCenter.default.removeObserver(resignObserver)
+            self.resignObserver = nil
+        }
         isListening = false
     }
 
@@ -97,6 +122,13 @@ final class DictationController {
 
         let input = engine.inputNode
         let format = input.outputFormat(forBus: 0)
+        // **들어오는 소리가 없으면 여기서 멈춘다.** 입력이 없는 기기(시뮬레이터)나 다른
+        // 앱이 마이크를 쥐고 있을 때 이 형식이 0채널 · 0Hz로 온다. 그대로 탭을 걸면
+        // CoreAudio가 `abort()`로 **앱을 죽인다** — 던지는 오류가 아니라 잡을 수도
+        // 없다. 미리 보고 "마이크를 열지 못했어요"로 받친다.
+        guard format.sampleRate > 0, format.channelCount > 0 else {
+            throw DictationError.noAudioInput
+        }
         input.removeTap(onBus: 0)
         input.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
             request.append(buffer)
@@ -145,13 +177,26 @@ final class DictationController {
         }
     }
 
-    private static func authorize() async -> Bool {
+    /// 허락을 묻는다.
+    ///
+    /// **`nonisolated`다.** `requestAuthorization`은 답을 아무 스레드에서나 돌려주는데,
+    /// 이 자리가 `@MainActor`에 묶여 있으면 그 콜백이 메인이 아닌 곳에서 continuation을
+    /// 깨우고 Swift 6의 격리 검사가 **앱을 그 자리에서 죽인다.** 허락을 처음 내주고
+    /// 마이크를 누른 사람에게만 일어나 눈에 띄지 않았다. 여기서는 배우의 상태를
+    /// 건드리지 않으므로 격리가 필요 없다.
+    nonisolated private static func authorize() async -> Bool {
         let speech = await withCheckedContinuation { continuation in
             SFSpeechRecognizer.requestAuthorization { continuation.resume(returning: $0) }
         }
         guard speech == .authorized else { return false }
         return await AVAudioApplication.requestRecordPermission()
     }
+}
+
+/// 받아쓰기를 열지 못한 까닭.
+enum DictationError: Error {
+    /// 들어오는 소리가 없다. 입력이 없는 기기이거나 다른 앱이 마이크를 쥐고 있다.
+    case noAudioInput
 }
 
 /// 멈추는 시각. Android와 같은 값이다.
