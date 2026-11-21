@@ -78,6 +78,10 @@ struct MMComponentGallery: View {
                     MMDivider()
                 }
 
+                section("Card / Resume · 3313:4957") {
+                    MMCardResume(done: 1, total: 3, title: "두통 · 1단계까지 했어요", action: {})
+                }
+
                 section("List Row · 335:1114 / KV Row · 333:1100 / Avatar · 311:839") {
                     MMListRow(title: "복부 통증 · 3주", meta: "2026.09.04 · 서울OO병원", badge: ("진료 전", .brand), action: {})
                     MMListRow(title: "복부 통증 · 3주", meta: "2026.09.04", selection: $picked, action: {})

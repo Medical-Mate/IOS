@@ -94,6 +94,8 @@ struct HomeSchedule: Sendable, Equatable {
 /// 이어서 할 문답.
 struct HomeOpenIntake: Sendable, Equatable {
     let sessionId: Int64
+    /// 어디가 아프다고 했는지. `Card / Resume`의 아랫줄이 이것으로 시작한다.
+    var siteText: String = ""
     /// 질문 고르기에서 "다음"까지 눌렀는지. **서버가 주는 값을 그대로 든다** —
     /// 진행도가 끝에 닿았는지로 짐작하면 안 된다. 3/3은 AI 문답이 끝난 것이고,
     /// 거기서 질문을 고르다 나간 사람도 3/3이다(`HomeDTO`가 못박아 둔 자리다).

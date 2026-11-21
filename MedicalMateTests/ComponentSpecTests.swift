@@ -215,6 +215,31 @@ struct ComponentSpecTests {
         #expect(MMKVEditRow.emptyHint == "비어 있음 — 카드에 표시되지 않아요")
     }
 
+    @Test("Card / Resume 진행 원은 44, 여백은 18·16, 사이는 14 (3313:4957)")
+    func cardResume() {
+        #expect(MMCardResumeSpec.size == CGFloat(44))
+        #expect(MMCardResumeSpec.insetH == CGFloat(18))
+        #expect(MMCardResumeSpec.insetV == CGFloat(16))
+        #expect(MMCardResumeSpec.gap == CGFloat(14))
+    }
+
+    @Test("Card / Resume 진행 원이 차는 비율")
+    func cardResumeFraction() {
+        #expect(MMCardResume.progressLabel(done: 1, total: 3) == "1/3")
+        #expect(MMCardResume.fraction(done: 1, total: 3) == CGFloat(1) / CGFloat(3))
+        // 총이 0이면 나누지 않는다.
+        #expect(MMCardResume.fraction(done: 1, total: 0) == 0)
+        // 끝을 넘겨도 한 바퀴까지다.
+        #expect(MMCardResume.fraction(done: 5, total: 3) == 1)
+    }
+
+    @Test("Card / Resume 아랫줄은 Android와 같은 말이다")
+    func cardResumeTitle() {
+        // `home_resume_step` = "%1$s · %2$d단계까지 했어요".
+        #expect(MMCardResume.stepTitle("두통", done: 1) == "두통 · 1단계까지 했어요")
+        #expect(MMCardResume.defaultLabel == "이어서 하기")
+    }
+
     @Test("Bottom Sheet 손잡이는 36×4, 위 모서리는 28 (3663:7479)")
     func bottomSheet() {
         #expect(SheetMetrics.handle.width == CGFloat(36))

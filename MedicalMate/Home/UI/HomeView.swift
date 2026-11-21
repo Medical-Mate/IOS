@@ -26,6 +26,8 @@ struct HomeView: View {
     var onScheduleCard: (Int64?) -> Void = { _ in }
     /// 배너 5의 "메이트에게 말해보기". **호출어 없이 여는 길이다.**
     var onTalkToMate: () -> Void = {}
+    /// 멈춘 문답을 이어서 한다(`Card / Resume`).
+    var onResumeIntake: (Int64) -> Void = { _ in }
 
     var body: some View {
         Group {
@@ -93,9 +95,27 @@ struct HomeView: View {
         )
     }
 
+    /// 멈춘 문답으로 돌아가는 줄(`Card / Resume` `3313:4957`).
+    ///
+    /// 홈이 `openIntake`를 읽기만 하고 그리지 않던 자리다 — 문답을 멈춘 사람이 홈에서
+    /// 돌아갈 길이 없었다. Android도 `Card / Action` 바로 다음이다.
+    private func resume(_ open: HomeOpenIntake) -> some View {
+        MMCardResume(
+            done: open.step,
+            total: open.total,
+            title: MMCardResume.stepTitle(open.siteText, done: open.step),
+            action: { onResumeIntake(open.sessionId) }
+        )
+    }
+
     private func sheet(_ model: HomeModel) -> some View {
         VStack(alignment: .leading, spacing: MMSpace.s12) {
             MMCardAction(caption: "진료 전에", title: "증상 정리 시작하기", action: onStartIntake)
+
+            // **멈춘 문답이 있으면 바로 아래에 선다**(`Card / Resume` `3313:4957`).
+            // 홈이 `openIntake`를 읽기만 하고 그리지 않던 자리다 — 문답을 멈춘 사람이
+            // 홈에서 돌아갈 길이 없었다. Android도 `Card / Action` 다음이다.
+            if let open = model.summary.openIntake { resume(open) }
 
             if model.summary.recentCards.isEmpty {
                 MMEmptyState(kind: .noRecord, onAction: onStartIntake)
