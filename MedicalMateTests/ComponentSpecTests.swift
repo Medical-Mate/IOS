@@ -126,6 +126,26 @@ struct ComponentSpecTests {
         #expect(MMSeveritySlider.level(atX: width / 2, in: width) == 3)
     }
 
+    @Test("끄는 동안 손잡이는 손가락을 따라가되 트랙을 벗어나지 않는다")
+    func severityDragFollowsFinger() {
+        let width: CGFloat = 320
+        // 단계 사이의 아무 자리도 그대로 쓴다 — 다섯 지점으로 뛰지 않는다.
+        let between = (MMSeveritySlider.center(for: 3, in: width)
+            + MMSeveritySlider.center(for: 4, in: width)) / 2
+        #expect(MMSeveritySlider.clamped(between, in: width) == between)
+        // 끝을 넘겨도 트랙 안에 머문다.
+        #expect(MMSeveritySlider.clamped(-50, in: width) == MMSeveritySlider.center(for: 1, in: width))
+        #expect(MMSeveritySlider.clamped(width + 50, in: width)
+            == MMSeveritySlider.center(for: 5, in: width))
+    }
+
+    @Test("캘린더 숫자 자리는 글자 배율을 따르지 않는다 (3778:1867)")
+    func calendarNumberHeightIsFixed() {
+        // 줄 높이를 따르면 배율을 키운 기기에서 숫자가 점을 면 밖으로 밀어내고,
+        // 면이 둥글게 깎여 있어 점이 통째로 사라진다. Android도 24로 못박았다.
+        #expect(CalendarMetrics.numberHeight == 24)
+    }
+
     @Test("캘린더 요일 색은 일 danger · 토 link다 (3778:1868)")
     func calendarWeekdayColors() {
         #expect(MMCalendarGrid.kind(forColumn: 0) == .sunday)

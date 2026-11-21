@@ -37,6 +37,8 @@ struct MMSeverityLevel: Sendable, Equatable {
 /// > 못 하는 상황과 사용자가 있다. **값을 색만으로 전달하지 않는다**(D11).
 struct MMSeveritySlider: View {
     @Binding var level: Int
+    /// 끄는 동안의 손가락 자리. 놓으면 `nil`이 되어 단계로 붙는다.
+    @State private var dragX: CGFloat?
     /// 임상 척도(NRS)를 함께 보일지. 마스터 기본은 꺼짐이다.
     var showsNRS: Bool = false
 
@@ -96,7 +98,11 @@ struct MMSeveritySlider: View {
     private var slider: some View {
         GeometryReader { geo in
             let width = geo.size.width
-            let center = Self.center(for: level, in: width)
+            // **끄는 동안에는 손가락을 그대로 따라간다.** 다섯 지점으로만 뛰면 손가락과
+            // 손잡이가 따로 놀아 뻑뻑하게 읽힌다. 놓을 때 단계로 붙는다. 값은 다섯
+            // 그대로이고, 지나는 단계마다 판독 카드와 트랙 색이 바뀐다. Android도
+            // 같은 자리를 같은 규칙으로 못박았다(#228).
+            let center = dragX ?? Self.center(for: level, in: width)
 
             ZStack(alignment: .topLeading) {
                 Capsule()
@@ -129,7 +135,12 @@ struct MMSeveritySlider: View {
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
+                        dragX = Self.clamped(value.location.x, in: width)
                         level = Self.level(atX: value.location.x, in: width)
+                    }
+                    // 놓으면 가장 가까운 단계로 붙는다.
+                    .onEnded { _ in
+                        withAnimation(.easeOut(duration: 0.12)) { dragX = nil }
                     }
             )
         }
@@ -161,6 +172,11 @@ struct MMSeveritySlider: View {
     static func center(for level: Int, in width: CGFloat) -> CGFloat {
         let usable = max(width - SeverityMetrics.thumb, 0)
         return SeverityMetrics.thumb / 2 + usable * CGFloat(min(max(level, 1), 5) - 1) / 4
+    }
+
+    /// 손잡이가 트랙을 벗어나지 않게 가둔다.
+    static func clamped(_ x: CGFloat, in width: CGFloat) -> CGFloat {
+        min(max(x, center(for: 1, in: width)), center(for: 5, in: width))
     }
 
     /// x 좌표를 가장 가까운 단계로 스냅한다.

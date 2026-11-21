@@ -24,9 +24,13 @@ struct MMDateCell: View {
     var body: some View {
         Button { action?() } label: {
             VStack(spacing: DateCellMetrics.gap) {
+                // 숫자가 설 자리는 글자 배율과 상관없이 고정이다 — ``MMCalendarDay``와
+                // 같은 까닭이다. 따르면 아래 점이 면 밖으로 밀려 잘린다.
                 Text("\(day)")
                     .mmTextStyle(MMFont.bodyMStrong)
                     .foregroundStyle(state.textColor)
+                    .fixedSize()
+                    .frame(height: DateCellMetrics.numberHeight)
                 if hasRecord && state != .disabled {
                     Circle()
                         .fill(state == .selected ? MMColor.fgOnPrimary : MMColor.bgPrimary)
@@ -54,6 +58,7 @@ private enum DateCellMetrics {
     static let size: CGFloat = 42
     static let gap: CGFloat = 3
     static let dot: CGFloat = 5
+    static let numberHeight: CGFloat = 24
 }
 
 private extension MMDateCell.State {

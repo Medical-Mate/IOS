@@ -26,9 +26,17 @@ struct MMCalendarDay: View {
         Button { action?() } label: {
             VStack(spacing: CalendarMetrics.gap) {
                 if state != .empty, let date {
+                    // **숫자가 설 자리는 글자 배율과 상관없이 24다.** 줄 높이를 그대로
+                    // 따르면 글자를 키워 쓰는 분의 기기에서 숫자가 자라 점을 면 밖으로
+                    // 밀어내고, 면이 `clipShape`이라 **점이 통째로 사라진다** — 이 달에
+                    // 무엇이 있었는지가 그 점뿐인데 그렇다. 글자는 그 자리 가운데에
+                    // 그리고 넘쳐도 자르지 않는다. Android도 같은 자리를 같은 값으로
+                    // 못박았다(`CalendarNumberHeight = 24`).
                     Text("\(date)")
                         .mmTextStyle(MMFont.bodyMStrong)
                         .foregroundStyle(numberColor)
+                        .fixedSize()
+                        .frame(height: CalendarMetrics.numberHeight)
                 }
                 if state != .empty, dot != .none {
                     Circle()
@@ -210,6 +218,8 @@ enum CalendarMetrics {
     static let topInset: CGFloat = 7
     static let gap: CGFloat = MMSpace.s2
     static let dot: CGFloat = 5
+    /// 숫자가 설 자리. 글자 배율을 따르지 않는다 — 따르면 점이 면 밖으로 밀려 잘린다.
+    static let numberHeight: CGFloat = 24
     static let legendDot: CGFloat = 6
     static let legendGap: CGFloat = 5
 }
