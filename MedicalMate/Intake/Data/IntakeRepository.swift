@@ -104,13 +104,15 @@ struct IntakeRepository: Sendable {
 
     /// 줄 아래 서는 AI 말(1c-D1 · 1c-D4). 고른 것이 없으면 서지 않는다.
     ///
-    /// 둘째 줄이 1c-D1과 1c-D4에서 다른데 **무엇이 그것을 가르는지 마스터가 말하지
-    /// 않는다.** 두 화면의 차이는 직접 적은 질문의 유무뿐이라 그것으로 갈랐다.
-    /// 디자인 트랙 확인 대기 — COMPONENT-MAP 3장 11번.
+    /// 둘째 줄이 1c-D1과 1c-D4에서 다른데 마스터가 무엇이 그것을 가르는지 말하지
+    /// 않는다. **직접 적은 줄이 있는지로 가른다** — Android `IntakeQuestionRows.kt`가
+    /// 같은 규칙이라 그쪽을 따랐다(COMPONENT-MAP 3장 #11).
+    ///
+    /// **고른 것이 아니라 줄 전체를 본다.** 적어 넣고 체크를 푼 줄도 "직접 적은 것"이다.
     static func summary(rows: [IntakeQuestionRow]) -> String? {
         let picked = rows.filter(\.isSelected)
         guard !picked.isEmpty else { return nil }
-        let tail = picked.contains(where: \.isOwn)
+        let tail = rows.contains(where: \.isOwn)
             ? "진료실에서 순서대로 물어보세요."
             : "더 묻고 싶은 게 있으면 빈 칸에 적어주세요."
         return "질문 \(picked.count)개를 카드에 담을게요.\n\(tail)"

@@ -96,21 +96,16 @@ struct VisitNoteView: View {
             MMDivider()
                 .padding(.top, VisitNoteMetrics.dividerTop)
 
-            // 마스터는 "오늘 진료 · 9월 12일"이다. 지난 날짜에 쓸 낱말이 Figma에 없어서
-            // **그때는 날짜만 둔다** — 없는 문구를 지어내지 않는다.
+            // 마스터는 "오늘 진료 · 9월 12일"이다. **지난 날짜는 "그 날 진료"다** —
+            // Figma에는 그때 쓸 낱말이 없고 Android가 들고 있는 말을 따른다
+            // (COMPONENT-MAP 3장 #19).
             HStack(spacing: MMSpace.s6) {
-                if model.isVisitToday {
-                    Text("오늘 진료")
-                        .mmTextStyle(MMFont.bodySStrong)
-                        .foregroundStyle(MMColor.fgPrimary)
-                    Text("· \(model.visitDayLabel)")
-                        .mmTextStyle(MMFont.bodyS)
-                        .foregroundStyle(MMColor.fgSubtle)
-                } else {
-                    Text(model.visitDayLabel)
-                        .mmTextStyle(MMFont.bodyS)
-                        .foregroundStyle(MMColor.fgSubtle)
-                }
+                Text(model.isVisitToday ? "오늘 진료" : "그 날 진료")
+                    .mmTextStyle(MMFont.bodySStrong)
+                    .foregroundStyle(MMColor.fgPrimary)
+                Text("· \(model.visitDayLabel)")
+                    .mmTextStyle(MMFont.bodyS)
+                    .foregroundStyle(MMColor.fgSubtle)
             }
             .padding(.top, VisitNoteMetrics.metaTop)
             .frame(maxWidth: .infinity, alignment: .leading)

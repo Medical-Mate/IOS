@@ -83,6 +83,10 @@ struct IntakeTests {
 
         let withOwn = suggested + [IntakeQuestionRow(text: "셋", isSelected: true, isOwn: true)]
         #expect(IntakeRepository.summary(rows: withOwn) == "질문 3개를 카드에 담을게요.\n진료실에서 순서대로 물어보세요.")
+
+        // 적어 넣고 체크를 푼 줄도 "직접 적은 것"이다(Android IntakeQuestionRows와 같다).
+        let unchecked = suggested + [IntakeQuestionRow(text: "셋", isOwn: true)]
+        #expect(IntakeRepository.summary(rows: unchecked) == "질문 2개를 카드에 담을게요.\n진료실에서 순서대로 물어보세요.")
     }
 
     // MARK: - 말로 넘기기

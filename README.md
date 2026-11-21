@@ -39,7 +39,7 @@ M0에서 들어온 것:
 **디자인 시스템이 Figma 마스터에서 전부 들어왔습니다** — 컴포넌트 42종, 아이콘 47종,
 로고 8종, 일러스트 5종. 게시된 마스터는 남김없이 옮겼고, `Archive`(미사용 15종)와
 미게시 작업물은 Figma가 그렇게 표시해 두어 일부러 옮기지 않았습니다. 목록 · 노드 id ·
-대조하면서 발견한 어긋남 28건은 [`docs/COMPONENT-MAP.md`](docs/COMPONENT-MAP.md)에
+대조하면서 발견한 어긋남 28건(23건 대기)은 [`docs/COMPONENT-MAP.md`](docs/COMPONENT-MAP.md)에
 있습니다.
 
 ## 문서
