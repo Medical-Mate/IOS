@@ -6,11 +6,12 @@ import SwiftUI
 /// **검색 전에도 빈 자리다**: 서버 검색은 질의가 있어야 답이 오고, 시안의 "결과 네 곳이
 /// 먼저 보이는" 모양은 픽스처였다(Android #155, 디자인 트랙에 올라가 있다).
 ///
-/// 진료 **후**(`1m`)도 같은 화면이고 제목 · 안내 · 버튼 라벨만 다르다. F 섹션에서 그
-/// 마스터를 읽고 갈래를 더한다.
+/// 진료 **후**(`1m` `3663:7329`)도 같은 화면이고 **제목 · 안내 · 버튼 라벨만 다르다.**
+/// 상단 내비는 둘 다 "병원 찾기"다.
 struct HospitalPickView: View {
     @Environment(\.appEnvironment) private var app
 
+    var purpose: HospitalPickPurpose = .beforeVisit
     let onBack: () -> Void
     /// 고른 병원을 들고 카드를 만든다. 고르지 않았으면 `nil`이다 — **건너뛸 수 있다.**
     let onSubmit: (Hospital?) -> Void
@@ -44,11 +45,11 @@ struct HospitalPickView: View {
 
             VStack(alignment: .leading, spacing: MMSpace.s20) {
                 VStack(alignment: .leading, spacing: MMSpace.s8) {
-                    Text("진료받을 병원을 찾아주세요")
+                    Text(purpose.title)
                         .mmTextStyle(MMFont.headingL)
                         .foregroundStyle(MMColor.fgDefault)
                         .fixedSize(horizontal: false, vertical: true)
-                    Text("아직 정하지 않았다면 건너뛰어도 돼요.\n진료 후에 등록할 수 있어요.")
+                    Text(purpose.message)
                         .mmTextStyle(MMFont.bodyM)
                         .foregroundStyle(MMColor.fgSubtle)
                         .fixedSize(horizontal: false, vertical: true)
@@ -155,7 +156,7 @@ struct HospitalPickView: View {
 
     private func footer(_ model: HospitalPickModel) -> some View {
         VStack(spacing: 0) {
-            MMButton("브리핑 카드 만들기") {
+            MMButton(purpose.submitTitle) {
                 onSubmit(model.picked)
             }
             .disabled(isSubmitting)
@@ -164,6 +165,38 @@ struct HospitalPickView: View {
         .padding(.top, MMSpace.s12)
         .padding(.bottom, MMSize.safeBottom)
         .background(MMColor.bgSurface)
+    }
+}
+
+/// 같은 화면이 하는 두 가지 일.
+///
+/// **진료 전은 건너뛸 수 있고 진료 후는 그렇지 않다** — 전자는 카드를 만들 때 비워 둘
+/// 수 있는 값이고, 후자는 "어디서 진료받았는지"라 기록의 뼈대다.
+enum HospitalPickPurpose: Sendable {
+    /// `1m-B` 진료 전.
+    case beforeVisit
+    /// `1m` 진료 후.
+    case afterVisit
+
+    var title: String {
+        switch self {
+        case .beforeVisit: "진료받을 병원을 찾아주세요"
+        case .afterVisit: "진료받은 병원을 찾아주세요"
+        }
+    }
+
+    var message: String {
+        switch self {
+        case .beforeVisit: "아직 정하지 않았다면 건너뛰어도 돼요.\n진료 후에 등록할 수 있어요."
+        case .afterVisit: "병원 이름으로 검색하면 주소가 함께 등록돼요."
+        }
+    }
+
+    var submitTitle: String {
+        switch self {
+        case .beforeVisit: "브리핑 카드 만들기"
+        case .afterVisit: "완료"
+        }
     }
 }
 

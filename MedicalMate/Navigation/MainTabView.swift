@@ -68,6 +68,14 @@ struct MainTabView: View {
             )
             .toolbar(.hidden, for: .navigationBar)
 
+        case .clinicConfirm(let cardId):
+            VisitFlowView(
+                cardId: cardId,
+                onClose: { path.removeLast() },
+                onSaved: { _ in path.removeLast() }
+            )
+            .toolbar(.hidden, for: .navigationBar)
+
         case .intake(let sessionId):
             // 새로 시작하는 길은 1단계(인체도)가 짚은 부위를 넘겨줘야 열린다. 아직
             // 그 화면이 없어서 이어서 하는 길만 간다.
