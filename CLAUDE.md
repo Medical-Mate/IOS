@@ -220,4 +220,5 @@ swiftlint --strict
 | 받아쓰기 · 죽던 자리 | **허락을 처음 내주고 마이크를 누르면 앱이 죽었습니다**(2026-11-21에 찾아 고쳤습니다). `requestAuthorization`의 콜백이 메인이 아닌 곳에서 돌아오는데 `authorize()`가 `@MainActor`에 묶여 있어 Swift 6의 격리 검사가 그 자리에서 죽였습니다 — **허락을 처음 내준 사람에게만** 일어나 화면을 띄워서는 보이지 않습니다. `nonisolated`로 바꿨고 시뮬레이터에서 권한 창 둘을 지나는 것을 확인했습니다. 함께: 앱이 뒤로 가면 듣기를 멈추고(`willResignActive`, 코드로만 확인), 들어오는 소리가 없으면 탭을 걸기 전에 막습니다(CoreAudio가 `abort()`로 죽이는 길) |
 | 받아쓰기 | `DictationController`. **`requiresOnDeviceRecognition = true`로 고정**했고 온디바이스를 못 하는 기기에서는 마이크를 아예 그리지 않습니다 — 몰래 서버로 보내지 않습니다 |
 | 카카오 SDK | 미연결. `UnavailableKakaoLoginClient`가 자리를 잡고 있습니다 ([#7](https://github.com/Medical-Mate/IOS/issues/7)) |
+| 내보내기 | **`1e-1-X`의 「이미지 저장」·「공유하기」가 시트만 닫습니다.** 눌러도 아무 일이 없습니다 — Android는 둘 다 합니다. 제품 화면의 단추 스물둘을 세어 보니 이 둘뿐이고 나머지는 다 이어져 있습니다. 저장 결과를 알리는 글은 `Toast` 마스터가 Figma의 `Archive`에 있어 막혀 있습니다 ([#10](https://github.com/Medical-Mate/IOS/issues/10)) |
 | 앱 아이콘 | 비어 있습니다. Figma에서 내보내 넣습니다 ([#8](https://github.com/Medical-Mate/IOS/issues/8)) |

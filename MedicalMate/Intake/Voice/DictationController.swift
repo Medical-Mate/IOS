@@ -83,7 +83,9 @@ final class DictationController {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.stop() }
+            // 이 파일의 다른 콜백과 같은 길로 메인으로 넘긴다. `assumeIsolated`는
+            // 바로 위에서 앱을 죽인 그 검사와 같은 것이라 쓰지 않는다.
+            Task { @MainActor [weak self] in self?.stop() }
         }
     }
 
