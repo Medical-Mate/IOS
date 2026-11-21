@@ -155,6 +155,19 @@ struct VisitTests {
     @Test func 메모_상한은_300이다() {
         #expect(VisitNoteMetrics.limit == 300)
     }
+
+    @Test func 상한을_넘기면_들어가는_만큼만_받는다() {
+        // 전에는 "412 / 300"처럼 넘긴 수를 적기만 하고 그대로 받았다.
+        let long = String(repeating: "가", count: 412)
+        #expect(MMTextArea.clamped(long, limit: 300).count == 300)
+        // 상한 안쪽은 그대로 둔다.
+        #expect(MMTextArea.clamped("위염이래요", limit: 300) == "위염이래요")
+        #expect(MMTextArea.clamped(String(repeating: "가", count: 300), limit: 300).count == 300)
+    }
+
+    @Test func 말로_적다_넘치면_무엇이_빠졌는지_알린다() {
+        #expect(VisitNoteView.overflowNotice == "300자까지만 담겨서 뒷말은 빠졌어요")
+    }
 }
 
 /// 병원 찾기가 두 가지 일을 한다.

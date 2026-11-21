@@ -27,6 +27,12 @@ struct VisitNoteView: View {
                             limit: VisitNoteMetrics.limit
                         )
 
+                        if model.noteOverflowed {
+                            Text(VisitNoteView.overflowNotice)
+                                .mmTextStyle(MMFont.bodyS)
+                                .foregroundStyle(MMColor.fgSubtle)
+                        }
+
                         if let message = model.errorMessage {
                             Text(message)
                                 .mmTextStyle(MMFont.bodyS)
@@ -148,12 +154,19 @@ struct VisitNoteView: View {
     private func wireDictation() {
         dictation.onAutoSend = { text in
             // 문답과 달리 보내는 곳이 없다. 적던 글 뒤에 이어 붙인다.
-            model.memo = VisitNoteView.joined(memoBeforeVoice, text)
+            let joined = VisitNoteView.joined(memoBeforeVoice, text)
+            // **넘치면 들어가는 만큼만 적고 알린다.** 말은 길어지기 쉬운데 조용히
+            // 잘리면 무엇이 사라졌는지 알 수 없다.
+            model.memo = MMTextArea.clamped(joined, limit: VisitNoteMetrics.limit)
+            model.noteOverflowed = joined.count > VisitNoteMetrics.limit
         }
         dictation.onSilentClose = {
             model.memo = memoBeforeVoice
         }
     }
+
+    /// 말로 적다 상한을 넘겼을 때. **무엇이 사라졌는지 알 수 있게 적는다.**
+    nonisolated static let overflowNotice = "\(VisitNoteMetrics.limit)자까지만 담겨서 뒷말은 빠졌어요"
 
     /// 적던 글과 말한 글을 잇는다. 둘 다 있으면 사이에 공백 하나를 둔다.
     static func joined(_ typed: String, _ spoken: String) -> String {

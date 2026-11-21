@@ -73,6 +73,17 @@ struct MMTextArea: View {
                 .accessibilityLabel("말로 적기")
             }
         }
+        // **세던 수를 실제로 지킨다.** 전에는 "412 / 300"처럼 넘긴 수를 적기만 하고
+        // 그대로 받았다. 세어 보이는 자리가 막지 않으면 세는 뜻이 없다.
+        .onChange(of: text) { _, new in
+            let clamped = MMTextArea.clamped(new, limit: limit)
+            if clamped != new { text = clamped }
+        }
+    }
+
+    /// 상한까지만 남긴다.
+    nonisolated static func clamped(_ text: String, limit: Int) -> String {
+        text.count <= limit ? text : String(text.prefix(limit))
     }
 }
 

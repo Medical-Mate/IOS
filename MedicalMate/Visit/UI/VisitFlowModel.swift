@@ -27,7 +27,11 @@ final class VisitFlowModel {
     /// 진료받은 날. 일정이 있으면 그 날, 없으면 오늘이다.
     private(set) var visitedOn: Date?
 
-    var memo = ""
+    var memo = "" {
+        didSet { if memo != oldValue { noteOverflowed = false } }
+    }
+    /// 말로 적다 상한을 넘겨 잘렸는지. 무엇이 사라졌는지 알 수 있게 화면이 적는다.
+    var noteOverflowed = false
     private(set) var classification: VisitClassification?
     /// 1q-1이 그리는 줄. 편집 사본이다.
     private(set) var items: [VisitItem] = []
