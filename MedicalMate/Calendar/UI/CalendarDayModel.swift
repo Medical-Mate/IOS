@@ -182,6 +182,10 @@ final class CalendarDayModel {
     }
 
     /// 이 진료에서 나온 재방문. **출처가 `VISIT_FOLLOW_UP`인 것만** 본다.
+    ///
+    /// **잡아 둔 일정이 없으면 기록에서 뽑아 둔 재방문이 선다**(`1r-2-A`). 그때는 시각이
+    /// 없어 화면이 "시간 정하고 확정하기"를 둔다 — 거기서 확정하면 일정 추가가 열려
+    /// 일정이 만들어진다. 잡아 둔 일정이 있으면 그쪽이 이긴다(`1r-2-A2`).
     private func loadNextEvent() async {
         guard record != nil || appointment?.status == .done else { return }
         guard case .success(let list) = await repository.upcoming() else { return }
@@ -192,6 +196,26 @@ final class CalendarDayModel {
                 next.origin == .visitFollowUp && next.on > date
                     && (linked.isEmpty || next.cards.contains { linked.contains($0.id) })
             }
+        if nextEvent == nil {
+            nextEvent = CalendarDayModel.pendingFollowUp(record, after: date)
+        }
+    }
+
+    /// 아직 일정으로 만들지 않은 재방문. **시각이 없다** — 기록에서 나온 날짜는
+    /// "2주 뒤"처럼 날짜까지다.
+    nonisolated static func pendingFollowUp(_ record: VisitListItem?, after day: Date) -> Appointment? {
+        guard let record, let on = record.followUp?.date, on > day else { return nil }
+        return Appointment(
+            id: 0,
+            title: record.cardTitle,
+            clinic: record.clinicName,
+            on: on,
+            time: nil,
+            status: .scheduled,
+            origin: .visitFollowUp,
+            cards: record.cardId.map { [AppointmentCard(id: $0, title: record.cardTitle)] } ?? [],
+            todos: []
+        )
     }
 
     // MARK: - 할 일

@@ -359,3 +359,37 @@ struct CalendarDotsAndCardSheetTests {
         #expect(try dayCard(id: 7, on: "2026-09-04").meta(calendar: seoul) == "2026.09.04 작성 · 5항목")
     }
 }
+
+/// `1r-2-A` · `1r-2-A2` — 일자 상세의 "다음 일정".
+struct CalendarDayNextEventTests {
+    private func record(followUp day: String?) -> VisitListItem {
+        VisitListItem(
+            id: 5,
+            cardId: 7,
+            cardTitle: "복부 통증 · 3주",
+            clinicName: "서울OO병원 내과",
+            visitedOn: fixtureDay("2026-09-12"),
+            followUp: day.map { VisitFollowUp(date: fixtureDay($0), text: "2주 뒤 재방문", approximate: true) }
+        )
+    }
+
+    @Test func 잡아_둔_일정이_없으면_뽑아_둔_재방문이_선다() {
+        // 1r-2-A. 시각이 없어 화면이 "시간 정하고 확정하기"를 둔다.
+        let next = CalendarDayModel.pendingFollowUp(record(followUp: "2026-09-26"), after: fixtureDay("2026-09-12"))
+        #expect(next?.on == fixtureDay("2026-09-26"))
+        #expect(next?.time == nil)
+        #expect(next?.origin == .visitFollowUp)
+        // 확정하러 가는 길이 카드를 들고 간다.
+        #expect(next?.cards.first?.id == 7)
+    }
+
+    @Test func 뽑아_둔_재방문이_없으면_다음_일정도_없다() {
+        #expect(CalendarDayModel.pendingFollowUp(record(followUp: nil), after: fixtureDay("2026-09-12")) == nil)
+        #expect(CalendarDayModel.pendingFollowUp(nil, after: fixtureDay("2026-09-12")) == nil)
+    }
+
+    @Test func 그_날이거나_지난_재방문은_다음_일정이_되지_않는다() {
+        #expect(CalendarDayModel.pendingFollowUp(record(followUp: "2026-09-12"), after: fixtureDay("2026-09-12")) == nil)
+        #expect(CalendarDayModel.pendingFollowUp(record(followUp: "2026-09-04"), after: fixtureDay("2026-09-12")) == nil)
+    }
+}
