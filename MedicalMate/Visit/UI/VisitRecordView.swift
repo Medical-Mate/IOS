@@ -75,8 +75,10 @@ struct VisitRecordView: View {
         .padding(.top, RecordMetrics.inset)
         .padding(.bottom, model.isEditing ? RecordMetrics.inset : RecordMetrics.readBottom)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(MMColor.bgSurface)
-        .clipShape(RoundedRectangle(cornerRadius: MMRadius.lg))
+        // **면만 둥글게 깎는다.** `clipShape`을 카드 전체에 걸면 툴팁 말풍선
+        // (`1q-1-T` `3663:14452`)이 카드 밖으로 못 나가 잘린다 — 시안은 카드 아래로
+        // 흘러나온다.
+        .background(RoundedRectangle(cornerRadius: MMRadius.lg).fill(MMColor.bgSurface))
         .mmShadow(MMElevation.card)
     }
 
@@ -120,6 +122,9 @@ struct VisitRecordView: View {
         .padding(.top, MMSpace.s14)
     }
 
+    /// 툴팁 말풍선의 글(`1q-1-T` `3663:14452`). **두 줄이다.**
+    nonisolated static let tooltipText = "소견·검사·약·재방문으로 나눴어요.\n원문 메모도 함께 남아요"
+
     private var aiCaption: some View {
         HStack(spacing: MMSpace.s4) {
             Text("AI가 메모를 \(model.items.count)가지로 나눴어요")
@@ -131,7 +136,7 @@ struct VisitRecordView: View {
         }
         .overlay(alignment: .topTrailing) {
             if model.isTooltipOpen {
-                MMTooltipBubble(text: "소견·검사·약·재방문으로 나눴어요.\n원문 메모도 함께 남아요")
+                MMTooltipBubble(text: VisitRecordView.tooltipText)
                     .offset(y: RecordMetrics.tooltipOffset)
             }
         }

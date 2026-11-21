@@ -159,6 +159,13 @@ struct VisitTests {
 
 /// 병원 찾기가 두 가지 일을 한다.
 struct HospitalPickPurposeTests {
+    @Test func 툴팁은_네_가지를_이름으로_적는다() {
+        // 시안(3663:14452)이 축 이름을 그대로 적는다. 지어내지 않는다.
+        #expect(VisitRecordView.tooltipText == "소견·검사·약·재방문으로 나눴어요.\n원문 메모도 함께 남아요")
+        // **두 줄이다.** 말풍선이 한 줄로 눌리면 뒷말이 잘린다.
+        #expect(VisitRecordView.tooltipText.contains("\n"))
+    }
+
     @Test func 저장_실패_문구가_갈린다() {
         // Android의 RETRYABLE · REJECTED와 같은 갈림이다.
         #expect(VisitFlowModel.saveFailed == "저장하지 못했어요. 다시 눌러주세요.")

@@ -35,6 +35,10 @@ struct MMTooltipBubble: View {
         Text(text)
             .mmTextStyle(MMFont.labelS)
             .foregroundStyle(MMColor.fgOnInverse)
+            // **세로로는 필요한 만큼 늘어난다.** 말풍선이 한 줄짜리 자리(설명 줄 옆)에
+            // 얹히는 자리라, 이것이 없으면 부모 높이에 눌려 두 줄짜리 글이 한 줄로
+            // 잘린다(`1q-1-T` `3663:14452` · `1e-1-T` `3663:7496`은 두 줄이다).
+            .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, MMSpace.s12)
             .padding(.vertical, MMSpace.s10)

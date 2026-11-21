@@ -160,8 +160,10 @@ struct BriefCardView: View {
         .padding(.top, CardMetrics.inset)
         .padding(.bottom, model.isEditing ? CardMetrics.inset : CardMetrics.readBottom)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(MMColor.bgSurface)
-        .clipShape(RoundedRectangle(cornerRadius: MMRadius.lg))
+        // **면만 둥글게 깎는다.** `clipShape`을 카드 전체에 걸면 툴팁 말풍선
+        // (`1e-1-T` `3663:7496`)이 카드 밖으로 못 나가 잘린다 — 시안은 카드 아래로
+        // 흘러나온다. 1q-1도 같은 자리다.
+        .background(RoundedRectangle(cornerRadius: MMRadius.lg).fill(MMColor.bgSurface))
         .overlay {
             if model.isEditing {
                 RoundedRectangle(cornerRadius: MMRadius.lg)
@@ -199,6 +201,9 @@ struct BriefCardView: View {
         .padding(.bottom, MMSpace.s14)
     }
 
+    /// 툴팁 말풍선의 글(`1e-1-T` `3663:7496`).
+    nonisolated static let tooltipText = "말씀하신 내용을 항목별로 정리했어요. 원문도 함께 남아요"
+
     private func aiCaption(_ model: BriefCardModel) -> some View {
         @Bindable var model = model
 
@@ -212,7 +217,7 @@ struct BriefCardView: View {
         }
         .overlay(alignment: .topTrailing) {
             if model.isTooltipOpen {
-                MMTooltipBubble(text: "말씀하신 내용을 항목별로 정리했어요. 원문도 함께 남아요")
+                MMTooltipBubble(text: BriefCardView.tooltipText)
                     .offset(y: TooltipMetrics.offset)
             }
         }
