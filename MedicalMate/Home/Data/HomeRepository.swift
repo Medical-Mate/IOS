@@ -112,6 +112,18 @@ struct HomeRepository: Sendable {
         )
     }
 
+    /// 다가오는 일정의 제목. "내과 재진".
+    ///
+    /// **초진인지 재진인지는 `origin`이 말한다** — 진료 후 기록에서 잡힌 재방문이면
+    /// 재진이다. 전에는 서버의 `purpose`를 그대로 썼는데, 그 값은 비어 올 때가 많아
+    /// 제목이 "내과"로 끝나거나 통째로 비었다. Android도 `origin`으로 가른다
+    /// (`HomeRepository.kt`의 `FOLLOW_UP_ORIGIN`).
+    nonisolated static func scheduleTitle(department: String?, origin: AppointmentOrigin) -> String {
+        let visit = origin == .visitFollowUp ? "재진" : "초진"
+        guard let department, !department.isEmpty else { return visit }
+        return "\(department) \(visit)"
+    }
+
     /// 카드 줄의 둘째 줄. "2026.08.21 · 서울OO병원 내과".
     ///
     /// **병원이 없으면 빈 자리를 두지 않고 "카드만 작성됨"이라고 적는다**(`3663:7014`).
@@ -125,10 +137,10 @@ struct HomeRepository: Sendable {
 
     private func schedule(from appointment: HomeResponse.Appointment) -> HomeSchedule {
         let date = Self.date(from: appointment.scheduledOn)
-        // 제목은 서버가 주지 않는다. 병원 · 진료과 · 목적을 앱이 조합한다.
-        let title = [appointment.department, appointment.purpose]
-            .compactMap { $0?.isEmpty == false ? $0 : nil }
-            .joined(separator: " ")
+        let title = Self.scheduleTitle(
+            department: appointment.department,
+            origin: AppointmentOrigin.of(appointment.origin)
+        )
 
         return HomeSchedule(
             id: appointment.appointmentId,
@@ -137,7 +149,8 @@ struct HomeRepository: Sendable {
             meta: [appointment.clinicName, weekdayAndTime(date: date, time: appointment.scheduledTime)]
                 .compactMap { $0?.isEmpty == false ? $0 : nil }
                 .joined(separator: " · "),
-            title: title.isEmpty ? (appointment.clinicName ?? "") : title,
+            // 제목은 비지 않는다 — 진료과가 없어도 "초진"·"재진"은 남는다.
+            title: title,
             dday: date.flatMap(dday(for:))
         )
     }

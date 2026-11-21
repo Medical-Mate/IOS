@@ -34,6 +34,32 @@ struct HomeTests {
         #expect(HomeRepository.cardMeta(day: "2026.08.21", clinic: "") == "2026.08.21 · 카드만 작성됨")
     }
 
+    @Test("다가오는 일정 제목은 origin으로 초진·재진을 가른다")
+    func 일정_제목이_진료_차수를_적는다() {
+        // 서버의 `purpose`는 비어 올 때가 많아 제목이 "내과"로 끝나거나 통째로 비었다.
+        // Android는 `origin == "VISIT_FOLLOW_UP"`으로 가른다.
+        #expect(HomeRepository.scheduleTitle(department: "내과", origin: .visitFollowUp) == "내과 재진")
+        #expect(HomeRepository.scheduleTitle(department: "내과", origin: .manual) == "내과 초진")
+        // **진료과가 없어도 비지 않는다.**
+        #expect(HomeRepository.scheduleTitle(department: nil, origin: .visitFollowUp) == "재진")
+        #expect(HomeRepository.scheduleTitle(department: "", origin: .manual) == "초진")
+    }
+
+    @Test("모레 진료는 내일 배너가 아니다")
+    func 모레는_내일_배너가_아니다() {
+        let input = HomeLeadInput(
+            lastVisitedOn: nil,
+            nextOn: fixtureDay("2026-09-20"),
+            nextTime: nil,
+            nextClinicLabel: "서울OO병원 내과",
+            nextClinicName: "서울OO병원",
+            nextCard: (id: 7, title: "복부 통증 · 3주")
+        )
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
+        #expect(HomeRepository.timedLead(input, today: fixtureDay("2026-09-18"), calendar: calendar) == nil)
+    }
+
     @Test("긴 제목은 24자에서 줄이고 말줄임을 붙인다")
     func shorten() {
         let long = "두통이랑 어지러움이 자주 있어요 특히 아침에 더 심해요"
