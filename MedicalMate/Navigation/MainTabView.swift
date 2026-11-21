@@ -11,6 +11,7 @@ struct MainTabView: View {
     @Environment(\.appEnvironment) private var app
     @State private var tab: Tab = .home
     @State private var path = NavigationPath()
+    @State private var mate: MateModel?
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -21,8 +22,19 @@ struct MainTabView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 MMTabBar(selection: $tab)
+
+                // 떠 있는 메이트 카드(J 섹션). 호출어가 정해지기 전에는 열리지 않는다.
+                if let mate {
+                    MateOverlay(model: mate)
+                }
             }
             .ignoresSafeArea(edges: .bottom)
+            .task {
+                if mate == nil { mate = MateModel(appointments: app.appointments) }
+            }
+            .onChange(of: mate?.pending) { _, action in
+                if let action { perform(action) }
+            }
             .navigationDestination(for: Route.self) { route in
                 destination(for: route)
             }
@@ -57,6 +69,20 @@ struct MainTabView: View {
                 onStartIntake: { path.append(Route.intake(sessionId: nil)) }
             )
         }
+    }
+
+    /// 메이트가 말한 대로 옮긴다. 옮긴 뒤 카드는 "어디로 왔다"를 적은 채 남는다.
+    private func perform(_ action: MateModel.Action) {
+        switch action {
+        case .tab(let destination):
+            path = NavigationPath()
+            tab = destination
+        case .route(let route):
+            path.append(route)
+        case .back:
+            if !path.isEmpty { path.removeLast() }
+        }
+        mate?.pending = nil
     }
 
     /// 라우트가 나르는 날짜. 서버와 같은 `yyyy-MM-dd`다.

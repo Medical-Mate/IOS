@@ -25,8 +25,11 @@ struct MMMateCard: View {
         case speaking(text: String, pending: String = "")
         /// 답. 본문만 놓는다.
         case answer(String)
-        /// 화면 이동. 어디로 갔는지와 다음에 할 수 있는 말을 적는다.
-        case navigated(title: String, hint: String)
+        /// 화면 이동. 어디로 갔는지와, 거기서 더 할 수 있는 말이 있으면 그것까지 적는다.
+        ///
+        /// **`hint`는 없을 수 있다.** 시안이 적어 둔 것은 캘린더 하나뿐이라 나머지 곳에는
+        /// 말을 지어내지 않고 줄을 비운다(COMPONENT-MAP 3장 #26).
+        case navigated(title: String, hint: String? = nil)
     }
 
     let state: State
@@ -120,7 +123,9 @@ struct MMMateCard: View {
 
         case .navigated(let heading, let hint):
             title(heading)
-            caption(hint, color: MMColor.fgPrimary)
+            if let hint {
+                caption(hint, color: MMColor.fgPrimary)
+            }
         }
     }
 
