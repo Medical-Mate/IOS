@@ -461,3 +461,17 @@ struct ScheduleLayoutSpecTests {
         #expect(CardSheetMetrics.listBottom + CardSheetMetrics.beforeButton == 26)
     }
 }
+
+/// `Card Pick`의 높이(2026-11-22). 시안이 84인데 두 기기가 80이던 자리다.
+/// 안쪽 여백이 18이어서가 아니라 **체크박스가 제 줄 높이 52를 갖기 때문**이다 —
+/// `3663:14792`의 감싸개가 `py-14`이고, `Checkbox` 마스터 설명도 "행 높이 52"라고
+/// 못박는다. 글 칸은 48뿐이라 이것이 없으면 80으로 선다.
+@Suite("카드 고르기 줄 높이")
+struct CardPickHeightTests {
+    @Test func 체크박스_줄이_카드를_84로_세운다() {
+        let box = MMSize.iconLg
+        let row = box + ScheduleMetrics.selectBoxRowPad * 2
+        #expect(row == 52)
+        #expect(MMSpace.s16 * 2 + row == ScheduleMetrics.cardPickHeight)
+    }
+}

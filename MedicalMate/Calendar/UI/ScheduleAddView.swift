@@ -215,8 +215,13 @@ struct ScheduleAddView: View {
 
         return Button { model.toggleCard(item) } label: {
             HStack(spacing: MMSpace.s10) {
+                // **체크박스가 제 줄 높이 52를 갖는다.** 시안(`3663:14792`)의 체크박스
+                // 감싸개가 `py-14`라 24 상자가 52짜리 줄이 되고, 그래서 카드가 84로
+                // 선다(16 + 52 + 16). 글 칸은 48뿐이라 이것 없이는 80으로 섰다.
+                // `Checkbox` 마스터 설명도 "행 높이 52로 터치 하한을 넘는다"고 못박는다.
                 MMSelectBox(isOn: .constant(isPicked))
                     .allowsHitTesting(false)
+                    .padding(.vertical, ScheduleMetrics.selectBoxRowPad)
 
                 VStack(alignment: .leading, spacing: MMSpace.s2) {
                     Text(item.title)
@@ -414,4 +419,8 @@ enum ScheduleMetrics {
     static let cardListGap = MMSpace.s10
     /// 아래 칸의 안내 줄과 버튼 사이. Android `MedicalMateFooter`와 같다.
     static let footerGap = MMSpace.s10
+    /// 체크박스 줄(52)을 만드는 위아래 여백. 24 + 14 × 2 = 52.
+    static let selectBoxRowPad = MMSpace.s14
+    /// 그래서 선 카드의 높이. 16 + 52 + 16.
+    static let cardPickHeight: CGFloat = 84
 }
