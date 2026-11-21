@@ -56,3 +56,22 @@ struct ProfileSetupTests {
         #expect(request.sex == "F")
     }
 }
+
+/// 직접 적은 글을 항목으로 나누는 자리(`1b-1`).
+struct ProfileSetupWrittenTests {
+    @Test func 쉼표로_나눈다() {
+        // 통째로 두면 목록에서 약 하나로 세어지고 카드에도 한 줄로 실린다.
+        #expect(ProfileSetupModel.written("타이레놀, 마그네슘") == ["타이레놀", "마그네슘"])
+        #expect(ProfileSetupModel.written("타이레놀") == ["타이레놀"])
+    }
+
+    @Test func 앞뒤_공백을_잘라내고_빈_조각은_버린다() {
+        #expect(ProfileSetupModel.written("  타이레놀 ,, 마그네슘  ,") == ["타이레놀", "마그네슘"])
+        #expect(ProfileSetupModel.written("   ").isEmpty)
+        #expect(ProfileSetupModel.written("").isEmpty)
+    }
+
+    @Test func 같은_것을_두_번_담지_않는다() {
+        #expect(ProfileSetupModel.written("타이레놀, 타이레놀") == ["타이레놀"])
+    }
+}

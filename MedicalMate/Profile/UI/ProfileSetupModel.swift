@@ -135,10 +135,22 @@ final class ProfileSetupModel {
     /// 비어 있으면 `UNKNOWN`이다 — "없다"로 단정하지 않는다.
     private func field(at step: Int) -> HealthField {
         var items = ProfileSetupStep.all[step].options.filter { picked[step].contains($0) }
-        let written = typed[step].trimmingCharacters(in: .whitespacesAndNewlines)
-        if !written.isEmpty, !items.contains(written) {
+        for written in ProfileSetupModel.written(typed[step]) where !items.contains(written) {
             items.append(written)
         }
         return HealthField(items: items)
+    }
+
+    /// 직접 적은 글을 항목으로 나눈다.
+    ///
+    /// **쉼표로 나눈다.** 한 칸에 "타이레놀, 마그네슘"이라고 적는 사람이 많은데 통째로
+    /// 두면 목록에서 약 하나로 세어지고 카드에도 한 줄로 실린다. 앞뒤 공백은 잘라내고,
+    /// 빈 조각과 겹치는 것은 버린다.
+    nonisolated static func written(_ text: String) -> [String] {
+        var seen: Set<String> = []
+        return text
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty && seen.insert($0).inserted }
     }
 }
