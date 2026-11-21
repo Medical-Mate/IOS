@@ -389,7 +389,8 @@ struct CalendarDayNextEventTests {
     }
 
     @Test func 그_날이거나_지난_재방문은_다음_일정이_되지_않는다() {
-        #expect(CalendarDayModel.pendingFollowUp(record(followUp: "2026-09-12"), after: fixtureDay("2026-09-12")) == nil)
-        #expect(CalendarDayModel.pendingFollowUp(record(followUp: "2026-09-04"), after: fixtureDay("2026-09-12")) == nil)
+        let day = fixtureDay("2026-09-12")
+        #expect(CalendarDayModel.pendingFollowUp(record(followUp: "2026-09-12"), after: day) == nil)
+        #expect(CalendarDayModel.pendingFollowUp(record(followUp: "2026-09-04"), after: day) == nil)
     }
 }
