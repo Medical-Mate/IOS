@@ -12,6 +12,8 @@ struct HospitalPickView: View {
     @Environment(\.appEnvironment) private var app
 
     var purpose: HospitalPickPurpose = .beforeVisit
+    /// 이미 있는 카드의 "변경"에서 왔는지. 그러면 만들 카드가 없다(Android `#229`).
+    var forExistingCard = false
     let onBack: () -> Void
     /// 고른 병원을 들고 카드를 만든다. 고르지 않았으면 `nil`이다 — **건너뛸 수 있다.**
     let onSubmit: (Hospital?) -> Void
@@ -177,7 +179,7 @@ struct HospitalPickView: View {
 
     private func footer(_ model: HospitalPickModel) -> some View {
         VStack(spacing: 0) {
-            MMButton(purpose.submitTitle) {
+            MMButton(purpose.submitTitle(forExistingCard: forExistingCard)) {
                 onSubmit(model.picked)
             }
             .disabled(isSubmitting)
@@ -194,30 +196,34 @@ struct HospitalPickView: View {
 /// **진료 전은 건너뛸 수 있고 진료 후는 그렇지 않다** — 전자는 카드를 만들 때 비워 둘
 /// 수 있는 값이고, 후자는 "어디서 진료받았는지"라 기록의 뼈대다.
 enum HospitalPickPurpose: Sendable {
-    /// `1m-B` 진료 전.
+    /// `1m-B` 진료 전. 문답을 마치고 카드를 만들러 가는 길이다.
     case beforeVisit
     /// `1m` 진료 후.
     case afterVisit
+    /// 일정 추가의 병원 칸. **문구는 진료 전과 같고 CTA만 다르다** — 여기서는 칸을
+    /// 채우고 돌아갈 뿐 만들 카드가 없다(Android `HospitalPickPurpose.SCHEDULE`).
+    case schedule
+
+    /// 아직 진료받지 않은 병원을 찾는 자리인지. `1m-B`와 일정 추가가 여기 해당한다.
+    var isBeforeVisit: Bool { self != .afterVisit }
 
     var title: String {
-        switch self {
-        case .beforeVisit: "진료받을 병원을 찾아주세요"
-        case .afterVisit: "진료받은 병원을 찾아주세요"
-        }
+        isBeforeVisit ? "진료받을 병원을 찾아주세요" : "진료받은 병원을 찾아주세요"
     }
 
     var message: String {
-        switch self {
-        case .beforeVisit: "아직 정하지 않았다면 건너뛰어도 돼요.\n진료 후에 등록할 수 있어요."
-        case .afterVisit: "병원 이름으로 검색하면 주소가 함께 등록돼요."
-        }
+        isBeforeVisit
+            ? "아직 정하지 않았다면 건너뛰어도 돼요.\n진료 후에 등록할 수 있어요."
+            : "병원 이름으로 검색하면 주소가 함께 등록돼요."
     }
 
-    var submitTitle: String {
-        switch self {
-        case .beforeVisit: "브리핑 카드 만들기"
-        case .afterVisit: "완료"
-        }
+    /// 하단 버튼의 글.
+    ///
+    /// **"브리핑 카드 만들기"는 정말 카드를 만드는 길에서만 적는다**(Android `#229`).
+    /// 이미 있는 카드에서 병원만 바꾸러 왔거나 일정 추가의 칸을 채우러 왔으면 만들
+    /// 것이 없어서 "완료"다 — 누르면 카드가 생긴다고 읽히면 안 된다.
+    func submitTitle(forExistingCard: Bool = false) -> String {
+        self == .beforeVisit && !forExistingCard ? "브리핑 카드 만들기" : "완료"
     }
 }
 

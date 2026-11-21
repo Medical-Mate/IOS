@@ -34,7 +34,8 @@ struct ScheduleAddView: View {
             if let model {
                 if isPickingClinic {
                     HospitalPickView(
-                        purpose: .beforeVisit,
+                        // 칸을 채우고 돌아갈 뿐이라 만들 카드가 없다.
+                        purpose: .schedule,
                         onBack: { isPickingClinic = false },
                         onSubmit: { hospital in
                             model.pick(clinic: hospital)

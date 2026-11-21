@@ -222,8 +222,20 @@ struct HospitalPickPurposeTests {
     @Test func 진료_전과_후의_문구가_갈린다() {
         #expect(HospitalPickPurpose.beforeVisit.title == "진료받을 병원을 찾아주세요")
         #expect(HospitalPickPurpose.afterVisit.title == "진료받은 병원을 찾아주세요")
-        #expect(HospitalPickPurpose.beforeVisit.submitTitle == "브리핑 카드 만들기")
-        #expect(HospitalPickPurpose.afterVisit.submitTitle == "완료")
+        #expect(HospitalPickPurpose.beforeVisit.submitTitle() == "브리핑 카드 만들기")
+        #expect(HospitalPickPurpose.afterVisit.submitTitle() == "완료")
+    }
+
+    @Test func 일정_추가에서는_문구가_진료_전과_같고_CTA만_다르다() {
+        // 칸을 채우고 돌아갈 뿐이라 만들 카드가 없다(Android `SCHEDULE`).
+        #expect(HospitalPickPurpose.schedule.title == "진료받을 병원을 찾아주세요")
+        #expect(HospitalPickPurpose.schedule.message == HospitalPickPurpose.beforeVisit.message)
+        #expect(HospitalPickPurpose.schedule.submitTitle() == "완료")
+    }
+
+    @Test func 이미_있는_카드에서_병원만_바꾸면_완료다() {
+        // "브리핑 카드 만들기"는 정말 카드를 만드는 길에서만 적는다(Android `#229`).
+        #expect(HospitalPickPurpose.beforeVisit.submitTitle(forExistingCard: true) == "완료")
     }
 }
 

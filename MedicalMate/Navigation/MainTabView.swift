@@ -222,6 +222,8 @@ struct MainTabView: View {
             // 고른 병원은 그 카드에 적고 돌아온다. 건너뛰면 그대로 돌아온다.
             HospitalPickView(
                 purpose: .beforeVisit,
+                // **이미 있는 카드의 "변경"이다.** 만들 카드가 없어 CTA가 "완료"다.
+                forExistingCard: true,
                 onBack: { path.removeLast() },
                 onSubmit: { hospital in
                     Task {
