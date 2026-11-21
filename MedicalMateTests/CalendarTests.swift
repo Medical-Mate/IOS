@@ -475,3 +475,23 @@ struct CardPickHeightTests {
         #expect(MMSpace.s16 * 2 + row == ScheduleMetrics.cardPickHeight)
     }
 }
+
+/// 카드를 들고 일정 추가로 가는 길(2026-11-22). 카드를 정해 놓고 들어오는 길이 넷인데
+/// 셋이 카드를 흘리고 있었다 — 카드만 있는 날 시트 · 홈 배너 · 브리핑 카드.
+/// Android `ScheduleAddDestination`은 `cardId`와 `followUp`을 따로 든다(#239 · #245).
+@Suite("일정 추가로 카드를 들고 가기")
+struct ScheduleAddCardTests {
+    @Test func 들고_온_카드가_고른_것에_든다() {
+        #expect(ScheduleAddModel.cardIds(picked: [], followUp: 7) == [7])
+        #expect(ScheduleAddModel.cardIds(picked: [3], followUp: 7) == [3, 7])
+    }
+
+    /// 같은 카드를 손으로도 골랐으면 한 번만 든다.
+    @Test func 겹치면_한_번만_든다() {
+        #expect(ScheduleAddModel.cardIds(picked: [7], followUp: 7) == [7])
+    }
+
+    @Test func 들고_온_카드가_없으면_고른_것만_든다() {
+        #expect(ScheduleAddModel.cardIds(picked: [3, 1], followUp: nil) == [1, 3])
+    }
+}

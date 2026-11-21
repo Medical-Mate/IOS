@@ -21,7 +21,9 @@ struct HomeView: View {
     /// 배너가 가리키는 곳. 갈래마다 다르다(1n-1 · 1n-1-4 · 1n-1-5).
     var onRecordVisit: (Int64) -> Void = { _ in }
     var onOpenCardId: (Int64) -> Void = { _ in }
-    var onScheduleCard: (Int64) -> Void = { _ in }
+    /// 일정 추가로 간다. 값이 있으면 **그 카드를 들고 간다**(배너 1의 `cardReady`).
+    /// 배너 3은 들고 갈 카드가 없다.
+    var onScheduleCard: (Int64?) -> Void = { _ in }
     /// 배너 5의 "메이트에게 말해보기". **호출어 없이 여는 길이다.**
     var onTalkToMate: () -> Void = {}
 
@@ -70,7 +72,9 @@ struct HomeView: View {
         case .saveCard(let cardId):
             // 카드가 없으면 목록으로 간다.
             if let cardId { onOpenCardId(cardId) } else { onOpenCardList() }
-        case .schedule: onScheduleCard(0)
+        // **들고 갈 카드가 없다.** 전에는 0을 넘겨서, 있지도 않은 0번 카드가
+        // 골라진 채로 저장될 뻔했다.
+        case .schedule: onScheduleCard(nil)
         // **호출어 없이 메이트를 연다.** 배너는 호출어 모델을 받지 않은 사람에게도
         // 보이고, 받아쓰기만으로 듣는다 — Android도 같은 자리다(#312).
         case .mate: onTalkToMate()

@@ -38,19 +38,27 @@ final class ScheduleAddModel {
     private let calendar: Calendar
     private let today: @Sendable () -> Date
 
-    /// 재방문을 확정하러 들어왔으면 그 카드. **출처와 카드를 함께 보내야** 만들어진
-    /// 일정이 무엇 하러 가는 날인지 남고, 일자 상세가 그것을 다음 일정으로 다시 찾는다.
-    private let followUpCardId: Int64?
+    /// 미리 골라 둘 카드. **카드를 정해 놓고 들어오는 길**이 넷이다 — 카드만 있는 날
+    /// 시트의 "이 카드로 일정 만들기" · 홈 배너의 "진료 일정 잡기" · 브리핑 카드의
+    /// "진료 일정 잡기" · 재방문 확정. 화면에서 다시 고르게 하면 두 번 고르는 꼴이다
+    /// (Android `#239`).
+    private let cardId: Int64?
+    /// 재방문을 확정하러 들어온 것인지. **출처와 카드는 다른 값이다** — 카드를 들고
+    /// 들어왔다고 다 재방문은 아니다. 이 값이 참일 때만 `visitFollowUp`으로 만든다
+    /// (Android `#245`).
+    private let isFollowUp: Bool
 
     init(
         initialDate: Date?,
-        followUpCardId: Int64? = nil,
+        cardId: Int64? = nil,
+        isFollowUp: Bool = false,
         repository: AppointmentRepository,
         cards cardsRepository: CardRepository,
         calendar: Calendar = .current,
         today: @escaping @Sendable () -> Date = { Date() }
     ) {
-        self.followUpCardId = followUpCardId
+        self.cardId = cardId
+        self.isFollowUp = isFollowUp
         self.repository = repository
         self.cardsRepository = cardsRepository
         self.calendar = calendar
@@ -106,6 +114,10 @@ final class ScheduleAddModel {
             // 카드를 못 받아도 일정은 만들 수 있다. 카드는 선택이다.
             cards = []
         }
+        // **들고 온 카드는 체크된 채로 선다.** 저장할 때만 끼워 넣으면 화면에는 안
+        // 골라진 것으로 보여서, 정해 놓고 들어온 사람이 같은 카드를 다시 찾아 누른다.
+        // Android `load()`도 받은 `cardId`를 고른 것에 더한다(#239).
+        if let cardId { pickedCardIds.insert(cardId) }
     }
 
     // MARK: - 고르기
@@ -204,9 +216,9 @@ final class ScheduleAddModel {
             purpose: nil,
             scheduledOn: VisitMapping.day(on, calendar: calendar),
             scheduledTime: time?.wire,
-            cardIds: ScheduleAddModel.cardIds(picked: pickedCardIds, followUp: followUpCardId),
+            cardIds: ScheduleAddModel.cardIds(picked: pickedCardIds, followUp: cardId),
             // **손으로 만든 일정은 출처가 없다.** 재방문을 확정하러 들어왔을 때만 적는다.
-            origin: (followUpCardId == nil ? AppointmentOrigin.manual : .visitFollowUp).wire,
+            origin: (isFollowUp ? AppointmentOrigin.visitFollowUp : .manual).wire,
             // 빈 줄은 보내지 않는다. 추가만 하고 안 적은 칸이다.
             todos: AppointmentMapping.cleaned(todos)
         )

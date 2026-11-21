@@ -49,8 +49,8 @@ struct MainTabView: View {
                 onOpenDay: { day in
                     path.append(Route.calendarDay(date: Self.wire(day), appointmentId: nil))
                 },
-                onAddSchedule: { day in
-                    path.append(Route.scheduleAdd(date: day.map(Self.wire)))
+                onAddSchedule: { day, cardId in
+                    path.append(Route.scheduleAdd(date: day.map(Self.wire), cardId: cardId))
                 },
                 onOpenCard: { id in
                     path.append(Route.briefCard(cardId: id))
@@ -64,7 +64,7 @@ struct MainTabView: View {
                 onProfile: { path.append(Route.myProfile) },
                 onRecordVisit: { path.append(Route.clinicConfirm(cardId: $0)) },
                 onOpenCardId: { path.append(Route.briefCard(cardId: $0)) },
-                onScheduleCard: { _ in path.append(Route.scheduleAdd(date: nil)) },
+                onScheduleCard: { path.append(Route.scheduleAdd(date: nil, cardId: $0)) },
                 onTalkToMate: { Task { await mate?.open() } }
             )
         case .record:
@@ -131,7 +131,7 @@ struct MainTabView: View {
                 justCreated: justCreated,
                 onBack: { path.removeLast() },
                 onChangeHospital: { path.append(Route.hospitalPick) },
-                onSchedule: { path.append(Route.scheduleAdd(date: nil)) },
+                onSchedule: { path.append(Route.scheduleAdd(date: nil, cardId: cardId)) },
                 onViewSchedule: { path.append(Route.calendarDay(date: "", appointmentId: $0)) },
                 onRecordVisit: { path.append(Route.clinicConfirm(cardId: cardId)) },
                 onDeleted: { path.removeLast() }
@@ -175,17 +175,18 @@ struct MainTabView: View {
                     onRecordVisit: { path.append(Route.clinicConfirm(cardId: $0)) },
                     onOpenRecord: { path.append(Route.visitDetail(visitId: "\($0)")) },
                     onConfirmNextEvent: { day, cardId in
-                        path.append(Route.scheduleAdd(date: Self.wire(day), followUpCardId: cardId))
+                        path.append(Route.scheduleAdd(date: Self.wire(day), cardId: cardId, isFollowUp: true))
                     },
                     onDeleted: { path.removeLast() }
                 )
                 .toolbar(.hidden, for: .navigationBar)
             }
 
-        case .scheduleAdd(let date, let followUpCardId):
+        case .scheduleAdd(let date, let cardId, let isFollowUp):
             ScheduleAddView(
                 initialDate: date.flatMap(HomeRepository.date(from:)),
-                followUpCardId: followUpCardId,
+                cardId: cardId,
+                isFollowUp: isFollowUp,
                 onBack: { path.removeLast() },
                 onSaved: { _ in path.removeLast() }
             )

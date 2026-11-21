@@ -8,7 +8,8 @@ struct CalendarView: View {
     @Environment(\.appEnvironment) private var app
 
     var onOpenDay: (Date) -> Void = { _ in }
-    var onAddSchedule: (Date?) -> Void = { _ in }
+    /// 둘째 값은 **들고 갈 카드**다. FAB으로 여는 길에는 없다.
+    var onAddSchedule: (Date?, Int64?) -> Void = { _, _ in }
     var onOpenCard: (Int64) -> Void = { _ in }
 
     @State private var model: CalendarModel?
@@ -63,7 +64,10 @@ struct CalendarView: View {
                         if let scheduled = card.scheduled {
                             onOpenDay(scheduled.on)
                         } else {
-                            onAddSchedule(model.selectedDate)
+                            // **그 카드를 들고 간다.** 이 문구가 카드를 정해 놓고
+                            // 들어가는 길이라 화면에서 다시 고르게 하면 두 번 고른다
+                            // (Android `#239`).
+                            onAddSchedule(model.selectedDate, card.id)
                         }
                     }
                 )
@@ -106,7 +110,7 @@ struct CalendarView: View {
                 .scrollBounceBehavior(.basedOnSize)
 
                 MMIconButton(icon: .plus, label: "일정 추가", style: .solid, size: .l) {
-                    onAddSchedule(model.selectedDate)
+                    onAddSchedule(model.selectedDate, nil)
                 }
                 .mmShadow(MMElevation.float)
                 .padding(.trailing, MMSize.gutter)

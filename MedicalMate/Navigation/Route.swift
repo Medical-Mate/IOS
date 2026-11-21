@@ -28,7 +28,11 @@ enum Route: Hashable, Sendable {
     case calendarDay(date: String, appointmentId: Int64?)
     /// 일정 추가. **재방문을 확정하러 들어오면** 그 카드를 들고 간다 — 만들어진 일정이
     /// 무엇 하러 가는 날인지 남아야 다음 일정으로 다시 찾을 수 있다(`1r-2-A`).
-    case scheduleAdd(date: String?, followUpCardId: Int64? = nil)
+    /// 일정 추가. `cardId`는 **미리 골라 둘 카드**이고, `isFollowUp`은 **진료 후 기록의
+    /// 재방문을 확정하러 들어온 것인지**다. 둘은 다른 뜻이라 따로 든다 — 카드를 들고
+    /// 들어가는 길(카드만 있는 날 시트 · 홈 배너 · 브리핑 카드)은 재방문이 아니다.
+    /// Android `ScheduleAddDestination`도 `cardId`와 `followUp`을 따로 둔다(#239 · #245).
+    case scheduleAdd(date: String?, cardId: Int64? = nil, isFollowUp: Bool = false)
 
     // 진료 후 기록
     case hospitalPick

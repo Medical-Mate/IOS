@@ -12,7 +12,8 @@ struct ScheduleAddView: View {
 
     var initialDate: Date?
     /// 재방문을 확정하러 들어왔으면 그 카드. 손으로 만들 때는 `nil`이다.
-    var followUpCardId: Int64?
+    var cardId: Int64?
+    var isFollowUp = false
     let onBack: () -> Void
     let onSaved: (Int64) -> Void
     var onNewCard: () -> Void = {}
@@ -49,7 +50,8 @@ struct ScheduleAddView: View {
             guard model == nil else { return }
             let created = ScheduleAddModel(
                 initialDate: initialDate,
-                followUpCardId: followUpCardId,
+                cardId: cardId,
+                isFollowUp: isFollowUp,
                 repository: app.appointments,
                 cards: app.cards
             )
