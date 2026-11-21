@@ -81,3 +81,18 @@ struct TokenRefreshTests {
         #expect(await tokens.accessToken() == nil)
     }
 }
+
+/// 재발급이 끝내 실패했을 때 어디로 가는가.
+struct SessionExpiryTests {
+    @Test func 화면_밖에서_세션이_끝나면_로그인_화면으로_보낸다() {
+        // 그대로 두면 환자는 앱 안에 남아 화면마다 "불러오지 못했어요"만 본다.
+        #expect(SessionModel.endsSession(from: .ready))
+        #expect(SessionModel.endsSession(from: .needsOnboarding))
+    }
+
+    @Test func 복구_중에_들어온_401은_스플래시를_흔들지_않는다() {
+        #expect(!SessionModel.endsSession(from: .checking))
+        // 이미 로그인 화면이면 할 일이 없다.
+        #expect(!SessionModel.endsSession(from: .loggedOut))
+    }
+}

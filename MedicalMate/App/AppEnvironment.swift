@@ -29,10 +29,14 @@ final class AppEnvironment {
         let holder = ClientHolder()
         let refresher = ServerTokenRefresher { holder.client }
 
+        // 세션 모델도 늦게 꽂는다. 재발급이 끝내 실패하면 로그인 화면으로 보내야 하는데
+        // 그 모델은 아래에서 만들어진다.
+        let sessionHolder = SessionHolder()
         let client = ApiClient(
             baseURL: AppConfig.backendBaseURL,
             tokens: tokens,
-            refresher: refresher
+            refresher: refresher,
+            onSessionExpired: { await sessionHolder.session?.sessionExpired() }
         )
         holder.client = client
         self.client = client
@@ -49,8 +53,16 @@ final class AppEnvironment {
         let remote = AuthRemote(client: client)
         let auth = AuthRepository(remote: remote, kakao: kakao, tokens: tokens)
         self.auth = auth
-        self.session = SessionModel(tokens: tokens, auth: auth)
+        let session = SessionModel(tokens: tokens, auth: auth)
+        self.session = session
+        sessionHolder.session = session
     }
+}
+
+/// 세션 모델과 클라이언트의 순환을 끊는 상자. ``ClientHolder``와 같은 이유다.
+@MainActor
+private final class SessionHolder {
+    var session: SessionModel?
 }
 
 /// 재발급기와 클라이언트의 순환을 끊는 상자.

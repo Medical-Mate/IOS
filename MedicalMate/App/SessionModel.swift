@@ -48,6 +48,27 @@ final class SessionModel {
         state = .loggedOut
     }
 
+    /// 화면 밖에서 세션이 끝났다. 재발급이 실패해 더 쓸 수 없는 토큰이다.
+    ///
+    /// **로그인 화면으로 보낸다.** 그대로 두면 환자는 앱 안에 남아 화면마다 "불러오지
+    /// 못했어요"만 보고, 왜 안 되는지도 어떻게 빠져나가는지도 알 수 없다.
+    ///
+    /// 이미 로그인 화면이면 아무것도 하지 않는다 — 복구 중(`checking`)에 들어오는 401이
+    /// 스플래시를 흔들면 안 된다.
+    func sessionExpired() async {
+        guard SessionModel.endsSession(from: state) else { return }
+        await tokens.clear()
+        state = .loggedOut
+    }
+
+    /// 지금 상태에서 로그인 화면으로 보내야 하는지.
+    ///
+    /// **들어와 있을 때만 보낸다.** 복구 중(`checking`)에 들어오는 401이 스플래시를
+    /// 흔들면 안 되고, 이미 로그인 화면이면 할 일이 없다.
+    nonisolated static func endsSession(from state: State) -> Bool {
+        state == .ready || state == .needsOnboarding
+    }
+
     func withdraw() async -> Bool {
         let done = await auth.withdraw()
         if done { state = .loggedOut }
