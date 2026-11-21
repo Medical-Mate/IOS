@@ -57,7 +57,7 @@ struct HospitalPickView: View {
                 .padding(.top, MMSpace.s8)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                MMSearchField(text: $model.query, placeholder: "병원 이름 검색")
+                MMSearchField(text: $model.query, placeholder: "병원 이름을 적어주세요")
 
                 Text(model.resultLabel)
                     .mmTextStyle(MMFont.labelM)
@@ -87,7 +87,11 @@ struct HospitalPickView: View {
             .padding(.bottom, MMSpace.s16)
             .frame(maxHeight: .infinity, alignment: .top)
 
-            footer(model)
+            // **고를 것이 없으면 하단 버튼도 없다**(`3663:7302`). 결과가 선 뒤에야
+            // 선다(`3663:7311` · `3663:14329`).
+            if !model.showsEmptyState {
+                footer(model)
+            }
         }
         .background(MMColor.bgSurface)
     }
