@@ -9,6 +9,33 @@ import SwiftUI
 /// 편집을 켜면 줄마다 고르는 상자가 서고 셋째 줄(요약)이 빠지며 아래에 Danger 버튼이
 /// 선다. **지우기는 되돌릴 수 없어서 Dialog가 먼저 묻는다.**
 struct BriefCardListView: View {
+    /// 같은 목록이 하는 두 가지 일.
+    ///
+    /// **`1j-4`는 브리핑 카드만, `1j-1`은 진료를 마친 기록까지** 세운다. 내비와 빈
+    /// 자리도 갈린다 — `1j-1`은 탭의 1Depth라 뒤로가기가 없다.
+    enum Kind: Sendable {
+        /// `1j-4` 브리핑 카드 전체.
+        case briefCards
+        /// `1j-1` 기록.
+        case records
+
+        var title: String {
+            switch self {
+            case .briefCards: "브리핑 카드"
+            case .records: "기록"
+            }
+        }
+
+        var leading: MMNavBar.Leading {
+            switch self {
+            case .briefCards: .back
+            case .records: .none
+            }
+        }
+    }
+
+    var kind: Kind = .briefCards
+
     @Environment(\.appEnvironment) private var app
     @Environment(\.dismiss) private var dismiss
     @State private var model: BriefCardListModel?
@@ -16,6 +43,10 @@ struct BriefCardListView: View {
 
     var onOpenCard: (Int64) -> Void = { _ in }
     var onResumeIntake: (Int64) -> Void = { _ in }
+    /// 기록 줄. 1j-1에서만 쓴다.
+    var onOpenRecord: (Int64) -> Void = { _ in }
+    /// 기록이 하나도 없을 때의 길(1j-2).
+    var onStartIntake: () -> Void = {}
 
     var body: some View {
         Group {
@@ -27,7 +58,11 @@ struct BriefCardListView: View {
         }
         .task {
             if model == nil {
-                model = BriefCardListModel(repository: app.cards, home: app.home)
+                model = BriefCardListModel(
+                    repository: app.cards,
+                    home: app.home,
+                    visits: kind == .records ? app.visits : nil
+                )
             }
             await model?.load()
         }
@@ -63,9 +98,9 @@ struct BriefCardListView: View {
 
     private func navBar(_ model: BriefCardListModel) -> some View {
         MMNavBar(
-            title: "브리핑 카드",
-            // 편집 중에도 뒤로가기는 그대로 있다(1j-4-D2).
-            leading: .back,
+            title: kind.title,
+            // 편집 중에도 뒤로가기는 그대로 있다(1j-4-D2). 기록 탭은 1Depth라 없다.
+            leading: kind.leading,
             onLeading: { dismiss() },
             actionTitle: model.isEditing ? "취소" : "편집",
             onAction: {
@@ -74,7 +109,31 @@ struct BriefCardListView: View {
         )
     }
 
+    /// `1j-2` 기록이 하나도 없을 때. **액션이 면 없는 링크다**(마스터의 Tonal을
+    /// 인스턴스가 바꿔 놓았다 — 1m-B · 1r-2와 같은 자리).
+    @ViewBuilder
+    private var emptyState: some View {
+        MMEmptyState(
+            icon: .emptyBox,
+            title: "아직 진료 기록이 없어요",
+            message: "증상을 정리해두면 진료실에서 바로 보여줄 수 있어요",
+            actionTitle: "증상 정리하기",
+            actionStyle: .link,
+            onAction: onStartIntake
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    @ViewBuilder
     private func list(_ model: BriefCardListModel) -> some View {
+        if !model.isLoading, model.sections.isEmpty, model.errorMessage == nil {
+            emptyState
+        } else {
+            rows(model)
+        }
+    }
+
+    private func rows(_ model: BriefCardListModel) -> some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: MMSpace.s12) {
                 ForEach(model.sections) { section in
@@ -98,7 +157,7 @@ struct BriefCardListView: View {
             }
             .padding(.horizontal, MMSize.gutter)
             .padding(.top, MMSpace.s8)
-            .padding(.bottom, MMSpace.s16)
+            .padding(.bottom, kind == .records ? CardListMetrics.tabBottom : MMSpace.s16)
         }
     }
 
@@ -134,8 +193,14 @@ struct BriefCardListView: View {
         switch item.kind {
         case .card(let id, _): onOpenCard(id)
         case .openIntake(let sessionId, _, _, _): onResumeIntake(sessionId)
+        case .visit(let id, _): onOpenRecord(id)
         }
     }
+}
+
+private enum CardListMetrics {
+    /// 기록 탭은 탭바가 아래를 가린다.
+    static let tabBottom: CGFloat = MMSize.tabBarHeight + MMSpace.s16
 }
 
 #Preview {

@@ -111,3 +111,61 @@ extension CardRepository {
         return await client.send(.patch("api/cards/\(cardId)", body: body), as: CardResponse.self)
     }
 }
+
+extension CardRepository {
+    /// 기록 목록(1j-1)의 한 줄.
+    ///
+    /// **진료를 마친 기록은 카드가 아니라 기록으로 들어간다** — 카드는 진료 전에 보여
+    /// 주는 것이고, 기록은 끝난 뒤에 읽는 것이다.
+    func item(from visit: VisitSummaryResponse) -> CardListItem? {
+        guard let date = HomeRepository.date(from: visit.visitedOn) else { return nil }
+        let clinic = visit.clinicName?.isEmpty == false ? visit.clinicName! : "병원 미정"
+        return CardListItem(
+            kind: .visit(id: visit.visitId, cardId: visit.cardId),
+            title: HomeRepository.shorten(visit.cardTitle ?? ""),
+            meta: "\(Self.writtenOn(date, calendar: calendar)) 진료 · \(clinic)",
+            summary: CardRepository.visitSummary(visit, calendar: calendar),
+            month: Self.month(date, calendar: calendar),
+            writtenOn: date
+        )
+    }
+
+    /// 기록 줄의 셋째 줄. 재방문이 있으면 날짜를 덧붙인다.
+    ///
+    /// 목록 응답에 축이 담기지 않아 **재방문만** 적는다 — 줄 하나를 위해 상세를
+    /// 한 건씩 부르지 않는다.
+    static func visitSummary(_ visit: VisitSummaryResponse, calendar: Calendar) -> String? {
+        guard let date = visit.followUp?.date.flatMap(HomeRepository.date(from:)) else { return nil }
+        let parts = calendar.dateComponents([.month, .day], from: date)
+        return String(format: "%02d.%02d 재방문", parts.month ?? 0, parts.day ?? 0)
+    }
+
+    /// 카드 · 문답 · 기록을 한 목록으로 묶고 달로 가른다(1j-1).
+    func sections(
+        cards: [CardSummaryResponse],
+        visits: [VisitSummaryResponse],
+        openIntake: OpenIntakeResponse?
+    ) -> [CardMonthSection] {
+        // 기록이 있는 카드는 기록 줄로만 선다. 같은 진료가 두 줄이 되면 안 된다.
+        let recorded = Set(visits.compactMap(\.cardId))
+        let base = sections(cards: cards.filter { !recorded.contains($0.cardId) }, openIntake: openIntake)
+        let visitItems = visits.compactMap(item(from:))
+        return CardRepository.merge(base, adding: visitItems)
+    }
+
+    /// 달 묶음에 줄을 꽂는다. 최신이 위다.
+    static func merge(_ sections: [CardMonthSection], adding items: [CardListItem]) -> [CardMonthSection] {
+        var all = sections.flatMap(\.items) + items
+        all.sort { $0.writtenOn > $1.writtenOn }
+
+        var merged: [CardMonthSection] = []
+        for item in all {
+            if let index = merged.firstIndex(where: { $0.month == item.month }) {
+                merged[index].items.append(item)
+            } else {
+                merged.append(CardMonthSection(month: item.month, items: [item]))
+            }
+        }
+        return merged
+    }
+}

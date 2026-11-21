@@ -10,6 +10,8 @@ struct CardListItem: Sendable, Identifiable, Equatable {
         case card(id: Int64, visited: Bool)
         /// 아직 카드가 아닌 문답. `tempSaved`면 질문 고르기까지 마친 것이다.
         case openIntake(sessionId: Int64, tempSaved: Bool, step: Int, total: Int)
+        /// 진료를 마친 기록(1j-1). 카드가 아니라 진료 후 기록으로 들어간다.
+        case visit(id: Int64, cardId: Int64?)
     }
 
     let kind: Kind
@@ -26,6 +28,7 @@ struct CardListItem: Sendable, Identifiable, Equatable {
         switch kind {
         case .card(let id, _): "card-\(id)"
         case .openIntake(let sessionId, _, _, _): "intake-\(sessionId)"
+        case .visit(let id, _): "visit-\(id)"
         }
     }
 
@@ -40,12 +43,14 @@ struct CardListItem: Sendable, Identifiable, Equatable {
             visited ? ("진료 완료", .success) : ("진료 전", .brand)
         case .openIntake(_, let tempSaved, _, _):
             tempSaved ? ("임시 저장", .warning) : ("작성 중", .neutral)
+        case .visit:
+            ("진료 완료", .success)
         }
     }
 
     var summaryTone: MMListRow.SummaryTone {
         switch kind {
-        case .card: .subtle
+        case .card, .visit: .subtle
         // 이어서 할 것은 눈에 띄어야 한다.
         case .openIntake: .warning
         }

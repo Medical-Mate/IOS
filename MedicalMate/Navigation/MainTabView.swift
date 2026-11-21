@@ -47,7 +47,13 @@ struct MainTabView: View {
                 onStartIntake: { path.append(Route.intake(sessionId: nil)) }
             )
         case .record:
-            PlaceholderView(title: "기록", note: "H 섹션 `1j-1`(3663:15519)을 그린다")
+            BriefCardListView(
+                kind: .records,
+                onOpenCard: { path.append(Route.briefCard(cardId: $0)) },
+                onResumeIntake: { path.append(Route.intake(sessionId: $0)) },
+                onOpenRecord: { path.append(Route.visitDetail(visitId: "\($0)")) },
+                onStartIntake: { path.append(Route.intake(sessionId: nil)) }
+            )
         }
     }
 

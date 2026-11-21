@@ -15,10 +15,13 @@ final class BriefCardListModel {
 
     private let repository: CardRepository
     private let home: HomeRepository
+    /// 기록 목록(1j-1)만 쓴다. 브리핑 카드 전체(1j-4)에는 기록 줄이 없다.
+    private let visits: VisitRepository?
 
-    init(repository: CardRepository, home: HomeRepository) {
+    init(repository: CardRepository, home: HomeRepository, visits: VisitRepository? = nil) {
         self.repository = repository
         self.home = home
+        self.visits = visits
     }
 
     var pickedCount: Int { picked.count }
@@ -35,17 +38,29 @@ final class BriefCardListModel {
         // 만든다 — 1j-4는 아직 카드가 아닌 문답도 한 줄로 보여 준다.
         async let cards = repository.cards()
         async let summary = home.summary()
+        async let records = visitList()
 
         switch await cards {
         case .success(let list):
             let openIntake = await openIntakeResponse(from: summary)
-            sections = repository.sections(cards: list, openIntake: openIntake)
+            // 기록 목록(1j-1)은 진료를 마친 기록까지 한 목록에 세운다.
+            if let visits = await records {
+                sections = repository.sections(cards: list, visits: visits, openIntake: openIntake)
+            } else {
+                sections = repository.sections(cards: list, openIntake: openIntake)
+            }
         case .rejected(let error):
             errorMessage = error.message ?? "불러오지 못했어요."
         case .networkUnavailable:
             errorMessage = "연결이 끊어졌어요."
         }
         isLoading = false
+    }
+
+    private func visitList() async -> [VisitSummaryResponse]? {
+        guard let visits else { return nil }
+        guard case .success(let list) = await visits.visits() else { return [] }
+        return list
     }
 
     /// 홈 응답의 열린 문답을 목록이 쓰는 모양으로.
@@ -88,6 +103,8 @@ final class BriefCardListModel {
                 _ = await repository.delete(cardId: id)
             case .openIntake(let sessionId, _, _, _):
                 _ = await repository.deleteIntake(sessionId: sessionId)
+            case .visit(let id, _):
+                _ = await visits?.delete(visitId: id)
             }
         }
         cancelEditing()
