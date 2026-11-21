@@ -139,3 +139,21 @@
 iOS `MMListRow`는 `MMColor.fgDefault`다.
 
 **바꿀 것**: `Rows.kt:258`의 `tint`를 `colors.fgDefault`로.
+
+---
+
+## #38 · `Tooltip Bubble`의 화살표가 오른쪽 끝에서 24다
+
+**시안**: `Tooltip Bubble` 마스터(`575:1287`) — 말풍선 180, 화살표 `x=148` · 16×10.
+오른쪽 끝(180)에서 화살표 오른쪽 끝(148+16=164)까지가 **16**이다.
+**지금**: `core/designsystem/component/TooltipBubble.kt:133` —
+`DefaultArrowOffsetFromEnd = 24.dp`.
+
+화살표가 가리키는 자리가 8 어긋난다. 말풍선이 180으로 좁아 8은 눈에 띈다 —
+트리거(물음표 아이콘)의 가운데를 가리켜야 하는데 그보다 안쪽을 가리킨다.
+
+iOS는 `TooltipMetrics.arrowInset`이 16이다.
+
+**바꿀 것**: `DefaultArrowOffsetFromEnd`를 `16.dp`로.
+
+덧: 화살표 크기 16×10은 양쪽이 같습니다(iOS가 8이던 것을 이번에 10으로 고쳤습니다).

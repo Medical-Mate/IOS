@@ -31,6 +31,14 @@ struct MMTooltip: View {
 struct MMTooltipBubble: View {
     let text: String
 
+    /// 마스터(`575:1287`)의 화살표 크기. 테스트가 못박는다.
+    nonisolated static let arrowSize = CGSize(
+        width: TooltipMetrics.arrowWidth, height: TooltipMetrics.arrowHeight
+    )
+    /// 말풍선 오른쪽 끝에서 화살표까지. 마스터가 x=148 · 폭 16 · 말풍선 180이다.
+    nonisolated static let arrowInsetFromTrailing = TooltipMetrics.arrowInset
+    nonisolated static let bubbleWidth = TooltipMetrics.width
+
     var body: some View {
         Text(text)
             .mmTextStyle(MMFont.labelS)
@@ -72,7 +80,9 @@ private enum TooltipMetrics {
     static let width: CGFloat = 180
     static let radius: CGFloat = 10
     static let arrowWidth: CGFloat = 16
-    static let arrowHeight: CGFloat = 8
+    /// 마스터(`575:1287`)의 `Arrow`가 16×10이다. 8로 두면 말풍선이 가리키는 각이
+    /// 뭉툭해져 어느 줄을 가리키는지가 흐려진다.
+    static let arrowHeight: CGFloat = 10
     static let arrowInset: CGFloat = MMSpace.s16
 }
 

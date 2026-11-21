@@ -139,6 +139,14 @@ struct ComponentSpecTests {
             == MMSeveritySlider.center(for: 5, in: width))
     }
 
+    @Test("Tooltip Bubble의 화살표는 16×10이고 오른쪽에서 16이다 (575:1287)")
+    func tooltipArrow() {
+        // 마스터의 `Arrow`가 x=148 · 16×10이고 말풍선이 180이라, 오른쪽 끝에서 16이다.
+        #expect(MMTooltipBubble.arrowSize == CGSize(width: 16, height: 10))
+        #expect(MMTooltipBubble.arrowInsetFromTrailing == 16)
+        #expect(MMTooltipBubble.bubbleWidth == 180)
+    }
+
     @Test("내보낸 파일 이름은 누를 때마다 새것이다")
     func exportFileName() {
         // 같은 카드를 두 번 내보내도 앞의 것을 덮지 않는다. Android와 같은 꼴이다.
