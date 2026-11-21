@@ -20,6 +20,9 @@ struct CardListItem: Sendable, Identifiable, Equatable {
     let meta: String
     /// 셋째 줄. 카드는 담긴 항목, 문답은 "이어서 정리하기".
     let summary: String?
+    /// 이 카드에 적힌 병원. **일정 추가가 빈 병원 칸을 이것으로 채운다**(`1r-4-B`).
+    /// 메타 줄에서 되읽지 않는다 — 거기에는 "병원 미정"이 섞여 있다.
+    let clinic: String?
     /// 묶이는 달. "2026년 9월".
     let month: String
     let writtenOn: Date

@@ -153,7 +153,27 @@ final class ScheduleAddModel {
         // 골라진 것으로 보여서, 정해 놓고 들어온 사람이 같은 카드를 다시 찾아 누른다.
         // Android `load()`도 받은 `cardId`를 고른 것에 더한다(#239).
         if let cardId { pickedCardIds.insert(cardId) }
+        // **들고 온 카드의 병원으로 빈 칸을 채운다**(`1r-4-B`). 카드를 정해 놓고
+        // 들어온 네 길은 병원을 이미 알고 있는데, 그러고도 다시 찾게 하면 아는 것을
+        // 두 번 묻는 꼴이다. Android도 `load()`에서 `pickedClinic()`으로 채운다.
+        fillClinicFromPickedCard()
         await loadAppointment()
+    }
+
+    /// 고른 카드의 병원으로 **빈** 병원 칸을 채운다. **이미 적힌 병원은 덮지 않는다.**
+    private func fillClinicFromPickedCard() {
+        guard clinic == nil,
+              let name = ScheduleAddModel.pickedClinic(cards: cards, picked: pickedCardIds)
+        else { return }
+        clinic = BriefCardHospital(name: name, address: nil)
+    }
+
+    /// 고른 카드 중 병원이 적힌 첫 장의 병원.
+    nonisolated static func pickedClinic(cards: [CardListItem], picked: Set<Int64>) -> String? {
+        cards.first { item in
+            guard case .card(let id, _) = item.kind else { return false }
+            return picked.contains(id) && item.clinic?.isEmpty == false
+        }?.clinic
     }
 
     /// 고치러 들어왔으면 그 일정의 값을 채운다.
@@ -190,6 +210,9 @@ final class ScheduleAddModel {
         } else {
             pickedCardIds.insert(id)
         }
+        // 고르는 순간에도 빈 병원 칸을 채운다. 푸는 것으로는 지우지 않는다 — 사람이
+        // 고쳐 둔 값을 되돌리게 된다.
+        fillClinicFromPickedCard()
     }
 
     // MARK: - 날짜 · 시간 시트

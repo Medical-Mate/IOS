@@ -90,6 +90,7 @@ struct ScheduleRevisitTests {
         CardListItem(
             kind: .card(id: id, visited: visited),
             title: "카드 \(id)", meta: "", summary: nil,
+            clinic: nil,
             month: "2026년 9월", writtenOn: Date(timeIntervalSince1970: 0)
         )
     }
@@ -111,6 +112,7 @@ struct ScheduleRevisitTests {
         let intake = CardListItem(
             kind: .openIntake(sessionId: 9, tempSaved: false, step: 2, total: 3),
             title: "문답", meta: "", summary: nil,
+            clinic: nil,
             month: "2026년 9월", writtenOn: Date(timeIntervalSince1970: 0)
         )
         #expect(!ScheduleAddModel.isVisitedAndPicked(intake, picked: [9]))
@@ -198,5 +200,36 @@ struct ScheduleSaveRuleTests {
         let model = model(date: fixtureDay("2026-09-26"))
         model.pick(clinic: Hospital(name: "서울OO병원 내과", address: nil))
         #expect(model.canSave)
+    }
+}
+
+/// 고른 카드의 병원으로 빈 칸을 채운다(`1r-4-B`).
+struct ScheduleClinicFillTests {
+    private func card(id: Int64, clinic: String?) -> CardListItem {
+        CardListItem(
+            kind: .card(id: id, visited: false),
+            title: "복부 통증 · 3주",
+            meta: "09.04 작성",
+            summary: nil,
+            clinic: clinic,
+            month: "2026년 9월",
+            writtenOn: fixtureDay("2026-09-04")
+        )
+    }
+
+    @Test func 고른_카드의_병원을_쓴다() {
+        let cards = [card(id: 7, clinic: "서울OO병원 내과")]
+        #expect(ScheduleAddModel.pickedClinic(cards: cards, picked: [7]) == "서울OO병원 내과")
+    }
+
+    @Test func 고르지_않은_카드의_병원은_쓰지_않는다() {
+        let cards = [card(id: 7, clinic: "서울OO병원 내과")]
+        #expect(ScheduleAddModel.pickedClinic(cards: cards, picked: [8]) == nil)
+    }
+
+    @Test func 병원이_빈_카드는_건너뛴다() {
+        // "병원 미정"은 메타 줄의 말이지 적힌 병원이 아니다.
+        let cards = [card(id: 7, clinic: nil), card(id: 8, clinic: "OO이비인후과의원")]
+        #expect(ScheduleAddModel.pickedClinic(cards: cards, picked: [7, 8]) == "OO이비인후과의원")
     }
 }

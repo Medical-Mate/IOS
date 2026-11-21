@@ -13,7 +13,7 @@ struct CardListTests {
 
     /// 배지·요약만 보는 줄. 나머지 값은 비운다.
     private func item(_ kind: CardListItem.Kind) -> CardListItem {
-        CardListItem(kind: kind, title: "", meta: "", summary: nil, month: "", writtenOn: .now)
+        CardListItem(kind: kind, title: "", meta: "", summary: nil, clinic: nil, month: "", writtenOn: .now)
     }
 
     private func repository(today: String = "2026-09-18") -> CardRepository {

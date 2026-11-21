@@ -241,6 +241,7 @@ struct OpenIntakeBadgeTests {
         CardListItem(
             kind: .openIntake(sessionId: 9, tempSaved: confirmed, step: step, total: total),
             title: "정리 중인 증상", meta: "", summary: nil,
+            clinic: nil,
             month: "2026년 11월", writtenOn: Date(timeIntervalSince1970: 0)
         )
     }

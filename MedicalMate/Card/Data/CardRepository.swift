@@ -40,12 +40,14 @@ struct CardRepository: Sendable {
 
     private func item(from card: CardSummaryResponse) -> CardListItem {
         let date = card.createdAt.flatMap(HomeRepository.date(from:)) ?? today()
-        let clinic = card.clinicName.flatMap { $0.isEmpty ? nil : $0 } ?? "병원 미정"
+        let name = card.clinicName.flatMap { $0.isEmpty ? nil : $0 }
+        let clinic = name ?? "병원 미정"
         return CardListItem(
             kind: .card(id: card.cardId, visited: card.visited ?? false),
             title: HomeRepository.shorten((card.title ?? card.chiefComplaint) ?? ""),
             meta: "\(Self.writtenOn(date, calendar: calendar)) 작성 · \(clinic)",
             summary: card.axes.flatMap { $0.isEmpty ? nil : $0.joined(separator: " · ") },
+            clinic: name,
             month: Self.month(date, calendar: calendar),
             writtenOn: date
         )
@@ -65,6 +67,8 @@ struct CardRepository: Sendable {
             title: intake.siteText.flatMap { $0.isEmpty ? nil : $0 } ?? "정리 중인 증상",
             meta: "\(relativeDay(date)) · \(total)단계 중 \(step)단계",
             summary: "이어서 정리하기",
+            // 아직 카드가 아니라 적힌 병원이 없다.
+            clinic: nil,
             month: Self.month(date, calendar: calendar),
             writtenOn: date
         )
@@ -139,12 +143,14 @@ extension CardRepository {
     /// 주는 것이고, 기록은 끝난 뒤에 읽는 것이다.
     func item(from visit: VisitSummaryResponse) -> CardListItem? {
         guard let date = HomeRepository.date(from: visit.visitedOn) else { return nil }
-        let clinic = visit.clinicName.flatMap { $0.isEmpty ? nil : $0 } ?? "병원 미정"
+        let name = visit.clinicName.flatMap { $0.isEmpty ? nil : $0 }
+        let clinic = name ?? "병원 미정"
         return CardListItem(
             kind: .visit(id: visit.visitId, cardId: visit.cardId),
             title: HomeRepository.shorten(visit.cardTitle ?? ""),
             meta: "\(Self.writtenOn(date, calendar: calendar)) 진료 · \(clinic)",
             summary: CardRepository.visitSummary(visit, calendar: calendar),
+            clinic: name,
             month: Self.month(date, calendar: calendar),
             writtenOn: date
         )
