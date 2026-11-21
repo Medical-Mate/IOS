@@ -108,6 +108,15 @@ struct IntakeRepository: Sendable {
     /// 않는다. **직접 적은 줄이 있는지로 가른다** — Android `IntakeQuestionRows.kt`가
     /// 같은 규칙이라 그쪽을 따랐다(COMPONENT-MAP 3장 #11).
     ///
+    /// 문답을 열 때 세우는 첫 마디(`1c-2` `3919:24204`).
+    ///
+    /// **서버가 마디를 주면 그것을 쓴다.** 앱 문장을 먼저 세우면 첫 답을 보낸 뒤 서버
+    /// 대화로 갈아 끼우면서 첫 질문이 바뀌어 보인다. 서버가 아무것도 안 줬을 때만
+    /// 이 말이 선다 — 빈 화면으로 열리면 무엇을 적어야 할지 알 수 없다.
+    nonisolated static func opening(site: String) -> String {
+        "\(site)\(KoreanParticle.subject(after: site)) 불편하시군요. 언제부터 그러셨어요? 정확하지 않아도 괜찮아요."
+    }
+
     /// 질문 줄 위의 AI 말(`1c-D` `3663:7218`). "물어볼 질문 3개를 골라봤어요."
     ///
     /// **추천만 센다.** 환자가 직접 적은 줄은 AI가 고른 것이 아니다. 추천이 하나도 없으면

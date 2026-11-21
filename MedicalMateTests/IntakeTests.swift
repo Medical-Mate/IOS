@@ -127,6 +127,14 @@ struct IntakeTests {
         #expect(KoreanParticle.subject(after: "MRI") == "가")
     }
 
+    @Test func 서버가_첫_마디를_안_주면_앱이_세운다() {
+        // 빈 화면으로 열면 무엇을 적어야 할지 알 수 없다(1c-2 `3919:24204`).
+        #expect(IntakeRepository.opening(site: "복부")
+            == "복부가 불편하시군요. 언제부터 그러셨어요? 정확하지 않아도 괜찮아요.")
+        // 조사도 부위 이름을 따라간다.
+        #expect(IntakeRepository.opening(site: "손목").hasPrefix("손목이 불편하시군요"))
+    }
+
     @Test func 괄호로_끝나는_이름은_마지막_한글_음절로_조사를_정한다() {
         // 온톨로지의 부위 이름이 괄호로 끝난다. 맨 끝 글자만 보면 늘 "가"가 붙어
         // "목 안(목구멍)가"가 된다.

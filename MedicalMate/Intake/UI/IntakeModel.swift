@@ -274,7 +274,16 @@ final class IntakeModel {
     private func apply(_ response: SessionResponse) {
         sessionId = response.sessionId
         let incoming = IntakeRepository.messages(from: response.messages)
-        if !incoming.isEmpty { messages = incoming }
+        if !incoming.isEmpty {
+            messages = incoming
+        } else if messages.isEmpty, !site.text.isEmpty {
+            // **서버가 마디를 안 줬다.** 빈 화면으로 열면 무엇을 적어야 할지 알 수 없다.
+            // 서버가 주면 그것을 쓴다 — 앱 문장을 먼저 세우면 첫 답을 보낸 뒤 서버
+            // 대화로 갈아 끼우면서 첫 질문이 바뀌어 보인다.
+            messages = [
+                IntakeMessage(seq: 1, fromPatient: false, text: IntakeRepository.opening(site: site.text))
+            ]
+        }
         if let level = response.severity?.level { severity = level }
         rows = IntakeRepository.rows(
             candidates: IntakeRepository.candidates(from: response.questionCandidates),
