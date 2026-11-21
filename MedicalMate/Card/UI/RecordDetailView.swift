@@ -38,7 +38,10 @@ struct RecordDetailView: View {
 
     private func content(_ model: RecordDetailModel) -> some View {
         VStack(spacing: 0) {
-            MMNavBar(title: "기록", leading: .back, onLeading: onBack)
+            // **"기록 상세"다.** 탭의 1Depth인 기록 목록이 "기록"이라 같은 말을 쓰면
+            // 어느 자리인지 알 수 없다. 시안(`3663:15567`)과 Android
+            // (`record_detail_title`)가 같다.
+            MMNavBar(title: "기록 상세", leading: .back, onLeading: onBack)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {

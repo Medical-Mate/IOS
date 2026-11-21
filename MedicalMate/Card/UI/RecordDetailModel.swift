@@ -192,7 +192,11 @@ final class RecordDetailModel {
                 kind: .visit(id: visit.id),
                 when: when,
                 title: "진료 후 기록",
-                items: visit.items.map { BriefCardItem(key: $0.label, value: $0.value, axis: $0.axis) }
+                // **재방문 줄은 여기서도 강조한다.** `1j-3`(`3663:15567`)이 1q-1과 같이
+                // 그 줄만 `fg/primary`로 세운다 — 타임라인에서 다음에 할 일이다.
+                items: visit.items.map {
+                    BriefCardItem(key: $0.label, value: $0.value, isEmphasized: $0.isEmphasized, axis: $0.axis)
+                }
             )
         }
     }

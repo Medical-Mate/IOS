@@ -10,13 +10,19 @@ struct RecordDetailTests {
         return calendar
     }
 
-    private func visit(id: Int64 = 5, clinic: String?, on day: String?, followUp: VisitFollowUp? = nil) -> Visit {
+    private func visit(
+        id: Int64 = 5,
+        clinic: String?,
+        on day: String?,
+        followUp: VisitFollowUp? = nil,
+        items: [VisitItem] = []
+    ) -> Visit {
         Visit(
             id: id,
             cardId: 7,
             clinicName: clinic,
             visitedOn: day.flatMap { HomeRepository.date(from: $0) },
-            items: [],
+            items: items,
             followUp: followUp,
             patientNotes: [],
             rawNote: nil
@@ -109,6 +115,20 @@ struct RecordDetailTests {
         #expect(step.when == "09.26 예정")
         #expect(step.notice?.title == "재방문 예정이에요")
         #expect(step.notice?.message == "9월 26일 (토) 전후")
+    }
+
+    @Test func 재방문_줄은_타임라인에서도_강조한다() {
+        // 1q-1에서만 파랗고 1j-3(3663:15567)에서는 까맣게 서던 자리다.
+        let items = [
+            VisitItem(axis: VisitAxis.findings, label: "소견", value: "위염 초기 소견"),
+            VisitItem(axis: VisitAxis.followUp, label: "재방문", value: "2주 뒤 재방문")
+        ]
+        let steps = RecordDetailModel.visitSteps(
+            [visit(clinic: "서울OO병원", on: "2026-09-12", items: items)],
+            calendar: calendar
+        )
+        #expect(steps.first?.items.first?.isEmphasized == false)
+        #expect(steps.first?.items.last?.isEmphasized == true)
     }
 
     @Test func 카드_제목이_비면_목록의_제목으로_받친다() {
