@@ -32,7 +32,14 @@ struct MainTabView: View {
     private var screen: some View {
         switch tab {
         case .calendar:
-            PlaceholderView(title: "캘린더", note: "G 섹션 `1r-1`(3663:15299)을 그린다")
+            CalendarView(
+                onOpenDay: { day in
+                    path.append(Route.calendarDay(date: Self.wire(day), appointmentId: nil))
+                },
+                onAddSchedule: { day in
+                    path.append(Route.scheduleAdd(date: day.map(Self.wire)))
+                }
+            )
         case .home:
             HomeView(
                 onOpenCardList: { path.append(Route.briefCardList) },
@@ -42,6 +49,11 @@ struct MainTabView: View {
         case .record:
             PlaceholderView(title: "기록", note: "H 섹션 `1j-1`(3663:15519)을 그린다")
         }
+    }
+
+    /// 라우트가 나르는 날짜. 서버와 같은 `yyyy-MM-dd`다.
+    private static func wire(_ date: Date) -> String {
+        VisitMapping.day(date, calendar: .current)
     }
 
     @ViewBuilder
