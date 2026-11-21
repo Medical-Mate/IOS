@@ -157,7 +157,7 @@ final class MateModel {
         .profile: .route(.myProfile),
         .back: .back,
         .intake: .route(.intake(sessionId: nil)),
-        .visitRecord: .route(.hospitalPick),
+        .visitRecord: .route(.hospitalPick()),
         .briefCards: .route(.briefCardList),
         .scheduleAdd: .route(.scheduleAdd(date: nil)),
         .resume: .tab(.home),

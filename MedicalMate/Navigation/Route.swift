@@ -35,7 +35,9 @@ enum Route: Hashable, Sendable {
     case scheduleAdd(date: String?, cardId: Int64? = nil, isFollowUp: Bool = false)
 
     // 진료 후 기록
-    case hospitalPick
+    /// 병원 찾기(`1m-B`). **카드를 들고 간다** — 고른 병원을 그 카드에 적는다.
+    /// `nil`이면 흐름 안에서 열린 것이라 흐름이 결과를 받는다.
+    case hospitalPick(cardId: Int64? = nil)
     case clinicConfirm(cardId: Int64)
     case visitNote(cardId: Int64)
     case visitRecord(cardId: Int64)

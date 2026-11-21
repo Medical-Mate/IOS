@@ -130,7 +130,7 @@ struct MainTabView: View {
                 cardId: cardId,
                 justCreated: justCreated,
                 onBack: { path.removeLast() },
-                onChangeHospital: { path.append(Route.hospitalPick) },
+                onChangeHospital: { path.append(Route.hospitalPick(cardId: cardId)) },
                 onSchedule: { path.append(Route.scheduleAdd(date: nil, cardId: cardId)) },
                 onViewSchedule: { day, id in
                     path.append(Route.calendarDay(date: Self.wire(day), appointmentId: id))
@@ -208,6 +208,27 @@ struct MainTabView: View {
                 cardId: cardId,
                 onClose: { path.removeLast() },
                 onSaved: { _ in path.removeLast() }
+            )
+            .toolbar(.hidden, for: .navigationBar)
+
+        case .hospitalPick(let cardId):
+            // **브리핑 카드의 "변경"이 닿는 곳이다.** 화면은 진작 서 있었는데 길이
+            // 이어져 있지 않아 자리표시자가 떴다 — 눌러 보고서야 보인 자리다.
+            // 고른 병원은 그 카드에 적고 돌아온다. 건너뛰면 그대로 돌아온다.
+            HospitalPickView(
+                purpose: .beforeVisit,
+                onBack: { path.removeLast() },
+                onSubmit: { hospital in
+                    Task {
+                        if let cardId, let hospital {
+                            _ = await app.cards.update(
+                                cardId: cardId,
+                                clinic: ClinicRequest(name: hospital.name, address: hospital.address)
+                            )
+                        }
+                        path.removeLast()
+                    }
+                }
             )
             .toolbar(.hidden, for: .navigationBar)
 
