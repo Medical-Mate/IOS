@@ -58,12 +58,23 @@ struct VisitNoteView: View {
                 }
 
                 // 받아쓰기가 불가능한 기기에서는 그리지 않는다.
-                if dictation.isAvailable {
+                //
+                // **듣는 중에는 마이크를 패널이 들고 있다.** 시안 `1p-T`(`3663:14402`)에
+                // 떠 있는 마이크가 없고, Android `VisitNoteScreen`도 그동안 FAB을
+                // 감춘다 — 같은 조작이 화면에 둘 있으면 어느 것을 눌러야 멈추는지
+                // 알 수 없다.
+                if dictation.isAvailable, !dictation.isListening {
                     fab
                 }
 
                 if dictation.isListening {
-                    MMVoiceInputMate(title: "말씀해 주세요", message: "듣고 있어요")
+                    // 글은 시안(`3663:14424`)과 Android `visit_note_voice_title`이
+                    // 같은 값이다. "말씀해 주세요"는 메이트의 `voice_idle_title`이고
+                    // 이 자리의 말이 아니다.
+                    MMVoiceInputMate(
+                        title: VisitNoteCopy.voiceTitle,
+                        message: VisitNoteCopy.voiceMessage
+                    )
                         .frame(width: MMSize.contentWidth)
                         .padding(.bottom, MMSpace.s16)
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -215,4 +226,15 @@ enum VisitNoteMetrics {
 /// 스크롤을 부를 자리.
 private enum NoteAnchor {
     case bottom
+}
+
+/// `1p`의 글.
+enum VisitNoteCopy {
+    /// 받아쓰는 동안 패널의 제목. 시안 `3663:14424` · Android `visit_note_voice_title`.
+    ///
+    /// **증상 문답의 패널과 다른 말이다** — 그쪽은 "말씀해 주세요"(`voice_idle_title`)이고
+    /// 여기는 진료실에서 들은 말을 묻는 자리다.
+    static let voiceTitle = "선생님이 뭐라고 하셨나요?"
+    /// 둘째 줄. Android `voice_listening_title`과 같다.
+    static let voiceMessage = "듣고 있어요"
 }

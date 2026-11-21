@@ -226,3 +226,20 @@ struct HospitalPickPurposeTests {
         #expect(HospitalPickPurpose.afterVisit.submitTitle == "완료")
     }
 }
+
+/// 받아쓰기 패널의 글(2026-11-22). **두 화면이 다른 말을 쓴다** — 진료 후 메모는
+/// "선생님이 뭐라고 하셨나요?", 증상 문답은 "말씀해 주세요"다. iOS가 `1p`에도
+/// 문답 쪽 말을 넣고 있었다. 시안 `3663:14424`와 Android `visit_note_voice_title`이
+/// 같은 값이다.
+@Suite("받아쓰기 패널의 글")
+struct VoicePanelCopyTests {
+    @Test func 진료_후_메모는_들은_말을_묻는다() {
+        #expect(VisitNoteCopy.voiceTitle == "선생님이 뭐라고 하셨나요?")
+        #expect(VisitNoteCopy.voiceMessage == "듣고 있어요")
+    }
+
+    /// 마스터의 기본값은 또 다르다 — 컴포넌트 혼자 설 때의 말이다.
+    @Test func 마스터의_기본값과도_다르다() {
+        #expect(VisitNoteCopy.voiceTitle != "듣고 있어요")
+    }
+}
