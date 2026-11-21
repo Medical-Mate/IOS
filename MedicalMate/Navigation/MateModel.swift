@@ -157,7 +157,12 @@ final class MateModel {
         .profile: .route(.myProfile),
         .back: .back,
         .intake: .route(.intake(sessionId: nil)),
-        .visitRecord: .route(.hospitalPick()),
+        // **진료 후 기록은 홈으로 간다.** 그 흐름(`VisitFlowView`)은 카드가 있어야
+        // 열리는데 메이트는 어느 카드인지 모른다. 전에는 `hospitalPick`을 가리켰고
+        // 그 라우트가 자리표시자여서 티가 안 났는데, 길을 이어 놓고 보니 **병원을
+        // 고른 뒤 아무 일도 없는 막다른 길**이었다. Android도 이 명령에서는
+        // `openTabRoot(tab)`으로 뿌리만 열고 화면에 넘긴다.
+        .visitRecord: .tab(.home),
         .briefCards: .route(.briefCardList),
         .scheduleAdd: .route(.scheduleAdd(date: nil)),
         .resume: .tab(.home),
