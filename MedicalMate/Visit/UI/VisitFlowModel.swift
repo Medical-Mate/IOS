@@ -35,6 +35,12 @@ final class VisitFlowModel {
 
     private(set) var isBusy = false
     private(set) var errorMessage: String?
+
+    /// 다시 누르면 되는 실패. 네트워크가 끊겼을 때다.
+    nonisolated static let saveFailed = "저장하지 못했어요. 다시 눌러주세요."
+    /// 다시 눌러도 안 되는 실패. **무엇을 먼저 해야 하는지**를 적는다 — 기록은 카드에
+    /// 붙는 것이라 카드가 없으면 받아 줄 곳이 없다.
+    nonisolated static let saveRejected = "다시 눌러도 저장되지 않아요. 브리핑 카드를 먼저 저장해야 기록을 남길 수 있어요."
     var isTooltipOpen = false
     var isDeleteRequested = false
 
@@ -249,9 +255,10 @@ final class VisitFlowModel {
             savedVisitId = response.visitId
             return response.visitId
         case .rejected(let error):
-            errorMessage = error.message ?? "기록을 저장하지 못했어요."
+            // 서버가 물린 것은 다시 눌러도 같다. 무엇을 먼저 해야 하는지를 적는다.
+            errorMessage = error.message ?? VisitFlowModel.saveRejected
         case .networkUnavailable:
-            errorMessage = "연결이 끊어졌어요."
+            errorMessage = VisitFlowModel.saveFailed
         }
         return nil
     }

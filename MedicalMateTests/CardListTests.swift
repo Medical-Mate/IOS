@@ -77,8 +77,39 @@ struct CardListTests {
 
     @Test("구간 머리의 수는 편집 중에 '선택됨'으로 바뀐다 (3663:7148)")
     func countLabel() {
-        #expect(CardRepository.countLabel(2, selected: false) == "2장")
-        #expect(CardRepository.countLabel(1, selected: true) == "1장 선택됨")
+        #expect(CardRepository.countLabel(2, unit: "장", selected: false) == "2장")
+        #expect(CardRepository.countLabel(1, unit: "장", selected: true) == "1장 선택됨")
+    }
+
+    @Test("기록은 건으로 세고 카드는 장으로 센다")
+    func 세는_말이_화면마다_갈린다() {
+        // Android가 `record_count`와 `brief_card_list_count`로 나눠 둔 자리다.
+        #expect(BriefCardListView.Kind.records.unit == "건")
+        #expect(BriefCardListView.Kind.briefCards.unit == "장")
+        #expect(CardRepository.countLabel(3, unit: "건", selected: false) == "3건")
+        #expect(CardRepository.countLabel(3, unit: "건", selected: true) == "3건 선택됨")
+    }
+
+    @Test("삭제 확인은 무엇이 사라지는지를 화면마다 다르게 적는다")
+    func 삭제_확인_문구가_갈린다() {
+        #expect(BriefCardListView.Kind.briefCards.deleteTitle(2) == "브리핑 카드 2장을 삭제할까요?")
+        #expect(BriefCardListView.Kind.records.deleteTitle(2) == "기록 2건을 삭제할까요?")
+        // 카드를 지워도 진료 기록은 남는다 — 1j-4가 꼭 적어야 하는 말이다.
+        #expect(BriefCardListView.Kind.briefCards.deleteBody == "연결된 진료 기록은 남고 선택한 카드는 사라져요.")
+        #expect(BriefCardListView.Kind.records.deleteBody == "선택한 기록이 사라지고 되돌릴 수 없어요.")
+    }
+
+    @Test("고른 것이 없으면 아래 버튼은 수를 적지 않는다")
+    func 삭제_버튼_라벨() {
+        #expect(BriefCardListView.deleteTitle(0, unit: "장") == "삭제")
+        #expect(BriefCardListView.deleteTitle(2, unit: "장") == "2장 삭제")
+        #expect(BriefCardListView.deleteTitle(2, unit: "건") == "2건 삭제")
+    }
+
+    @Test("빈 자리 제목은 무엇이 없는지를 가리킨다")
+    func 빈_자리_제목() {
+        #expect(BriefCardListView.Kind.briefCards.emptyTitle == "아직 브리핑 카드가 없어요")
+        #expect(BriefCardListView.Kind.records.emptyTitle == "아직 진료 기록이 없어요")
     }
 
     @Test("이어서 할 것은 요약 줄이 warning이다 (3663:7130)")

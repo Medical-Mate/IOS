@@ -32,6 +32,40 @@ struct BriefCardListView: View {
             case .records: .none
             }
         }
+
+        /// 세는 말. **기록은 "건", 카드는 "장"이다**(Android `record_count` ·
+        /// `brief_card_list_count`).
+        var unit: String {
+            switch self {
+            case .briefCards: "장"
+            case .records: "건"
+            }
+        }
+
+        /// 삭제 확인(`1j-4-DC`)의 제목. 무엇이 몇 개 사라지는지를 적는다.
+        func deleteTitle(_ count: Int) -> String {
+            switch self {
+            case .briefCards: "브리핑 카드 \(count)장을 삭제할까요?"
+            case .records: "기록 \(count)건을 삭제할까요?"
+            }
+        }
+
+        /// 삭제 확인의 본문. **카드를 지워도 진료 기록은 남는다**는 것이 1j-4의 핵심이라
+        /// 두 화면이 다른 말을 한다.
+        var deleteBody: String {
+            switch self {
+            case .briefCards: "연결된 진료 기록은 남고 선택한 카드는 사라져요."
+            case .records: "선택한 기록이 사라지고 되돌릴 수 없어요."
+            }
+        }
+
+        /// 비었을 때의 제목. `1j-2`는 기록, `1j-4`는 카드를 가리킨다.
+        var emptyTitle: String {
+            switch self {
+            case .briefCards: "아직 브리핑 카드가 없어요"
+            case .records: "아직 진료 기록이 없어요"
+            }
+        }
     }
 
     var kind: Kind = .briefCards
@@ -83,8 +117,8 @@ struct BriefCardListView: View {
             if askingDelete {
                 MMOverlayScrim { askingDelete = false }
                 MMDialog(
-                    title: "\(model.pickedCount)장을 삭제할까요?",
-                    message: "삭제하면 되돌릴 수 없어요.",
+                    title: kind.deleteTitle(model.pickedCount),
+                    message: kind.deleteBody,
                     confirmTitle: "삭제",
                     onCancel: { askingDelete = false },
                     onConfirm: {
@@ -115,7 +149,7 @@ struct BriefCardListView: View {
     private var emptyState: some View {
         MMEmptyState(
             icon: .emptyBox,
-            title: "아직 진료 기록이 없어요",
+            title: kind.emptyTitle,
             message: "증상을 정리해두면 진료실에서 바로 보여줄 수 있어요",
             actionTitle: "증상 정리하기",
             actionStyle: .link,
@@ -140,8 +174,12 @@ struct BriefCardListView: View {
                     MMSectionHeader(
                         title: section.month,
                         trailing: model.isEditing
-                            ? .selected(CardRepository.countLabel(model.pickedCount(in: section), selected: true))
-                            : .count(CardRepository.countLabel(section.items.count, selected: false))
+                            ? .selected(CardRepository.countLabel(
+                                model.pickedCount(in: section), unit: kind.unit, selected: true
+                            ))
+                            : .count(CardRepository.countLabel(
+                                section.items.count, unit: kind.unit, selected: false
+                            ))
                     )
 
                     ForEach(section.items) { item in
@@ -179,7 +217,8 @@ struct BriefCardListView: View {
     }
 
     private func footer(_ model: BriefCardListModel) -> some View {
-        MMButton("\(model.pickedCount)장 삭제", kind: .danger) {
+        // 고른 것이 없으면 "삭제"만 적는다. "0장 삭제"는 세는 말이 되지 않는다.
+        MMButton(Self.deleteTitle(model.pickedCount, unit: kind.unit), kind: .danger) {
             askingDelete = true
         }
         .disabled(model.pickedCount == 0)
@@ -187,6 +226,11 @@ struct BriefCardListView: View {
         .padding(.top, MMSpace.s12)
         .padding(.bottom, MMSpace.s24)
         .background(MMColor.bgSurface)
+    }
+
+    /// "삭제" · "2장 삭제" · "2건 삭제".
+    nonisolated static func deleteTitle(_ count: Int, unit: String) -> String {
+        count == 0 ? "삭제" : "\(count)\(unit) 삭제"
     }
 
     private func open(_ item: CardListItem) {

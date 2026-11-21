@@ -159,6 +159,13 @@ struct VisitTests {
 
 /// 병원 찾기가 두 가지 일을 한다.
 struct HospitalPickPurposeTests {
+    @Test func 저장_실패_문구가_갈린다() {
+        // Android의 RETRYABLE · REJECTED와 같은 갈림이다.
+        #expect(VisitFlowModel.saveFailed == "저장하지 못했어요. 다시 눌러주세요.")
+        #expect(VisitFlowModel.saveRejected.hasPrefix("다시 눌러도 저장되지 않아요."))
+        #expect(VisitFlowModel.saveRejected.contains("브리핑 카드를 먼저 저장해야"))
+    }
+
     @Test func 진료_전과_후의_문구가_갈린다() {
         #expect(HospitalPickPurpose.beforeVisit.title == "진료받을 병원을 찾아주세요")
         #expect(HospitalPickPurpose.afterVisit.title == "진료받은 병원을 찾아주세요")

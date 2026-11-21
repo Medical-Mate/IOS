@@ -104,7 +104,7 @@ final class HealthEditModel {
             errorMessage = nil
             return true
         case .rejected, .networkUnavailable:
-            errorMessage = "저장하지 못했어요. 잠시 뒤 다시 시도해주세요."
+            errorMessage = "저장하지 못했어요. 다시 눌러주세요."
             return false
         }
     }

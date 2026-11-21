@@ -122,7 +122,7 @@ final class ProfileSetupModel {
         case .success:
             return true
         case .rejected(let error):
-            errorMessage = error.message ?? "저장하지 못했어요. 잠시 후 다시 시도해주세요."
+            errorMessage = error.message ?? "저장하지 못했어요. 다시 눌러주세요."
             return false
         case .networkUnavailable:
             errorMessage = "연결이 끊어졌어요. 잠시 후 다시 시도해주세요."

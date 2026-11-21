@@ -85,9 +85,13 @@ struct CardRepository: Sendable {
         "\(calendar.component(.year, from: date))년 \(calendar.component(.month, from: date))월"
     }
 
-    /// "2장" · "1장 선택됨".
-    static func countLabel(_ count: Int, selected: Bool) -> String {
-        selected ? "\(count)장 선택됨" : "\(count)장"
+    /// "2장" · "1장 선택됨" · "2건" · "1건 선택됨".
+    ///
+    /// **기록은 "건", 카드는 "장"으로 센다.** Android가 세는 말을 화면마다 나눠 두었고
+    /// (`record_count` · `brief_card_list_count`) 같은 목록이 두 화면을 겸하는 iOS도
+    /// 그 자리를 따라간다.
+    static func countLabel(_ count: Int, unit: String, selected: Bool) -> String {
+        selected ? "\(count)\(unit) 선택됨" : "\(count)\(unit)"
     }
 }
 

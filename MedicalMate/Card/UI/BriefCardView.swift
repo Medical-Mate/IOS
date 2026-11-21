@@ -108,7 +108,7 @@ struct BriefCardView: View {
                     }
 
                     if model.saveFailed {
-                        Text("고친 내용을 저장하지 못했어요. 잠시 뒤 다시 해주세요.")
+                        Text("저장하지 못했어요. 다시 눌러주세요.")
                             .mmTextStyle(MMFont.bodyS)
                             .foregroundStyle(MMColor.fgDanger)
                     }
