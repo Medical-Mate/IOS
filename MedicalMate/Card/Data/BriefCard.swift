@@ -72,6 +72,19 @@ enum BriefCardFooterAction: Sendable, Equatable {
         case .recordVisit: "진료 후 기록하기"
         }
     }
+
+    /// 버튼의 모양. **셋이 다 다르다.**
+    ///
+    /// 시안이 일정 잡기는 채운 면(`3663:7335`), 일정 보기는 테두리(`3663:7393`),
+    /// 진료 후 기록은 옅은 면(`3663:7428`)으로 그린다. 지금 할 일이 무엇인지에 따라
+    /// 무게가 갈리는 자리다 — 아직 안 잡은 일정이 가장 급하다.
+    var kind: MMButtonKind {
+        switch self {
+        case .schedule: .primary
+        case .viewSchedule: .outline
+        case .recordVisit: .tonal
+        }
+    }
 }
 
 /// 편집 중인 사본.

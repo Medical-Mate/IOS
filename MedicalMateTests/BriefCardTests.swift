@@ -223,4 +223,12 @@ struct BriefCardAxisLabelTests {
         // 기간으로 읽힌다. 화면 문구는 Figma를 따른다 — COMPONENT-MAP 3장 14번.
         #expect(BriefCardMapping.label(for: "onset") == "기간")
     }
+
+    @Test func 하단_버튼은_세_상태가_모양이_다르다() {
+        // 시안이 일정 잡기는 채운 면(3663:7335), 일정 보기는 테두리(3663:7393),
+        // 진료 후 기록은 옅은 면(3663:7428)으로 그린다.
+        #expect(BriefCardFooterAction.schedule.kind == .primary)
+        #expect(BriefCardFooterAction.viewSchedule.kind == .outline)
+        #expect(BriefCardFooterAction.recordVisit.kind == .tonal)
+    }
 }

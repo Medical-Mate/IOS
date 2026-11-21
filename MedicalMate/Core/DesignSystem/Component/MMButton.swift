@@ -19,8 +19,12 @@ private enum ButtonMetrics {
 ///
 /// 마스터는 Type 5 × Size 3 × State 3 = 45 변형이다. `State`는 코드에서 변형이 아니라
 /// 눌림·비활성으로 저절로 갈린다.
+/// 버튼의 갈래. **제네릭 바깥에 둔다** — 안에 두면 쓰는 쪽이 `MMButton<_, _>.Kind`로
+/// 가리켜야 한다(`MMCardEmphasis`와 같은 자리).
+enum MMButtonKind { case primary, tonal, outline, ghost, danger }
+
 struct MMButton<Leading: View, Trailing: View>: View {
-    enum Kind { case primary, tonal, outline, ghost, danger }
+    typealias Kind = MMButtonKind
     enum Size { case l, m, s }
 
     let title: String

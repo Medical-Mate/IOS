@@ -273,7 +273,7 @@ struct BriefCardView: View {
                 }
                 .disabled(model.isSaving)
             } else if let action = model.footerAction {
-                MMButton(action.title, kind: .outline) {
+                MMButton(action.title, kind: action.kind) {
                     switch action {
                     case .schedule: onSchedule()
                     case .viewSchedule: model.card?.appointment.map { onViewSchedule($0.id) }
