@@ -118,3 +118,13 @@ struct MyProfileTests {
         #expect(model.options(0).filter { $0 == "혈압약" }.count == 1)
     }
 }
+
+/// 건강 정보 수정(`1s-2`)에서 직접 적어 넣는 자리.
+struct HealthEditDraftTests {
+    @Test func 앞서_적어_넣은_것과_같으면_줄을_더하지_않는다() {
+        // 같은 줄이 두 번 서지 않는다. 고른 것으로만 표시된다.
+        #expect(HealthEditModel.isNew("메밀", extras: []))
+        #expect(!HealthEditModel.isNew("메밀", extras: ["메밀"]))
+        #expect(HealthEditModel.isNew("메밀", extras: ["땅콩"]))
+    }
+}

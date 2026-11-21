@@ -79,14 +79,24 @@ final class HealthEditModel {
         guard let step = adding else { return }
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
+        // 기본 목록에 있는 말이면 줄을 더하지 않고 칸을 열어 둔다.
         if options(step).contains(text) {
             draft = ""
             return
         }
-        extras[step].append(text)
+        // **같은 것을 두 번 담지 않는다.** 앞서 적어 넣은 것과 같으면 줄을 더하지 않고
+        // 고른 것으로만 표시한다 — 같은 줄이 두 번 서지 않는다.
+        if HealthEditModel.isNew(text, extras: extras[step]) {
+            extras[step].append(text)
+        }
         picked[step].insert(text)
         draft = ""
         adding = nil
+    }
+
+    /// 새 줄로 더해야 하는지. 앞서 적어 넣은 것에 없을 때만이다.
+    nonisolated static func isNew(_ text: String, extras: [String]) -> Bool {
+        !extras.contains(text)
     }
 
     func save() async -> Bool {
