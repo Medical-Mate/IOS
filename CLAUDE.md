@@ -13,6 +13,7 @@ Medical Mate **iOS** 저장소에서 AI 에이전트가 작업할 때 참고하�
 | [`docs/FEATURE-SPEC.md`](docs/FEATURE-SPEC.md) | 화면 · API · 도메인 모델 · 상태 규칙을 확인할 때 |
 | [`docs/AOS-IOS-DIFF.md`](docs/AOS-IOS-DIFF.md) | **Android 코드를 옮기기 전에 항상.** 6장의 규칙 20개는 다시 발견하지 말고 그대로 지킵니다 |
 | [`docs/COMPONENT-MAP.md`](docs/COMPONENT-MAP.md) | **컴포넌트를 만들기 전에 항상.** 어떤 마스터가 들어왔는지, 가져오는 절차, 대조하면서 발견한 어긋남 |
+| [`docs/ANDROID-ISSUES.md`](docs/ANDROID-ISSUES.md) | Android 저장소에 올릴 여덟 건의 Issue 본문. **여기서 고치지 않습니다**(6장 4번) |
 
 Android 구현이 사실상의 참조 구현입니다. 어떤 화면이나 규칙이 모호하면
 [`Medical-Mate/Android`](https://github.com/Medical-Mate/Android)의 같은 도메인

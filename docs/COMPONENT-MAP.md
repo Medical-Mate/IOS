@@ -288,6 +288,8 @@ iOS 쪽 값은 `DesignTokenTests`가 못박고 있어 이쪽이 밀리면 CI가 
 따랐으니 그쪽을 맞추면 두 플랫폼이 같아진다. (이 저장소에서 고치지 않는다 —
 `CLAUDE.md` 6장 4번.)
 
+**그대로 올릴 수 있는 Issue 본문은 [`ANDROID-ISSUES.md`](ANDROID-ISSUES.md)에 있다.**
+
 | # | 자리 | Figma | Android 지금 |
 | -- | -- | -- | -- |
 | 14 | 카드 `onset` 줄 이름 | **기간** | `CardMapping.kt`의 `"시작"` |
