@@ -207,3 +207,27 @@ struct HomeTests {
 private enum AppEnvironmentStub {
     static let client = AppEnvironment().client
 }
+
+/// 배너가 이음매 없이 도는 자리(2026-11-22). 자리를 모듈로로 접으면 마지막 장에서
+/// 0으로 되돌아가 **앞의 네 장을 거꾸로 되감는다.** 자리는 늘 앞으로만 가고 그릴 때만
+/// 접는다 — Android `HomeBannerPager`의 `LOOP_PAGES`와 같은 방법이다.
+@Suite("홈 배너가 도는 법")
+struct HomeBannerLoopTests {
+    @Test func 시작_자리는_첫_장이다() {
+        for count in 1...8 {
+            #expect(BannerCarouselMetrics.start(for: count) % count == 0)
+        }
+    }
+
+    @Test func 시작_자리는_가운데_언저리다() {
+        let start = BannerCarouselMetrics.start(for: 5)
+        #expect(start > 0)
+        #expect(start < BannerCarouselMetrics.loopPages)
+        // 앞뒤로 넉넉히 남는다.
+        #expect(BannerCarouselMetrics.loopPages - start > 1000)
+    }
+
+    @Test func 장이_없으면_0이다() {
+        #expect(BannerCarouselMetrics.start(for: 0) == 0)
+    }
+}
