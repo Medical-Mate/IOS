@@ -231,3 +231,29 @@ struct HomeBannerLoopTests {
         #expect(BannerCarouselMetrics.start(for: 0) == 0)
     }
 }
+
+/// 문답 줄의 배지(2026-11-22). **"작성 중"과 "임시 저장"은 진행도로 갈리지 않는다** —
+/// 3/3은 AI 문답이 끝난 것이고, 거기서 질문을 고르다 나간 사람도 3/3이다.
+/// 서버의 `questions_confirmed`가 가른다(`HomeDTO`가 못박아 둔 자리다).
+@Suite("문답 줄의 배지")
+struct OpenIntakeBadgeTests {
+    private func row(_ confirmed: Bool, step: Int, total: Int) -> CardListItem {
+        CardListItem(
+            kind: .openIntake(sessionId: 9, tempSaved: confirmed, step: step, total: total),
+            title: "정리 중인 증상", meta: "", summary: nil,
+            month: "2026년 11월", writtenOn: Date(timeIntervalSince1970: 0)
+        )
+    }
+
+    @Test func 확정_전이면_끝까지_왔어도_작성_중이다() {
+        #expect(row(false, step: 3, total: 3).badge.text == "작성 중")
+    }
+
+    @Test func 확정했으면_임시_저장이다() {
+        #expect(row(true, step: 3, total: 3).badge.text == "임시 저장")
+    }
+
+    @Test func 진행_중이면_작성_중이다() {
+        #expect(row(false, step: 2, total: 3).badge.text == "작성 중")
+    }
+}

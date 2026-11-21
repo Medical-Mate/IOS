@@ -21,6 +21,7 @@ struct HomeRepository: Sendable {
             openIntake: response.inProgressSession.map {
                 HomeOpenIntake(
                     sessionId: $0.sessionId,
+                    questionsConfirmed: $0.questionsConfirmed ?? false,
                     step: $0.progressCurrent ?? 0,
                     total: $0.progressTotal ?? 3
                 )

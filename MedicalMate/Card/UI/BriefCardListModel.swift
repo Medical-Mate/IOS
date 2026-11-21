@@ -71,7 +71,11 @@ final class BriefCardListModel {
         return OpenIntakeResponse(
             sessionId: open.sessionId,
             siteText: nil,
-            questionsConfirmed: open.step >= open.total,
+            // **서버가 준 값을 그대로 쓴다.** 전에는 `open.step >= open.total`로
+            // 짐작해서, 질문 고르기 도중에 나간 문답(3/3이지만 확정 전)이 "임시
+            // 저장"으로 떴다. `HomeDTO`가 "`ended`로 가르지 않는다"고 적어 둔 것과
+            // 같은 함정이다 — 진행도가 끝에 닿은 것과 확정한 것은 다르다.
+            questionsConfirmed: open.questionsConfirmed,
             startedAt: nil,
             progressCurrent: open.step,
             progressTotal: open.total
