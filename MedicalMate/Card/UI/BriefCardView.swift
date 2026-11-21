@@ -82,49 +82,56 @@ struct BriefCardView: View {
     private func body(_ card: BriefCard, model: BriefCardModel) -> some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(alignment: .leading, spacing: MMSpace.s14) {
-                    briefCard(card, model: model)
-                        // 툴팁 말풍선은 카드 밖으로 흘러나온다(`1e-1-T` `3663:7496`).
-                        // **뒤에 오는 알러지 경고가 그 위에 그려지면 글이 가려진다** —
-                        // 열려 있는 동안만 카드를 위로 올린다.
-                        .zIndex(model.isTooltipOpen ? 1 : 0)
-
-                    // 알러지는 카드 밖 경고다. **처방을 바꾸는 값이라 다른 정보와 같은
-                    // 무게로 두지 않는다.** 편집 중에는 숨는다(마스터가 끈다).
-                    if !model.isEditing, !card.allergies.isEmpty {
-                        MMNotice(
-                            title: "알러지 · \(card.allergies.joined(separator: " · "))",
-                            message: "처방 전에 꼭 확인해 주세요",
-                            tone: .warning
-                        )
-                    }
-
-                    callout(card, model: model)
-
-                    MMSectionHeader(
-                        title: "진료받을 병원",
-                        actionTitle: "변경",
-                        onAction: onChangeHospital
-                    )
-
-                    if let hospital = card.hospital {
-                        hospitalCard(hospital)
-                    }
-
-                    if model.saveFailed {
-                        Text("저장하지 못했어요. 다시 눌러주세요.")
-                            .mmTextStyle(MMFont.bodyS)
-                            .foregroundStyle(MMColor.fgDanger)
-                    }
-                }
-                .padding(.horizontal, MMSize.gutter)
-                .padding(.top, MMSpace.s12)
-                .padding(.bottom, MMSpace.s16)
+                column(card, model: model)
             }
             .scrollBounceBehavior(.basedOnSize)
 
             footer(model)
         }
+    }
+
+    /// 화면에 흐르는 본문. **이미지로 내보내는 것도 이것이다** — 시트가
+    /// "카드 전체가 긴 이미지 한 장"이라고 적어 두었고, 카드만 찍으면 알러지 경고와
+    /// 묻고 싶은 것이 빠진다. Android도 스크롤 안쪽을 통째로 찍는다.
+    private func column(_ card: BriefCard, model: BriefCardModel) -> some View {
+        VStack(alignment: .leading, spacing: MMSpace.s14) {
+                briefCard(card, model: model)
+                    // 툴팁 말풍선은 카드 밖으로 흘러나온다(`1e-1-T` `3663:7496`).
+                    // **뒤에 오는 알러지 경고가 그 위에 그려지면 글이 가려진다** —
+                    // 열려 있는 동안만 카드를 위로 올린다.
+                    .zIndex(model.isTooltipOpen ? 1 : 0)
+
+                // 알러지는 카드 밖 경고다. **처방을 바꾸는 값이라 다른 정보와 같은
+                // 무게로 두지 않는다.** 편집 중에는 숨는다(마스터가 끈다).
+                if !model.isEditing, !card.allergies.isEmpty {
+                    MMNotice(
+                        title: "알러지 · \(card.allergies.joined(separator: " · "))",
+                        message: "처방 전에 꼭 확인해 주세요",
+                        tone: .warning
+                    )
+                }
+
+                callout(card, model: model)
+
+                MMSectionHeader(
+                    title: "진료받을 병원",
+                    actionTitle: "변경",
+                    onAction: onChangeHospital
+                )
+
+                if let hospital = card.hospital {
+                    hospitalCard(hospital)
+                }
+
+                if model.saveFailed {
+                    Text("저장하지 못했어요. 다시 눌러주세요.")
+                        .mmTextStyle(MMFont.bodyS)
+                        .foregroundStyle(MMColor.fgDanger)
+                }
+                }
+        .padding(.horizontal, MMSize.gutter)
+        .padding(.top, MMSpace.s12)
+        .padding(.bottom, MMSpace.s16)
     }
 
     // MARK: - 카드
@@ -177,6 +184,21 @@ struct BriefCardView: View {
         .mmShadow(MMElevation.card)
     }
 
+    /// 카드를 이미지로 찍는다.
+    ///
+    /// **찍는 동안만 내보내기 단추를 감춘다**(`isCapturing`). 시안 폭(`320`) 그대로
+    /// 그리고 화면 배율로 키운다 — 진료실에서 확대해 보여 줄 수 있어야 한다.
+    /// "이름·나이 가리기"는 `model.patientLine`이 이미 보고 있어 따로 손대지 않는다.
+    func captureImage(_ card: BriefCard, model: BriefCardModel) -> UIImage? {
+        model.isCapturing = true
+        defer { model.isCapturing = false }
+        return BriefCardExport.render(
+            column(card, model: model),
+            width: MMSize.contentWidth + MMSize.gutter * 2,
+            scale: UITraitCollection.current.displayScale
+        )
+    }
+
     private func head(_ card: BriefCard, model: BriefCardModel) -> some View {
         VStack(alignment: .leading, spacing: MMSpace.s4) {
             HStack(alignment: .firstTextBaseline, spacing: MMSpace.s8) {
@@ -192,8 +214,9 @@ struct BriefCardView: View {
 
                 Spacer(minLength: 0)
 
-                // 편집 중에는 내보내기를 숨긴다 — 아직 저장되지 않은 값을 내보낼 수 없다.
-                if !model.isEditing {
+                // 편집 중에는 내보내기를 숨긴다 — 아직 저장되지 않은 값을 내보낼 수
+                // 없다. **찍는 동안에도 감춘다** — 그림에 단추가 같이 찍힌다.
+                if !model.isEditing, !model.isCapturing {
                     MMIconButton(icon: .export, label: "이미지로 내보내기", style: .ghost, size: .s) {
                         model.sheet = .export
                     }

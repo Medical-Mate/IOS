@@ -24,6 +24,18 @@ extension BriefCardView {
             .padding(.horizontal, MMSize.gutter)
         }
 
+        if model.sharing != nil {
+            Color.clear
+                .sheet(isPresented: Binding(
+                    get: { model.sharing != nil },
+                    set: { if !$0 { model.sharing = nil } }
+                )) {
+                    if let image = model.sharing {
+                        ShareSheet(items: [image])
+                    }
+                }
+        }
+
         if let sheet = model.sheet {
             MMOverlayScrim(onTap: { model.sheet = nil })
             VStack {
@@ -74,13 +86,50 @@ extension BriefCardView {
 
                 Color.clear.frame(height: MMSpace.s8)
 
-                MMButton("이미지 저장") { model.sheet = nil }
+                MMButton("이미지 저장") { saveImage(model) }
 
                 Color.clear.frame(height: MMSpace.s8)
 
-                MMButton("공유하기", kind: .outline) { model.sheet = nil }
+                MMButton("공유하기", kind: .outline) { shareImage(model) }
+
+                if let failure = model.saveFailure {
+                    Color.clear.frame(height: MMSpace.s8)
+                    Text(failure)
+                        .mmTextStyle(MMFont.bodyS)
+                        .foregroundStyle(MMColor.fgDanger)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
         }
+    }
+
+    /// 사진에 넣는다. **넣은 뒤에 시트를 닫는다** — 허락 창이 시트 위에 뜨고,
+    /// 못 넣었으면 그 자리에서 까닭을 적어야 한다.
+    private func saveImage(_ model: BriefCardModel) {
+        guard let card = model.card, let image = captureImage(card, model: model) else {
+            model.saveFailure = BriefCardOverlayCopy.saveFailed
+            return
+        }
+        model.saveFailure = nil
+        Task {
+            switch await BriefCardExport.save(image) {
+            case .saved:
+                model.sheet = nil
+            case .failed:
+                model.saveFailure = BriefCardOverlayCopy.saveFailed
+            }
+        }
+    }
+
+    /// 공유 시트에 넘긴다. **사진에 남기지 않는다** — 받는 앱에만 간다.
+    private func shareImage(_ model: BriefCardModel) {
+        guard let card = model.card, let image = captureImage(card, model: model) else {
+            model.saveFailure = BriefCardOverlayCopy.saveFailed
+            return
+        }
+        model.saveFailure = nil
+        model.sheet = nil
+        model.sharing = image
     }
 
     /// `1e-1-S` 저장 직후 일정.
@@ -113,4 +162,10 @@ extension BriefCardView {
             }
         }
     }
+}
+
+/// 내보내기에서 쓰는 말.
+enum BriefCardOverlayCopy {
+    /// **무엇을 하면 되는지 적는다.** 허락을 내주지 않은 것이 대부분이라 그 길을 가리킨다.
+    static let saveFailed = "사진에 넣지 못했어요. 설정에서 사진 추가를 허용해 주세요."
 }

@@ -1,6 +1,7 @@
 import Foundation
-import SwiftUI
 import Observation
+import SwiftUI
+import UIKit
 
 /// 1e-1 브리핑 카드의 상태.
 ///
@@ -35,6 +36,13 @@ final class BriefCardModel {
     var sheet: Sheet?
     /// 내보내기 시트의 "이름·나이 가리기".
     var masksPatient = false
+    /// 이미지로 찍는 중인지. **찍는 동안만 켠다** — 내보내기 단추가 그림에 같이
+    /// 찍히면 안 된다. Android도 찍는 동안 그 단추를 감춘다(#306 · #314).
+    var isCapturing = false
+    /// 공유 시트에 넘길 이미지. 있으면 시트가 뜬다.
+    var sharing: UIImage?
+    /// 사진에 넣지 못했을 때 적을 말. 넣은 것은 사진 앱이 알리므로 적지 않는다.
+    var saveFailure: String?
 
     private let cardId: Int64
     private let repository: CardRepository

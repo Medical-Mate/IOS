@@ -139,6 +139,17 @@ struct ComponentSpecTests {
             == MMSeveritySlider.center(for: 5, in: width))
     }
 
+    @Test("내보낸 파일 이름은 누를 때마다 새것이다")
+    func exportFileName() {
+        // 같은 카드를 두 번 내보내도 앞의 것을 덮지 않는다. Android와 같은 꼴이다.
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
+        let moment = calendar.date(from: DateComponents(
+            year: 2026, month: 9, day: 4, hour: 14, minute: 5, second: 9
+        )) ?? .distantPast
+        #expect(BriefCardExport.fileName(at: moment, calendar: calendar) == "브리핑카드_20260904_140509.png")
+    }
+
     @Test("캘린더 숫자 자리는 글자 배율을 따르지 않는다 (3778:1867)")
     func calendarNumberHeightIsFixed() {
         // 줄 높이를 따르면 배율을 키운 기기에서 숫자가 점을 면 밖으로 밀어내고,
