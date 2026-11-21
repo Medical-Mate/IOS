@@ -79,9 +79,11 @@ struct HomeView: View {
             onNotification: onNotification,
             onAvatar: onProfile
         ) {
-            // 첫 홈 사진만 에셋에 있다. 나머지 넷은 디자인 트랙에서 받아야 한다
-            // (docs/COMPONENT-MAP.md 3장).
-            if lead == .firstVisit || lead == .other {
+            // **첫 홈(334)의 사진만 에셋에 있다.** 마스터가 "단계별 사진 포함"이라
+            // 적어 둔 대로 장마다 사진이 다르고, 400짜리 갈래의 것은 아직 못 받았다.
+            // 그 자리는 `bg/inverse`로 둔다 — 가진 사진을 늘려 깔면 시안과 다른 그림이
+            // 된다(docs/COMPONENT-MAP.md 3장).
+            if lead == .firstVisit {
                 Image("home-banner-first")
                     .resizable()
                     .aspectRatio(contentMode: .fill)
