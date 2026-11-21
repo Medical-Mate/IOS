@@ -86,6 +86,26 @@ struct MainTabView: View {
             )
             .toolbar(.hidden, for: .navigationBar)
 
+        case .recordDetail(let recordId):
+            if let id = Int64(recordId) {
+                RecordDetailView(
+                    visitId: id,
+                    onBack: { path.removeLast() },
+                    onOpenCard: { path.append(Route.briefCard(cardId: $0)) }
+                )
+                .toolbar(.hidden, for: .navigationBar)
+            }
+
+        case .visitDetail(let visitId):
+            if let id = Int64(visitId) {
+                RecordDetailView(
+                    visitId: id,
+                    onBack: { path.removeLast() },
+                    onOpenCard: { path.append(Route.briefCard(cardId: $0)) }
+                )
+                .toolbar(.hidden, for: .navigationBar)
+            }
+
         case .calendarDay(let date, _):
             if let day = HomeRepository.date(from: date) {
                 CalendarDayView(

@@ -42,3 +42,13 @@ struct VisitRepository: Sendable {
         await client.send(.delete("api/visits/\(visitId)"))
     }
 }
+
+extension VisitRepository {
+    /// 한 카드의 진료 기록 전부. 최근 진료일 순이다.
+    ///
+    /// **체인의 아무 카드 id나 받는다.** 재방문 전에 카드를 고치면 첫 기록과 두 번째
+    /// 기록이 서로 다른 카드 행에 붙는데 서버가 문답 단위로 모아 준다.
+    func visits(cardId: Int64) async -> ApiResult<[VisitSummaryResponse]> {
+        await client.send(.get("api/cards/\(cardId)/visits"), as: [VisitSummaryResponse].self)
+    }
+}
