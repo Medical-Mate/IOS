@@ -102,6 +102,23 @@ final class ScheduleAddModel {
 
     func isPicked(_ id: Int64) -> Bool { pickedCardIds.contains(id) }
 
+    /// 재진인 일정인지. **재방문을 확정하러 들어왔거나, 이미 진료를 마친 카드를
+    /// 골랐으면** 재진이다(Android `#245` · `#272`).
+    ///
+    /// 뒤의 것이 없으면 같은 카드로 다시 잡은 일정이 일자 화면과 홈에서 "초진"으로
+    /// 뜨고, 기록 상세(`1j-3`)는 같은 진료를 재방문으로 적어 **두 화면이 어긋난다.**
+    ///
+    /// 서버의 `origin`은 원래 일정이 어디서 왔는지인데 화면이 그 값 하나로 초진·재진을
+    /// 가르므로 여기에 싣는다. 서버가 둘을 따로 내려 주면 그 값을 쓴다.
+    var isRevisit: Bool {
+        isFollowUp || cards.contains { ScheduleAddModel.isVisitedAndPicked($0, picked: pickedCardIds) }
+    }
+
+    nonisolated static func isVisitedAndPicked(_ item: CardListItem, picked: Set<Int64>) -> Bool {
+        guard case .card(let id, let visited) = item.kind else { return false }
+        return visited && picked.contains(id)
+    }
+
     // MARK: - 들어오기
 
     func load() async {
@@ -218,7 +235,7 @@ final class ScheduleAddModel {
             scheduledTime: time?.wire,
             cardIds: ScheduleAddModel.cardIds(picked: pickedCardIds, followUp: cardId),
             // **손으로 만든 일정은 출처가 없다.** 재방문을 확정하러 들어왔을 때만 적는다.
-            origin: (isFollowUp ? AppointmentOrigin.visitFollowUp : .manual).wire,
+            origin: (isRevisit ? AppointmentOrigin.visitFollowUp : .manual).wire,
             // 빈 줄은 보내지 않는다. 추가만 하고 안 적은 칸이다.
             todos: AppointmentMapping.cleaned(todos)
         )

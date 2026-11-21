@@ -79,3 +79,40 @@ struct CalendarDayPickTests {
         #expect(CalendarDayModel.pick([], id: 1) == nil)
     }
 }
+
+/// 재진인 일정인지(2026-11-22). 재방문 확정으로 들어왔거나 **이미 진료를 마친 카드를
+/// 골랐으면** 재진이다(Android `#245` · `#272`). 뒤의 것이 없으면 같은 카드로 다시 잡은
+/// 일정이 일자 화면과 홈에서 "초진"으로 뜨는데, 기록 상세는 같은 진료를 재방문으로
+/// 적어 두 화면이 어긋난다.
+@Suite("재진인 일정 가르기")
+struct ScheduleRevisitTests {
+    private func card(_ id: Int64, visited: Bool) -> CardListItem {
+        CardListItem(
+            kind: .card(id: id, visited: visited),
+            title: "카드 \(id)", meta: "", summary: nil,
+            month: "2026년 9월", writtenOn: Date(timeIntervalSince1970: 0)
+        )
+    }
+
+    @Test func 진료를_마친_카드를_고르면_재진이다() {
+        #expect(ScheduleAddModel.isVisitedAndPicked(card(1, visited: true), picked: [1]))
+    }
+
+    @Test func 고르지_않았으면_재진이_아니다() {
+        #expect(!ScheduleAddModel.isVisitedAndPicked(card(1, visited: true), picked: [2]))
+    }
+
+    @Test func 아직_안_간_카드는_재진이_아니다() {
+        #expect(!ScheduleAddModel.isVisitedAndPicked(card(1, visited: false), picked: [1]))
+    }
+
+    /// 문답 줄과 기록 줄은 카드가 아니다.
+    @Test func 카드가_아닌_줄은_재진이_아니다() {
+        let intake = CardListItem(
+            kind: .openIntake(sessionId: 9, tempSaved: false, step: 2, total: 3),
+            title: "문답", meta: "", summary: nil,
+            month: "2026년 9월", writtenOn: Date(timeIntervalSince1970: 0)
+        )
+        #expect(!ScheduleAddModel.isVisitedAndPicked(intake, picked: [9]))
+    }
+}
