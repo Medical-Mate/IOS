@@ -46,8 +46,14 @@ final class CalendarDayModel {
     private let calendar: Calendar
     private let today: @Sendable () -> Date
 
+    /// **월 화면에서 누른 일정.** 하루에 일정이 둘 이상일 수 있는데 날짜만으로 열면
+    /// 첫 건이 나와서, 누른 것과 열린 것이 달랐다(Android `#179`). 없거나 그 날에서
+    /// 못 찾으면 첫 건을 연다 — 지운 일정으로 돌아오는 경우가 그렇다.
+    private let appointmentId: Int64?
+
     init(
         date: Date,
+        appointmentId: Int64? = nil,
         repository: AppointmentRepository,
         cards cardsRepository: CardRepository,
         visits visitsRepository: VisitRepository,
@@ -55,6 +61,7 @@ final class CalendarDayModel {
         today: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.date = date
+        self.appointmentId = appointmentId
         self.repository = repository
         self.cardsRepository = cardsRepository
         self.visitsRepository = visitsRepository
@@ -141,11 +148,12 @@ final class CalendarDayModel {
         let day = VisitMapping.day(date, calendar: calendar)
         switch await repository.appointments(date: day) {
         case .success(let list):
-            // 하루에 일정이 여럿일 수 있지만 시안은 한 건을 그린다. 가장 이른 것을 든다.
-            appointment = list
+            // 하루에 일정이 여럿일 수 있지만 시안은 한 건을 그린다.
+            // **누르고 들어온 것이 있으면 그것을 연다.** 없으면 가장 이른 것이다.
+            let live = list
                 .compactMap(AppointmentMapping.appointment(from:))
                 .filter { $0.status != .canceled }
-                .min { AppointmentMapping.isEarlier($0, than: $1) }
+            appointment = CalendarDayModel.pick(live, id: appointmentId)
             await loadCards()
             await loadRecord()
             await loadNextEvent()
@@ -155,6 +163,12 @@ final class CalendarDayModel {
             errorMessage = "연결이 끊어졌어요."
         }
         isLoading = false
+    }
+
+    /// 누르고 들어온 일정을 고른다. 못 찾으면 가장 이른 것이다.
+    nonisolated static func pick(_ list: [Appointment], id: Int64?) -> Appointment? {
+        if let id, let hit = list.first(where: { $0.id == id }) { return hit }
+        return list.min { AppointmentMapping.isEarlier($0, than: $1) }
     }
 
     /// 카드 줄의 둘째 줄("2026.09.04 · 5항목")은 일정 응답에 없다. 카드 목록에서

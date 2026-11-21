@@ -7,7 +7,8 @@ import SwiftUI
 struct CalendarView: View {
     @Environment(\.appEnvironment) private var app
 
-    var onOpenDay: (Date) -> Void = { _ in }
+    /// 둘째 값은 **누른 일정**이다. 하루에 둘 이상일 때 누른 것이 열려야 한다.
+    var onOpenDay: (Date, Int64?) -> Void = { _, _ in }
     /// 둘째 값은 **들고 갈 카드**다. FAB으로 여는 길에는 없다.
     var onAddSchedule: (Date?, Int64?) -> Void = { _, _ in }
     var onOpenCard: (Int64) -> Void = { _ in }
@@ -62,7 +63,7 @@ struct CalendarView: View {
                         model.dismissCardSheet()
                         // 이미 만든 일정이 있으면 그 날로 간다. 없을 때만 만들러 간다.
                         if let scheduled = card.scheduled {
-                            onOpenDay(scheduled.on)
+                            onOpenDay(scheduled.on, nil)
                         } else {
                             // **그 카드를 들고 간다.** 이 문구가 카드를 정해 놓고
                             // 들어가는 길이라 화면에서 다시 고르게 하면 두 번 고른다
@@ -140,7 +141,7 @@ struct CalendarView: View {
             title: appointment.title,
             meta: AppointmentMapping.meta(appointment),
             badge: AppointmentMapping.badge(appointment),
-            action: { model.selectedDate.map(onOpenDay) }
+            action: { model.selectedDate.map { onOpenDay($0, appointment.id) } }
         )
     }
 }

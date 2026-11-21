@@ -19,6 +19,8 @@ struct CalendarDayView: View {
     @Environment(\.appEnvironment) private var app
 
     let date: Date
+    /// 월 화면에서 누른 일정. 하루에 둘 이상일 때 어느 것을 열지 가른다.
+    var appointmentId: Int64?
     let onBack: () -> Void
     var onOpenCard: (Int64) -> Void = { _ in }
     var onRecordVisit: (Int64) -> Void = { _ in }
@@ -41,6 +43,7 @@ struct CalendarDayView: View {
             guard model == nil else { return }
             let created = CalendarDayModel(
                 date: date,
+                appointmentId: appointmentId,
                 repository: app.appointments,
                 cards: app.cards,
                 visits: app.visits

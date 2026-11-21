@@ -15,7 +15,9 @@ struct BriefCardView: View {
     let onBack: () -> Void
     var onChangeHospital: () -> Void = {}
     var onSchedule: () -> Void = {}
-    var onViewSchedule: (Int64) -> Void = { _ in }
+    /// 잡아 둔 일정을 보러 간다. **날짜도 들고 간다** — 전에는 번호만 넘기고
+    /// 날짜를 빈 글로 보내서 일자 화면이 아예 그려지지 않았다.
+    var onViewSchedule: (Date, Int64) -> Void = { _, _ in }
     var onRecordVisit: () -> Void = {}
     var onDeleted: () -> Void = {}
 
@@ -311,7 +313,7 @@ struct BriefCardView: View {
                 MMButton(action.title, kind: action.kind) {
                     switch action {
                     case .schedule: onSchedule()
-                    case .viewSchedule: model.card?.appointment.map { onViewSchedule($0.id) }
+                    case .viewSchedule: model.card?.appointment.map { onViewSchedule($0.date, $0.id) }
                     case .recordVisit: onRecordVisit()
                     }
                 }

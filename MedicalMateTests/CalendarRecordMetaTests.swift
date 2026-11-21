@@ -40,3 +40,42 @@ struct CalendarRecordMetaTests {
         #expect(CalendarDayModel.recordMeta([item(VisitAxis.tests, "위내시경")]).isEmpty)
     }
 }
+
+/// 누른 일정이 열리는지(2026-11-22). 하루에 일정이 둘 이상일 수 있는데 날짜만으로 열면
+/// 첫 건이 나와서, 누른 것과 열린 것이 달랐다(Android `#179`).
+@Suite("일자 화면이 여는 일정")
+struct CalendarDayPickTests {
+    private func appointment(_ id: Int64, _ hour: Int) -> Appointment {
+        Appointment(
+            id: id,
+            title: "진료 \(id)",
+            clinic: nil,
+            on: Date(timeIntervalSince1970: 0),
+            time: AppointmentTime(hour: hour, minute: 0),
+            status: .scheduled,
+            origin: .manual,
+            cards: [],
+            todos: []
+        )
+    }
+
+    @Test func 누른_일정을_연다() {
+        let list = [appointment(1, 9), appointment(2, 14)]
+        #expect(CalendarDayModel.pick(list, id: 2)?.id == 2)
+    }
+
+    /// 지운 일정으로 돌아오는 경우가 그렇다.
+    @Test func 그_날에_없는_번호면_가장_이른_것을_연다() {
+        let list = [appointment(1, 9), appointment(2, 14)]
+        #expect(CalendarDayModel.pick(list, id: 99)?.id == 1)
+    }
+
+    @Test func 번호가_없으면_가장_이른_것을_연다() {
+        let list = [appointment(2, 14), appointment(1, 9)]
+        #expect(CalendarDayModel.pick(list, id: nil)?.id == 1)
+    }
+
+    @Test func 일정이_없으면_아무것도_없다() {
+        #expect(CalendarDayModel.pick([], id: 1) == nil)
+    }
+}

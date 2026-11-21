@@ -46,8 +46,8 @@ struct MainTabView: View {
         switch tab {
         case .calendar:
             CalendarView(
-                onOpenDay: { day in
-                    path.append(Route.calendarDay(date: Self.wire(day), appointmentId: nil))
+                onOpenDay: { day, appointmentId in
+                    path.append(Route.calendarDay(date: Self.wire(day), appointmentId: appointmentId))
                 },
                 onAddSchedule: { day, cardId in
                     path.append(Route.scheduleAdd(date: day.map(Self.wire), cardId: cardId))
@@ -132,7 +132,9 @@ struct MainTabView: View {
                 onBack: { path.removeLast() },
                 onChangeHospital: { path.append(Route.hospitalPick) },
                 onSchedule: { path.append(Route.scheduleAdd(date: nil, cardId: cardId)) },
-                onViewSchedule: { path.append(Route.calendarDay(date: "", appointmentId: $0)) },
+                onViewSchedule: { day, id in
+                    path.append(Route.calendarDay(date: Self.wire(day), appointmentId: id))
+                },
                 onRecordVisit: { path.append(Route.clinicConfirm(cardId: cardId)) },
                 onDeleted: { path.removeLast() }
             )
@@ -166,10 +168,11 @@ struct MainTabView: View {
     @ViewBuilder
     private func calendarDestination(_ route: Route) -> some View {
         switch route {
-        case .calendarDay(let date, _):
+        case .calendarDay(let date, let appointmentId):
             if let day = HomeRepository.date(from: date) {
                 CalendarDayView(
                     date: day,
+                    appointmentId: appointmentId,
                     onBack: { path.removeLast() },
                     onOpenCard: { path.append(Route.briefCard(cardId: $0)) },
                     onRecordVisit: { path.append(Route.clinicConfirm(cardId: $0)) },
