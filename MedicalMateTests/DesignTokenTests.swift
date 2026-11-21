@@ -46,4 +46,27 @@ struct DesignTokenTests {
             #expect(shadows[0].blur > shadows[1].blur)
         }
     }
+
+    @Test("날것의 팔레트 값을 화면에 적지 않는다")
+    func noRawPaletteInViews() throws {
+        // CLAUDE.md 5장. 값이 같더라도 날것으로 적으면 팔레트가 바뀔 때 그 자리만
+        // 따라오지 않는다. 딤(`bg/scrim`)과 `Elevation/Primary`가 그랬다.
+        let root = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("MedicalMate")
+        let allowed = ["Palette.swift", "MMColor.swift", "MMElevation.swift",
+                       "MMSocialLoginButton.swift"]
+        var offenders: [String] = []
+        let files = FileManager.default.enumerator(at: root, includingPropertiesForKeys: nil)
+        while let url = files?.nextObject() as? URL {
+            guard url.pathExtension == "swift", !allowed.contains(url.lastPathComponent) else { continue }
+            let text = try String(contentsOf: url, encoding: .utf8)
+            for line in text.split(separator: "\n") where line.contains("Color(hex:") {
+                // `#Preview`의 보기용은 세지 않는다.
+                if line.contains("//") { continue }
+                offenders.append("\(url.lastPathComponent): \(line.trimmingCharacters(in: .whitespaces))")
+            }
+        }
+        #expect(offenders.isEmpty, "날것의 색이 남았다: \(offenders)")
+    }
 }

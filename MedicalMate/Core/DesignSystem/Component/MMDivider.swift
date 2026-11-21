@@ -22,12 +22,20 @@ struct MMDivider: View {
 /// > 앞 시트의 흰 면이 확실히 떠 보이는 지점이다. 바텀시트는 메인 콘텐츠에 대한
 /// > 접근성을 유지하면서 임시 정보를 주는 요소라 완전히 가리면 안 된다. **딤을 탭하면
 /// > 닫힌다. 되돌릴 수 없는 선택을 시트에서 받을 때만 이 동작을 막는다.**
+private enum ScrimMetrics {
+    /// `bg/scrim` 설명의 "모달 딤 — 불투명도 50%".
+    static let opacity: Double = 0.5
+}
+
 struct MMOverlayScrim: View {
     /// 딤을 탭했을 때. 되돌릴 수 없는 선택을 받는 시트에서는 `nil`로 둔다.
     var onTap: (() -> Void)?
 
     var body: some View {
-        Color(hex: 0x131722, opacity: 0.5)
+        // **토큰을 쓴다.** 값이 같더라도 날것의 팔레트를 화면에 적으면 팔레트가
+        // 바뀔 때 이 자리만 따라오지 않는다(CLAUDE.md 5장). 불투명도 50%는
+        // `bg/scrim`의 설명이 못박은 값이고, Android도 토큰에 `SCRIM_ALPHA`를 건다.
+        MMColor.bgScrim.opacity(ScrimMetrics.opacity)
             .ignoresSafeArea()
             .contentShape(Rectangle())
             .onTapGesture { onTap?() }

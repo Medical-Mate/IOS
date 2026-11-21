@@ -127,7 +127,9 @@ extension View {
                 .fill(MMColor.bgPrimary)
                 .padding(PrimaryElevation.spread)
                 .shadow(
-                    color: Color(hex: 0x3B4FC0, opacity: PrimaryElevation.opacity),
+                    // 날것의 `0x3B4FC0`을 적지 않는다 — `primary600`과 같은 값인데
+                    // 팔레트가 바뀌면 이 자리만 어긋난다(CLAUDE.md 5장).
+                    color: PrimaryElevation.color,
                     radius: PrimaryElevation.blur / 2,
                     y: PrimaryElevation.y
                 )
@@ -136,6 +138,8 @@ extension View {
 }
 
 private enum PrimaryElevation {
+    /// `Elevation/Primary`의 그림자 색. 팔레트의 `primary600`이다.
+    static let color = Palette.primary600.opacity(opacity)
     static let opacity: Double = 0.28
     static let blur: CGFloat = 30
     static let y: CGFloat = 8
