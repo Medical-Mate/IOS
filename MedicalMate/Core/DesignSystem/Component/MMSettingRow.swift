@@ -88,7 +88,7 @@ private enum SettingRowMetrics {
 #Preview {
     @Previewable @State var on = true
     return VStack(spacing: 0) {
-        MMSettingRow(title: "진료 전 알림", kind: .toggle($on, description: "확정 시 24시간 전, 미정이면 전날 오후 7시"))
+        MMSettingRow(title: "진료 전 알림", kind: .toggle($on, description: "확정시 24시간 전, 미정이면 전날 오후 7시"))
         MMSettingRow(title: "알림 시간", kind: .navigation(value: "오후 7:00", action: {}))
         MMSettingRow(title: "앱 버전", kind: .value("0.1.0"))
     }
