@@ -100,10 +100,24 @@ final class ScheduleAddModel {
     /// 병원 없이 저장하면 **일자 화면의 일정 제목이 빈 줄로 선다** — 제목을 병원 ·
     /// 진료과 · 목적으로 짓기 때문이다.
     ///
-    /// **카드는 여기서 묻지 않는다.** Android는 하나 이상을 요구하지만(`#312`) 그쪽은
-    /// 사람이 정한 값이고, 이 저장소에는 "카드 없이 다음 주 치과만 적을 수 있어야
-    /// 한다"가 적혀 있다 — 두 저장소가 갈린 채로 두고 COMPONENT-MAP 3장에 올린다.
-    var canSave: Bool { clinic != nil && on != nil && !isSaving }
+    /// **새 일정에는 가져갈 카드도 하나 이상 있어야 한다**(Android `#312`).
+    ///
+    /// 홈의 오늘 진료 배너와 진료 후 기록이 카드에 붙어 있어서, 카드 없는 일정은 그
+    /// 길에 들어서지 못한다 — 잡아 두고도 아무 데서도 이어지지 않는 일정이 된다.
+    /// 전에는 "카드 없이 다음 주 치과만 적을 수 있어야 한다"고 두었는데, 두 기기가
+    /// 같은 화면에서 다르게 저장되는 쪽이 더 나쁘다(COMPONENT-MAP 3장 43번).
+    ///
+    /// **고치러 연 일정에는 묻지 않는다** — 그때는 카드를 보내지 않는다.
+    var canSave: Bool { clinic != nil && on != nil && !isCardMissing && !isSaving }
+
+    /// 새 일정인데 고른 카드가 없는지.
+    var isCardMissing: Bool {
+        ScheduleAddModel.isCardMissing(appointmentId: appointmentId, pickedCount: pickedCardIds.count)
+    }
+
+    nonisolated static func isCardMissing(appointmentId: Int64?, pickedCount: Int) -> Bool {
+        appointmentId == nil && pickedCount == 0
+    }
 
     var sheetDays: [MMCalendarGrid.Day] {
         sheetMonth.days(

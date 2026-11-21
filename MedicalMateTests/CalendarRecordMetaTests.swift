@@ -195,11 +195,19 @@ struct ScheduleSaveRuleTests {
         #expect(!model.canSave)
     }
 
-    @Test func 병원과_날짜가_차면_저장할_수_있다() {
-        // 시각과 카드는 선택이다.
+    @Test func 카드를_고르지_않으면_저장할_수_없다() {
+        // 홈의 오늘 진료 배너와 진료 후 기록이 카드에 붙어 있어서, 카드 없는 일정은
+        // 그 길에 들어서지 못한다(Android `#312`). 시각만 선택이다.
         let model = model(date: fixtureDay("2026-09-26"))
         model.pick(clinic: Hospital(name: "서울OO병원 내과", address: nil))
-        #expect(model.canSave)
+        #expect(!model.canSave)
+    }
+
+    @Test func 고치러_연_일정에는_카드를_묻지_않는다() {
+        // 그때는 카드를 보내지 않는다.
+        #expect(!ScheduleAddModel.isCardMissing(appointmentId: 1, pickedCount: 0))
+        #expect(ScheduleAddModel.isCardMissing(appointmentId: nil, pickedCount: 0))
+        #expect(!ScheduleAddModel.isCardMissing(appointmentId: nil, pickedCount: 1))
     }
 }
 
