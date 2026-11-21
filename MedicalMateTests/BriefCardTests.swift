@@ -210,6 +210,40 @@ struct BriefCardModelTests {
         #expect(model.actionTitle == "편집")
         #expect(!model.isEditing)
     }
+
+    @Test func 이름나이_가리기는_처음부터_켜져_있다() {
+        // 카드를 남에게 보이는 자리라 덜 내보내는 쪽이 기본이다. 시안(`1e-1-X`)의
+        // 토글이 켜져 있고 Android도 `maskPatient = true`다.
+        #expect(model().masksPatient)
+    }
+}
+
+/// 내보내기 토글이 어느 줄을 바꾸는가(`1e-1-X` `3663:7479`).
+struct BriefCardMaskTests {
+    private static let card = BriefCard(
+        id: 1,
+        title: "복부 통증 · 3주",
+        patientLine: "김OO · 32세 여 · 2026.09.18 작성",
+        maskedPatientLine: "김OO · OO세 여 · 2026.09.18 작성",
+        items: [],
+        severity: nil,
+        allergies: [],
+        questions: [],
+        hospital: nil,
+        appointment: nil,
+        status: nil,
+        visited: false
+    )
+
+    @Test func 찍는_중이_아니면_화면의_줄은_가리지_않는다() {
+        // 토글은 내보낼 이미지를 정하는 값이다. 켜 둔 채 시트를 닫았다고 해서 내
+        // 화면의 내 이름까지 가려진 채 남으면 안 된다.
+        #expect(BriefCardModel.patientLine(Self.card, masked: false) == Self.card.patientLine)
+    }
+
+    @Test func 찍는_동안에는_가린_줄로_그린다() {
+        #expect(BriefCardModel.patientLine(Self.card, masked: true) == Self.card.maskedPatientLine)
+    }
 }
 
 private enum BriefCardStub {

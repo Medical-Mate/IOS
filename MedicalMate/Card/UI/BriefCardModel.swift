@@ -34,8 +34,10 @@ final class BriefCardModel {
     var isDeleteRequested = false
     var isTooltipOpen = false
     var sheet: Sheet?
-    /// 내보내기 시트의 "이름·나이 가리기".
-    var masksPatient = false
+    /// 내보내기 시트의 "이름·나이 가리기". **처음부터 켜 둔다** — 카드를 남에게
+    /// 보이는 자리라 덜 내보내는 쪽이 기본이다. 시안(`1e-1-X` `3663:7479`)의 토글이
+    /// 켜져 있고 Android도 `maskPatient = true`다.
+    var masksPatient = true
     /// 이미지로 찍는 중인지. **찍는 동안만 켠다** — 내보내기 단추가 그림에 같이
     /// 찍히면 안 된다. Android도 찍는 동안 그 단추를 감춘다(#306 · #314).
     var isCapturing = false
@@ -85,10 +87,25 @@ final class BriefCardModel {
         isEditing && !hasChanges ? .subtle : .primary
     }
 
-    /// 카드 머리의 환자 줄. 내보내기에서 가리면 바뀐다.
+    /// 카드 머리의 환자 줄.
+    ///
+    /// **가리기는 찍는 동안에만 건다.** 토글은 내보낼 이미지를 정하는 값이지 화면의
+    /// 카드를 바꾸는 값이 아니다 — 켜 둔 채 시트를 닫으면 내 화면의 내 이름까지
+    /// 가려진 채 남는다. Android도 `capturingMasked`를 찍는 동안만 켠다.
     var patientLine: String {
         guard let card else { return "" }
-        return masksPatient ? card.maskedPatientLine : card.patientLine
+        return BriefCardModel.patientLine(card, masked: masksPatient && isCapturing)
+    }
+
+    /// 내보내기 시트의 미리보기가 보일 환자 줄. **토글을 따라 그 자리에서 바뀐다** —
+    /// 토글이 무엇을 바꾸는지 보이는 곳이 여기뿐이다(Android도 같다).
+    var exportPatientLine: String {
+        guard let card else { return "" }
+        return BriefCardModel.patientLine(card, masked: masksPatient)
+    }
+
+    nonisolated static func patientLine(_ card: BriefCard, masked: Bool) -> String {
+        masked ? card.maskedPatientLine : card.patientLine
     }
 
     // MARK: - 읽기

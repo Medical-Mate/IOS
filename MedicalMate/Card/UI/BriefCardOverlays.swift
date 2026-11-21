@@ -71,7 +71,7 @@ extension BriefCardView {
 
                 Color.clear.frame(height: MMSpace.s16)
 
-                MMExportPreview()
+                MMExportPreview(title: model.card?.title ?? "", meta: model.exportPatientLine)
 
                 Color.clear.frame(height: MMSpace.s8)
 

@@ -74,13 +74,18 @@ private enum ThumbnailMetrics {
 /// Figma 설명 그대로: **카드를 이미지로 내보내기 시트(1e-1-X) 미리보기 영역 320×300.**
 /// `Card Thumbnail` + `Chip Type=Info` "긴 이미지 1장".
 struct MMExportPreview: View {
+    /// 내보낼 카드의 제목과 환자 줄. **마스터의 예시 글을 그대로 두지 않는다** —
+    /// 「이름·나이 가리기」를 켜고 끄는 것이 보이는 곳이 여기뿐이다(Android도 실제
+    /// 값을 넣는다). 안쪽 막대는 글이 아니라 모양이라 마스터 그대로다.
+    var title: String = "복부 통증 · 3주"
+    var meta: String = "김OO · OO세 여 · 2026.09.18 작성"
     var chipText: String = "긴 이미지 1장"
 
     var body: some View {
         ZStack(alignment: .topLeading) {
             MMColor.bgSubtle
 
-            MMCardThumbnail()
+            MMCardThumbnail(title: title, meta: meta)
                 .offset(x: ExportPreviewMetrics.thumbnailX, y: ExportPreviewMetrics.thumbnailY)
 
             MMInfoChip(text: chipText)
