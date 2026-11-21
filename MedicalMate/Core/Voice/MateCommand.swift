@@ -101,3 +101,45 @@ enum MateCommandParser {
         (.back, ["뒤로", "이전", "돌아가", "전화면", "앞화면", "되돌아"]),
     ]
 }
+
+/// 말을 가려 듣는 데 쓰는 낱말 규칙. Android `core/voice/VoiceWords.kt`와 같다.
+enum MateWords {
+    /// 띄어쓰기와 문장부호를 지운 글.
+    static func compact(_ text: String) -> String {
+        text.filter { !$0.isWhitespace && !punctuation.contains($0) }
+    }
+
+    /// 카드를 닫으라는 **짧은 말.** "그만", "닫아 줘", "됐어".
+    ///
+    /// **말 전체가 닫자는 말일 때만이다.** 앞이 "그만"·"끝"이면 닫던 때에는, 의사에게 물을
+    /// "그만 먹어도 되나요?"나 메모에 적을 "끝났대요"가 카드를 닫았다.
+    static func isStop(_ text: String) -> Bool {
+        !isAsking(text) && matchesWhole(stop, compact(text))
+    }
+
+    /// 묻는 말인지. **물음표로 끝나거나** "…나요" · "…까요"처럼 끝난다.
+    static func isAsking(_ text: String) -> Bool {
+        if text.trimmingCharacters(in: .whitespacesAndNewlines).hasSuffix("?") { return true }
+        guard let regex = askingEnd else { return false }
+        let heard = compact(text)
+        let range = NSRange(heard.startIndex..<heard.endIndex, in: heard)
+        return regex.firstMatch(in: heard, range: range) != nil
+    }
+
+    private static func matchesWhole(_ regex: NSRegularExpression?, _ text: String) -> Bool {
+        guard let regex, !text.isEmpty else { return false }
+        let range = NSRange(text.startIndex..<text.endIndex, in: text)
+        return regex.firstMatch(in: text, options: [], range: range)?.range == range
+    }
+
+    private static let punctuation: Set<Character> = [".", ",", "?", "!", "~"]
+
+    private static let stop = try? NSRegularExpression(
+        pattern: "(?:이제)?(?:그만|닫아|닫기|끝|끝내|종료|됐어|됐다|됐어요|됐습니다|꺼줘|꺼|멈춰|멈춰줘)"
+            + "(?:요|해|해요|할래|할게|하자|해줘|줘|주세요|닫아|닫아줘|이야|이에요)?"
+    )
+
+    private static let askingEnd = try? NSRegularExpression(
+        pattern: "(?:나요|까요|가요|는지|은지|인지|니까|되죠|하죠|있죠)$"
+    )
+}

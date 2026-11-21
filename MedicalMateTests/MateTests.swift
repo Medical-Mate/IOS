@@ -90,6 +90,22 @@ struct MateTests {
         #expect(answer == "9월 25일 (금) 오전 10:30,\n서울OO병원 내과 재진이에요")
     }
 
+    @Test func 말_전체가_닫자는_말일_때만_닫는다() {
+        #expect(MateWords.isStop("그만"))
+        #expect(MateWords.isStop("됐어요"))
+        #expect(MateWords.isStop("이제 닫아 줘"))
+        // 의사에게 물을 말이 카드를 닫으면 안 된다.
+        #expect(!MateWords.isStop("그만 먹어도 되나요?"))
+        #expect(!MateWords.isStop("끝났대요"))
+        #expect(!MateWords.isStop("다음 진료 언제야"))
+    }
+
+    @Test func 물음표가_없어도_묻는_말을_가린다() {
+        #expect(MateWords.isAsking("그만 먹어도 되나요"))
+        #expect(MateWords.isAsking("언제까지 먹을까요"))
+        #expect(!MateWords.isAsking("그만"))
+    }
+
     @Test func 못_알아들은_말은_그대로_되돌려_준다() {
         #expect(MateModel.missed("오늘 날씨") == "\"오늘 날씨\", 잘 못 알아들었어요")
         #expect(MateModel.missed("") == "잘 못 알아들었어요")

@@ -61,17 +61,29 @@ final class HealthEditModel {
         }
     }
 
+    /// "+ 직접 추가"를 눌렀다.
+    ///
+    /// **이미 열려 있던 갈래를 다시 누르면 닫는다** — 열어 둔 것을 닫을 길이 없으면
+    /// 적다 만 입력 칸이 화면에 남는다.
     func startAdding(_ step: Int) {
-        adding = step
+        adding = adding == step ? nil : step
         draft = ""
     }
 
-    /// 직접 적은 것을 칩으로 세우고 고른 상태로 둔다. **같은 글은 두 번 세우지 않는다.**
+    /// 직접 적은 것을 칩으로 세우고 **넣는 동시에 고른 것으로 표시한다** — 적어 넣고
+    /// 다시 눌러야 골라지는 것은 한 번에 두 번 시키는 일이다.
+    ///
+    /// **빈 값과 이미 있는 항목은 넣지 않는다.** 같은 칩이 두 개 생기면 어느 쪽이
+    /// 골라졌는지 알 수 없다. 이미 있으면 적던 글만 비우고 칸은 열어 둔다.
     func commitDraft() {
         guard let step = adding else { return }
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
-        if !options(step).contains(text) { extras[step].append(text) }
+        if options(step).contains(text) {
+            draft = ""
+            return
+        }
+        extras[step].append(text)
         picked[step].insert(text)
         draft = ""
         adding = nil

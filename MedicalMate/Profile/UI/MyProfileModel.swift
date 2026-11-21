@@ -75,8 +75,11 @@ final class MyProfileModel {
     // MARK: - 화면 값
 
     /// 아바타의 한 글자. **서버가 "김OO"처럼 가려서 준다.**
+    ///
+    /// **이름이 없으면 글자도 없다.** 카카오 동의를 거부한 계정이 그렇고 빈 동그라미가
+    /// 그려진다 — 아무 글자나 채우면 그것이 이름의 첫 자로 읽힌다.
     nonisolated static func initial(_ name: String?) -> String {
-        guard let first = name?.trimmingCharacters(in: .whitespaces).first else { return "나" }
+        guard let first = name?.trimmingCharacters(in: .whitespaces).first else { return "" }
         return String(first)
     }
 

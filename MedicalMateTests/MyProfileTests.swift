@@ -10,10 +10,11 @@ struct MyProfileTests {
         #expect(MyProfileModel.initial("김OO") == "김")
     }
 
-    @Test func 이름이_없으면_나로_적는다() {
-        // 카카오 동의를 거부한 계정은 이름이 빈 채로 온다.
-        #expect(MyProfileModel.initial(nil) == "나")
-        #expect(MyProfileModel.initial("  ") == "나")
+    @Test func 이름이_없으면_아바타_글자도_없다() {
+        // 카카오 동의를 거부한 계정은 이름이 빈 채로 온다. 아무 글자나 채우면 그것이
+        // 이름의 첫 자로 읽힌다 — 빈 동그라미로 둔다.
+        #expect(MyProfileModel.initial(nil).isEmpty)
+        #expect(MyProfileModel.initial("  ").isEmpty)
     }
 
     @Test func 생년과_성별을_한_줄로_묶는다() {
@@ -90,5 +91,30 @@ struct MyProfileTests {
         let field = HealthEditModel.field([], step: 2, extras: [])
         #expect(field.items.isEmpty)
         #expect(field.status == .unknown)
+    }
+
+    @MainActor
+    @Test func 직접_추가를_다시_누르면_닫는다() {
+        // 열어 둔 것을 닫을 길이 없으면 적다 만 입력 칸이 화면에 남는다.
+        let model = HealthEditModel(repository: HealthProfileRepository(client: AppEnvironment().client))
+        model.startAdding(0)
+        #expect(model.adding == 0)
+        model.startAdding(0)
+        #expect(model.adding == nil)
+        model.startAdding(1)
+        #expect(model.adding == 1)
+    }
+
+    @MainActor
+    @Test func 이미_있는_항목은_칩을_두_번_세우지_않는다() {
+        let model = HealthEditModel(repository: HealthProfileRepository(client: AppEnvironment().client))
+        model.startAdding(0)
+        // 1b의 기본 목록에 있는 말이다.
+        model.draft = "혈압약"
+        model.commitDraft()
+        #expect(model.draft.isEmpty)
+        // 칸은 열어 둔 채로 둔다.
+        #expect(model.adding == 0)
+        #expect(model.options(0).filter { $0 == "혈압약" }.count == 1)
     }
 }

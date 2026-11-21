@@ -35,10 +35,17 @@ final class MateModel {
         dictation.onAutoSend = { [weak self] text in
             Task { await self?.heard(text) }
         }
-        dictation.onSilentClose = { [weak self] in self?.close() }
+        // 받아쓰기가 스스로 끝나도 카드는 닫지 않는다. 대화가 이어지는 자리라
+        // 다시 열고, **들린 것이 없이 `idleTimeout`이 지났을 때만** 닫는다.
+        dictation.onSilentClose = { [weak self] in
+            Task { await self?.silence() }
+        }
     }
 
     var isOpen: Bool { state != nil }
+
+    /// 이만큼 아무것도 들리지 않으면 닫는다. **말하는 중의 글도 들린 것으로 친다.**
+    static let idleTimeout: Double = 12
 
     /// 가이드. 할 수 있는 말을 세 줄로 보인다.
     static let guides: [MMMateCard.Guide] = [
@@ -47,8 +54,22 @@ final class MateModel {
         .init(icon: .calendar, phrase: "다음 진료 언제야", meaning: "일정 찾기"),
     ]
 
+    /// 마지막으로 들린 때. 말하는 중의 글도 들린 것으로 친다.
+    private var lastHeard = Date.distantPast
+
     func open() async {
         state = .listening(guides: Self.guides)
+        lastHeard = Date()
+        await dictation.start()
+    }
+
+    /// 받아쓰기가 조용히 끝났다.
+    private func silence() async {
+        guard isOpen else { return }
+        if Date().timeIntervalSince(lastHeard) >= Self.idleTimeout {
+            close()
+            return
+        }
         await dictation.start()
     }
 
@@ -60,12 +81,23 @@ final class MateModel {
     /// 받아쓰는 동안 제목이 따라 바뀐다(`1n-1-M2`).
     func typing(_ text: String) {
         guard isOpen else { return }
+        lastHeard = Date()
         state = .speaking(text: MateCommandParser.withoutWakeEcho(text))
     }
 
     /// 한 마디가 끝났다.
+    ///
+    /// **한 마디를 처리해도 닫지 않는다.** 한 흐름을 말로 끝까지 하려면 단계마다 다시
+    /// 부르지 않아야 한다. 닫히는 것은 정해진 경우뿐이다 — "그만"이라고 하거나, 닫기를
+    /// 누르거나, ``idleTimeout`` 동안 아무것도 들리지 않을 때다.
     private func heard(_ text: String) async {
+        lastHeard = Date()
         let said = MateCommandParser.withoutWakeEcho(text)
+        // 묻는 말 속의 "그만"은 닫자는 말이 아니다.
+        if MateWords.isStop(said) {
+            close()
+            return
+        }
         guard let command = MateCommandParser.command(from: said) else {
             // **못 알아들은 것을 아무 데로나 옮기지 않는다.** 들은 말을 그대로 되돌려 준다.
             state = .answer(MateModel.missed(said))
