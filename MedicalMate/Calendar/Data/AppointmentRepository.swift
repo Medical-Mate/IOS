@@ -36,3 +36,39 @@ struct AppointmentRepository: Sendable {
         await client.send(.delete("api/me/appointments/\(id)"))
     }
 }
+
+/// 기록에서 나온 재방문을 일정으로 올린다.
+///
+/// **시각은 비워 둔다** — 기록에서 나온 날짜는 "2주 뒤"처럼 날짜까지다. 일자 화면이
+/// `1r-2-A`("시간 정하고 확정하기")로 받는다.
+struct AppointmentFollowUpScheduler: FollowUpScheduler {
+    let repository: AppointmentRepository
+    var calendar: Calendar = .current
+
+    func schedule(clinic: String?, on: Date, cardId: Int64) async {
+        guard let request = AppointmentFollowUpScheduler.request(
+            clinic: clinic, on: on, cardId: cardId, calendar: calendar
+        ) else { return }
+        _ = await repository.create(request)
+    }
+
+    /// 보낼 요청. **병원이 없으면 `nil`이다** — 서버가 일정에 병원을 요구한다.
+    nonisolated static func request(
+        clinic: String?,
+        on: Date,
+        cardId: Int64,
+        calendar: Calendar
+    ) -> CreateAppointmentRequest? {
+        guard let clinic, !clinic.isEmpty else { return nil }
+        return CreateAppointmentRequest(
+            clinicName: clinic,
+            department: nil,
+            purpose: nil,
+            scheduledOn: VisitMapping.day(on, calendar: calendar),
+            scheduledTime: nil,
+            cardIds: [cardId],
+            origin: AppointmentOrigin.visitFollowUp.wire,
+            todos: []
+        )
+    }
+}

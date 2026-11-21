@@ -36,6 +36,12 @@ final class VisitFlowModel {
     private(set) var isBusy = false
     private(set) var errorMessage: String?
 
+    /// 다시 눌러 보라고 할지. **서버가 말해 준다** — 잠시 받지 못한 것(`retryable`)은
+    /// 다시 누를 수 있고, 받지 않는 요청은 다시 눌러도 같다.
+    nonisolated static func saveMessage(retryable: Bool) -> String {
+        retryable ? saveFailed : saveRejected
+    }
+
     /// 다시 누르면 되는 실패. 네트워크가 끊겼을 때다.
     nonisolated static let saveFailed = "저장하지 못했어요. 다시 눌러주세요."
     /// 다시 눌러도 안 되는 실패. **무엇을 먼저 해야 하는지**를 적는다 — 기록은 카드에
@@ -43,6 +49,9 @@ final class VisitFlowModel {
     nonisolated static let saveRejected = "다시 눌러도 저장되지 않아요. 브리핑 카드를 먼저 저장해야 기록을 남길 수 있어요."
     var isTooltipOpen = false
     var isDeleteRequested = false
+
+    /// 기록에서 나온 재방문을 일정으로 올리는 쪽. 조립하는 자리가 잇는다.
+    private let followUp: FollowUpScheduler?
 
     /// 편집 중인지. 1q-1-E의 사본이다.
     private(set) var draft: [VisitItem]?
@@ -57,12 +66,14 @@ final class VisitFlowModel {
         cardId: Int64,
         cards: CardRepository,
         visits: VisitRepository,
+        followUp: FollowUpScheduler? = nil,
         calendar: Calendar = .current,
         today: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.cardId = cardId
         self.cards = cards
         self.visits = visits
+        self.followUp = followUp
         self.calendar = calendar
         self.today = today
     }
@@ -253,10 +264,16 @@ final class VisitFlowModel {
         switch await visits.create(cardId: cardId, request: request) {
         case .success(let response):
             savedVisitId = response.visitId
+            // **저장이 곧 확인이다.** 재방문 줄의 날짜가 이 화면에 보이고 고칠 수 있어서,
+            // 저장한 그 날짜로 일정을 만든다. 서버는 기록에서 일정을 만들지 않는다 —
+            // AI가 날짜를 잘못 뽑아도 조용히 일정이 생기면 안 되기 때문이다.
+            // **거절되면 만들지 않는다** — 이 자리는 성공한 뒤다.
+            if let on = classification?.followUp?.date {
+                await followUp?.schedule(clinic: clinic?.name, on: on, cardId: cardId)
+            }
             return response.visitId
         case .rejected(let error):
-            // 서버가 물린 것은 다시 눌러도 같다. 무엇을 먼저 해야 하는지를 적는다.
-            errorMessage = error.message ?? VisitFlowModel.saveRejected
+            errorMessage = error.message ?? VisitFlowModel.saveMessage(retryable: error.isRetryable)
         case .networkUnavailable:
             errorMessage = VisitFlowModel.saveFailed
         }

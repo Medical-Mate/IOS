@@ -166,6 +166,39 @@ struct HospitalPickPurposeTests {
         #expect(VisitRecordView.tooltipText.contains("\n"))
     }
 
+    @Test func 저장이_되면_재방문_날짜로_일정을_만든다() throws {
+        // 이 화면의 재방문 줄에 날짜가 보이고 고칠 수 있어서 **저장이 곧 확인이다.**
+        // 서버는 기록에서 일정을 만들지 않는다 — AI가 날짜를 잘못 뽑아도 조용히 생기면
+        // 안 되기 때문이다.
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
+        let request = try #require(AppointmentFollowUpScheduler.request(
+            clinic: "서울OO병원 내과", on: fixtureDay("2026-09-26"), cardId: 7, calendar: calendar
+        ))
+        #expect(request.scheduledOn == "2026-09-26")
+        // **시각은 비워 둔다** — 기록에서 나온 날짜는 "2주 뒤"처럼 날짜까지다.
+        #expect(request.scheduledTime == nil)
+        #expect(request.origin == "VISIT_FOLLOW_UP")
+        #expect(request.cardIds == [7])
+    }
+
+    @Test func 병원이_없으면_일정을_만들지_않는다() {
+        // 서버가 일정에 병원을 요구한다.
+        let calendar = Calendar(identifier: .gregorian)
+        #expect(AppointmentFollowUpScheduler.request(
+            clinic: nil, on: fixtureDay("2026-09-26"), cardId: 7, calendar: calendar
+        ) == nil)
+        #expect(AppointmentFollowUpScheduler.request(
+            clinic: "", on: fixtureDay("2026-09-26"), cardId: 7, calendar: calendar
+        ) == nil)
+    }
+
+    @Test func 다시_눌러_보라고_할지는_서버가_말한다() {
+        // 잠시 받지 못한 것은 다시 누를 수 있고, 받지 않는 요청은 다시 눌러도 같다.
+        #expect(VisitFlowModel.saveMessage(retryable: true) == VisitFlowModel.saveFailed)
+        #expect(VisitFlowModel.saveMessage(retryable: false) == VisitFlowModel.saveRejected)
+    }
+
     @Test func 저장_실패_문구가_갈린다() {
         // Android의 RETRYABLE · REJECTED와 같은 갈림이다.
         #expect(VisitFlowModel.saveFailed == "저장하지 못했어요. 다시 눌러주세요.")

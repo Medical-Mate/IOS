@@ -23,7 +23,12 @@ struct VisitFlowView: View {
         }
         .task {
             guard model == nil else { return }
-            let created = VisitFlowModel(cardId: cardId, cards: app.cards, visits: app.visits)
+            let created = VisitFlowModel(
+                cardId: cardId,
+                cards: app.cards,
+                visits: app.visits,
+                followUp: AppointmentFollowUpScheduler(repository: app.appointments)
+            )
             model = created
             await created.load()
         }
