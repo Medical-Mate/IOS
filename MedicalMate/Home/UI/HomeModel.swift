@@ -47,8 +47,8 @@ final class HomeModel {
 
 /// 홈 맨 위 배너의 글. 와이어프레임 `1n-2` · `1n-1` · `1n-1-4` · `1n-1-5`.
 ///
-/// **배너 2~5(예약 문자 · 일정 알림 · 카드 저장 · 헤이 메이트)는 아직 세우지 않는다.**
-/// 사진 다섯 장을 못 받아서이고, 가르는 규칙 자체는 `docs/FEATURE-SPEC.md` 2.9에 있다.
+/// **다섯 장이 다 선다.** 사진은 Android 저장소의 내보내기를 가져왔다. 첫 장을 가르는
+/// 규칙과 2~5장의 차례는 `docs/FEATURE-SPEC.md` 2.9에 있다.
 enum HomeBannerCopy {
     static func title(_ page: HomeBannerPage) -> String {
         switch page {

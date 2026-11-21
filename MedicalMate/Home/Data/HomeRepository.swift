@@ -107,11 +107,20 @@ struct HomeRepository: Sendable {
         return HomeCard(
             id: String(card.cardId),
             title: title,
-            meta: [Self.day(from: card.createdAt), card.clinicName]
-                .compactMap { $0?.isEmpty == false ? $0 : nil }
-                .joined(separator: " · "),
+            meta: Self.cardMeta(day: Self.day(from: card.createdAt), clinic: card.clinicName),
             visited: card.visited ?? false
         )
+    }
+
+    /// 카드 줄의 둘째 줄. "2026.08.21 · 서울OO병원 내과".
+    ///
+    /// **병원이 없으면 빈 자리를 두지 않고 "카드만 작성됨"이라고 적는다**(`3663:7014`).
+    /// 아직 병원을 안 정한 것이지 날짜만 있는 줄이 아니다. Android도 같다
+    /// (`home_card_meta_draft`).
+    nonisolated static func cardMeta(day: String?, clinic: String?) -> String {
+        let day = day?.isEmpty == false ? day : nil
+        let clinic = clinic?.isEmpty == false ? clinic : nil
+        return [day, clinic ?? "카드만 작성됨"].compactMap(\.self).joined(separator: " · ")
     }
 
     private func schedule(from appointment: HomeResponse.Appointment) -> HomeSchedule {

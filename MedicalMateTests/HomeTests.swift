@@ -23,6 +23,14 @@ struct HomeTests {
         #expect(repo.dday(for: fixtureDay("2026-09-15")) == "D+3")
     }
 
+    @Test("병원이 없으면 '카드만 작성됨'으로 적는다 (3663:7014)")
+    func 카드_줄의_병원_자리() {
+        #expect(HomeRepository.cardMeta(day: "2026.09.04", clinic: "서울OO병원 내과") == "2026.09.04 · 서울OO병원 내과")
+        // 빈 자리를 남기지 않는다. 날짜만 선 줄은 무엇이 빠졌는지 알 수 없다.
+        #expect(HomeRepository.cardMeta(day: "2026.08.21", clinic: nil) == "2026.08.21 · 카드만 작성됨")
+        #expect(HomeRepository.cardMeta(day: "2026.08.21", clinic: "") == "2026.08.21 · 카드만 작성됨")
+    }
+
     @Test("긴 제목은 24자에서 줄이고 말줄임을 붙인다")
     func shorten() {
         let long = "두통이랑 어지러움이 자주 있어요 특히 아침에 더 심해요"
@@ -47,7 +55,8 @@ struct HomeTests {
         let response = try JSONDecoder().decode(HomeResponse.self, from: Data(json.utf8))
         let summary = repository(today: "2026-09-18").summary(from: response)
         #expect(summary.recentCards.first?.title == "배가 아파요")
-        #expect(summary.recentCards.first?.meta == "2026.09.04")
+        // 병원이 없는 표본이라 둘째 줄이 "카드만 작성됨"으로 닫힌다(3663:7014).
+        #expect(summary.recentCards.first?.meta == "2026.09.04 · 카드만 작성됨")
     }
 
     @Test("진료 완료 여부로 배지가 갈린다")

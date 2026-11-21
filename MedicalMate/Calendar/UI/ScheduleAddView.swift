@@ -212,10 +212,21 @@ struct ScheduleAddView: View {
                         .allowsHitTesting(false)
                         .onTapGesture { model.toggleTodo(todo) }
 
-                    TextField("할 일을 적어주세요", text: model.todo(at: index))
-                        .mmTextStyle(MMFont.bodyM)
-                        .foregroundStyle(MMColor.fgDefault)
-                        .textFieldStyle(.plain)
+                    // **빈 칸에는 안내 글을 넣지 않는다.** 시안(`3663:15151`)이 밑줄 친
+                    // 빈 자리를 그려 두었고, 적기 시작하면 밑줄이 사라진다
+                    // (`3663:15250`). 질문 빈 칸(`MMCallout`)과 같은 모양이다.
+                    VStack(spacing: ScheduleMetrics.todoFieldGap) {
+                        TextField("", text: model.todo(at: index))
+                            .mmTextStyle(MMFont.bodyM)
+                            .foregroundStyle(MMColor.fgDefault)
+                            .textFieldStyle(.plain)
+                        if todo.text.isEmpty {
+                            Rectangle()
+                                .fill(MMColor.borderSubtle)
+                                .frame(height: 1)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
 
                     Button { model.deleteTodo(todo) } label: {
                         MMIcon.close.view(size: MMSize.iconMd)
@@ -378,4 +389,6 @@ private enum ScheduleMetrics {
     static let pickedBorder: CGFloat = 1.5
     /// "새 카드 만들기" 같은 한 줄의 높이.
     static let rowHeight: CGFloat = MMSize.controlMd
+    /// 빈 할 일 칸의 글자와 밑줄 사이. `MMCallout`의 빈 질문 칸과 같다.
+    static let todoFieldGap: CGFloat = 5
 }
