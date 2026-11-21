@@ -15,6 +15,8 @@ struct MMTextArea: View {
     var limit: Int = 300
     /// 마이크. 받아쓰기가 불가능한 기기에서는 그리지 않는다.
     var onMic: (() -> Void)?
+    /// 포커스가 들고 난 것. 키보드가 올라올 때 칸의 아랫변을 시야로 부르는 화면이 쓴다.
+    var onFocusChange: ((Bool) -> Void)?
 
     @FocusState private var isFocused: Bool
 
@@ -54,6 +56,7 @@ struct MMTextArea: View {
                     .strokeBorder(border.color, lineWidth: border.width)
             }
         }
+        .onChange(of: isFocused) { _, focused in onFocusChange?(focused) }
     }
 
     private var footer: some View {

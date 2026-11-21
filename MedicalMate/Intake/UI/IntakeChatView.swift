@@ -75,6 +75,11 @@ struct IntakeChatView: View {
             .onChange(of: model.messages.count) { _, _ in scroll(proxy) }
             .onChange(of: model.isAnswering) { _, _ in scroll(proxy) }
             .onChange(of: model.isEnded) { _, _ in scroll(proxy) }
+            // **질문 줄이 늘거나 직접 적기 시작해도 끝으로 보낸다.** 문답이 끝나면
+            // 같은 대화 아래에 추천 질문이 서는데, 줄이 늘거나 빈 칸이 열리면 그것이
+            // 키보드 뒤에 남는다. Android도 같은 자리를 같은 값들로 민다.
+            .onChange(of: model.rows.count) { _, _ in scroll(proxy) }
+            .onChange(of: model.isWritingOwn) { _, _ in scroll(proxy) }
         }
     }
 

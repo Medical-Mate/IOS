@@ -4,7 +4,7 @@ import SwiftUI
 ///
 /// 네 장이 한 자리의 네 단계다 — 목록 · 빈 칸이 선 뒤 · 적는 중 · 다 적은 뒤.
 extension ScheduleAddView {
-    func todoList(_ model: ScheduleAddModel) -> some View {
+    func todoList(_ model: ScheduleAddModel, focus: FocusState<UUID?>.Binding) -> some View {
         VStack(spacing: 0) {
             ForEach(Array(model.todos.enumerated()), id: \.element.id) { index, todo in
                 HStack(spacing: MMSpace.s10) {
@@ -20,6 +20,7 @@ extension ScheduleAddView {
                             .mmTextStyle(MMFont.bodyM)
                             .foregroundStyle(MMColor.fgDefault)
                             .textFieldStyle(.plain)
+                            .focused(focus, equals: todo.id)
                         if todo.text.isEmpty {
                             Rectangle()
                                 .fill(MMColor.borderSubtle)

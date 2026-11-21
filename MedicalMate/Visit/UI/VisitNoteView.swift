@@ -17,15 +17,26 @@ struct VisitNoteView: View {
             MMNavBar(title: "진료 후 기록", leading: .back, onLeading: onBack)
 
             ZStack(alignment: .bottomTrailing) {
+                ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: MMSpace.s16) {
                         heading
                         card
-                        MMTextArea(
-                            text: $model.memo,
-                            placeholder: "3일치 약 처방을 받았어요",
-                            limit: VisitNoteMetrics.limit
-                        )
+                        // **칸의 아랫변을 따라간다.** 칸은 적을수록 아래로 자라는데
+                        // 키보드가 올라오면 보이는 높이가 줄어, 방금 친 글자와 세는
+                        // 칸이 키보드 뒤로 들어간다. **칸 자체를 부르지 않는다** — 칸이
+                        // 화면보다 길어지면 윗변에 맞춰져 커서가 도로 가린다. 바로
+                        // 아래 줄을 부른다. Android가 같은 자리를 같은 방법으로 풀었다.
+                        VStack(alignment: .leading, spacing: 0) {
+                            MMTextArea(
+                                text: $model.memo,
+                                placeholder: "3일치 약 처방을 받았어요",
+                                limit: VisitNoteMetrics.limit,
+                                onFocusChange: { if $0 { bringNoteBottomIntoView(proxy) } }
+                            )
+                            Color.clear.frame(height: 1).id(NoteAnchor.bottom)
+                        }
+                        .onChange(of: model.memo) { _, _ in bringNoteBottomIntoView(proxy) }
 
                         if model.noteOverflowed {
                             Text(VisitNoteView.overflowNotice)
@@ -44,6 +55,7 @@ struct VisitNoteView: View {
                     .padding(.bottom, MMSpace.s16)
                 }
                 .scrollBounceBehavior(.basedOnSize)
+                }
 
                 // 받아쓰기가 불가능한 기기에서는 그리지 않는다.
                 if dictation.isAvailable {
@@ -63,6 +75,17 @@ struct VisitNoteView: View {
         .background(MMColor.bgSurface)
         .onAppear(perform: wireDictation)
         .onDisappear { dictation.stop() }
+    }
+
+    /// 칸 바로 아래 줄을 시야로 부른다.
+    ///
+    /// **키보드가 멎기를 기다린다.** 올라오는 동안 부르면 그때의 높이에 맞춰 옮겨
+    /// 놓고 끝나, 다 올라온 뒤에는 도로 가려진다. Android도 같은 까닭으로 기다린다.
+    private func bringNoteBottomIntoView(_ proxy: ScrollViewProxy) {
+        Task {
+            try? await Task.sleep(for: .milliseconds(VisitNoteMetrics.imeSettle))
+            withAnimation { proxy.scrollTo(NoteAnchor.bottom, anchor: .bottom) }
+        }
     }
 
     private var heading: some View {
@@ -185,4 +208,11 @@ enum VisitNoteMetrics {
     static let iconGap: CGFloat = 13
     static let dividerTop: CGFloat = 13
     static let metaTop: CGFloat = 11
+    /// 키보드가 다 올라오기를 기다리는 시간(ms). Android의 `IME_SETTLE_MS`와 같다.
+    static let imeSettle = 120
+}
+
+/// 스크롤을 부를 자리.
+private enum NoteAnchor {
+    case bottom
 }

@@ -21,6 +21,10 @@ struct ScheduleAddView: View {
     /// 병원 찾기를 이 화면 안에서 연다. 고른 결과를 되돌려 받아야 해서 라우트로
     /// 내보내지 않는다.
     @State private var isPickingClinic = false
+    /// 방금 선 할 일 줄. **더하면 바로 적을 수 있게 커서를 준다** — Android의
+    /// `UnderlinedField`도 뜨자마자 초점을 가져간다. 빈 줄을 하나 더 눌러야
+    /// 적기 시작하는 것은 "추가"를 두 번 누르게 하는 것과 같다.
+    @FocusState private var focusedTodo: UUID?
 
     var body: some View {
         Group {
@@ -59,6 +63,7 @@ struct ScheduleAddView: View {
             VStack(spacing: 0) {
                 MMNavBar(title: "일정 추가", leading: .back, onLeading: onBack)
 
+                ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         field(label: "병원") {
@@ -88,9 +93,14 @@ struct ScheduleAddView: View {
 
                         MMSectionHeader(title: "진료 전 할 일")
 
-                        todoList(model)
+                        todoList(model, focus: $focusedTodo)
 
+                        // **늘어난 줄을 따라간다.** 할 일을 더하면 키보드가 올라오고
+                        // 방금 선 빈 줄이 그 뒤로 들어간다. 지우거나 처음 불러온
+                        // 때에는 움직이지 않는다 — 보던 자리가 까닭 없이 튄다.
+                        // Android `TodoSection`이 같은 규칙이다.
                         addRow(title: "할 일 추가") { model.addTodo() }
+                            .id(ScheduleAnchor.addTodo)
 
                         if let message = model.errorMessage {
                             Text(message)
@@ -104,6 +114,10 @@ struct ScheduleAddView: View {
                     .padding(.bottom, MMSize.safeBottom)
                 }
                 .scrollBounceBehavior(.basedOnSize)
+                .onChange(of: model.todos.count) { was, now in
+                    followNewTodo(model, was: was, now: now, proxy: proxy)
+                }
+                }
 
                 footer(model)
             }
@@ -111,6 +125,20 @@ struct ScheduleAddView: View {
             overlays(model)
         }
         .background(MMColor.bgSurface)
+    }
+
+    /// 방금 선 할 일 줄에 커서를 주고 시야로 부른다.
+    ///
+    /// **지우거나 처음 불러온 때에는 움직이지 않는다** — 보던 자리가 까닭 없이 튄다.
+    /// 키보드가 다 올라오기를 기다렸다 옮긴다. 올라오는 동안 옮기면 그때의 높이에
+    /// 맞춰 놓고 끝나 도로 가려진다. Android `TodoSection`이 같은 규칙이다.
+    private func followNewTodo(_ model: ScheduleAddModel, was: Int, now: Int, proxy: ScrollViewProxy) {
+        guard now > was else { return }
+        focusedTodo = model.todos.last?.id
+        Task {
+            try? await Task.sleep(for: .milliseconds(ScheduleMetrics.imeSettle))
+            withAnimation { proxy.scrollTo(ScheduleAnchor.addTodo, anchor: .bottom) }
+        }
     }
 
     // MARK: - 입력 칸
@@ -360,7 +388,14 @@ struct ScheduleAddView: View {
     }
 }
 
+/// 스크롤을 부를 자리.
+private enum ScheduleAnchor {
+    case addTodo
+}
+
 enum ScheduleMetrics {
+    /// 키보드가 다 올라오기를 기다리는 시간(ms). Android의 `IME_SETTLE_MS`와 같다.
+    static let imeSettle = 120
     /// 라벨과 칸 사이.
     static let labelGap: CGFloat = 7
     static let cardInset: CGFloat = 18
