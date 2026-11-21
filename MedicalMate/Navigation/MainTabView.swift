@@ -80,6 +80,18 @@ struct MainTabView: View {
             )
             .toolbar(.hidden, for: .navigationBar)
 
+        case .calendarDay(let date, _):
+            if let day = HomeRepository.date(from: date) {
+                CalendarDayView(
+                    date: day,
+                    onBack: { path.removeLast() },
+                    onOpenCard: { path.append(Route.briefCard(cardId: $0)) },
+                    onRecordVisit: { path.append(Route.clinicConfirm(cardId: $0)) },
+                    onDeleted: { path.removeLast() }
+                )
+                .toolbar(.hidden, for: .navigationBar)
+            }
+
         case .scheduleAdd(let date):
             ScheduleAddView(
                 initialDate: date.flatMap(HomeRepository.date(from:)),

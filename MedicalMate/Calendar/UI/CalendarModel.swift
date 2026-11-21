@@ -68,14 +68,7 @@ final class CalendarModel {
         guard let day = selectedDay else { return [] }
         return appointments
             .filter { calendar.component(.day, from: $0.on) == day && $0.status != .canceled }
-            .sorted { lhs, rhs in
-                switch (lhs.time, rhs.time) {
-                case let (left?, right?): left < right
-                case (nil, _?): false
-                case (_?, nil): true
-                default: lhs.id < rhs.id
-                }
-            }
+            .sorted(by: AppointmentMapping.isEarlier)
     }
 
     // MARK: - 움직임

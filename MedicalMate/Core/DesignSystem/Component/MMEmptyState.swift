@@ -15,13 +15,18 @@ struct MMEmptyState: View {
     private let message: String
     /// 액션 라벨. 마스터의 네 variant는 모두 들고 있지만 **인스턴스가 끌 수 있다**.
     private let actionTitle: String?
+    /// 액션의 모양. 마스터는 Tonal이고 **`1r-2`의 인스턴스는 면 없는 링크다**.
+    private let actionStyle: ActionStyle
     var onAction: (() -> Void)?
+
+    enum ActionStyle { case tonal, link }
 
     init(kind: Kind, onAction: (() -> Void)? = nil) {
         self.icon = kind.icon
         self.title = kind.title
         self.message = kind.message
         self.actionTitle = kind.actionTitle
+        self.actionStyle = .tonal
         self.onAction = onAction
     }
 
@@ -30,12 +35,20 @@ struct MMEmptyState: View {
     /// 마스터(`335:1166`)의 variant는 넷뿐이고 `1m-B`는 그중 하나에 **아이콘과 문구를
     /// 덮고 액션을 끈** 인스턴스다(아이콘 바꿔치기는 Android #228에서도 같은 판단).
     /// 새 variant를 만든 것이 아니라 마스터를 그대로 쓰는 자리라 이 생성자로 받는다.
-    init(icon: MMIcon, title: String, message: String) {
+    init(
+        icon: MMIcon,
+        title: String,
+        message: String,
+        actionTitle: String? = nil,
+        actionStyle: ActionStyle = .tonal,
+        onAction: (() -> Void)? = nil
+    ) {
         self.icon = icon
         self.title = title
         self.message = message
-        self.actionTitle = nil
-        self.onAction = nil
+        self.actionTitle = actionTitle
+        self.actionStyle = actionStyle
+        self.onAction = onAction
     }
 
     var body: some View {
@@ -59,7 +72,20 @@ struct MMEmptyState: View {
             .frame(maxWidth: .infinity)
 
             if let actionTitle {
-                MMButton(actionTitle, kind: .tonal, size: .m, fill: false) { onAction?() }
+                switch actionStyle {
+                case .tonal:
+                    MMButton(actionTitle, kind: .tonal, size: .m, fill: false) { onAction?() }
+                case .link:
+                    Button { onAction?() } label: {
+                        Text(actionTitle)
+                            .mmTextStyle(MMFont.labelL)
+                            .foregroundStyle(MMColor.fgLink)
+                            .frame(height: MMSize.controlMd)
+                            .padding(.horizontal, MMSpace.s20)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
         .padding(.vertical, MMSpace.s40)

@@ -54,10 +54,13 @@ struct MMListRow: View {
                     Spacer(minLength: 0)
                 }
 
-                Text(meta)
-                    .mmTextStyle(MMFont.bodyS)
-                    .foregroundStyle(MMColor.fgSubtle)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                // 비면 줄을 만들지 않는다. 빈 줄이 서면 행이 괜히 높아진다.
+                if !meta.isEmpty {
+                    Text(meta)
+                        .mmTextStyle(MMFont.bodyS)
+                        .foregroundStyle(MMColor.fgSubtle)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
 
                 if let summary {
                     Text(summary)

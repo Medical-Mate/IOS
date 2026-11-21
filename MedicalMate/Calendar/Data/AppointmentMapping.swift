@@ -84,4 +84,14 @@ enum AppointmentMapping {
             }
             .filter { !$0.text.isEmpty }
     }
+
+    /// 시간이 이른 것부터. **미정은 뒤로 간다.**
+    static func isEarlier(_ lhs: Appointment, than rhs: Appointment) -> Bool {
+        switch (lhs.time, rhs.time) {
+        case let (left?, right?): left < right
+        case (nil, _?): false
+        case (_?, nil): true
+        default: lhs.id < rhs.id
+        }
+    }
 }

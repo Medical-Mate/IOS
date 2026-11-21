@@ -171,3 +171,30 @@ struct ScheduleAddTests {
         #expect(cleaned.first?.text == "복용 중인 약 챙기기")
     }
 }
+
+/// 일자 상세가 하루의 일정을 어떻게 고르는지.
+struct CalendarDayTests {
+    private func appointment(id: Int64, hour: Int?, minute: Int = 0) -> Appointment {
+        Appointment(
+            id: id, title: "", clinic: nil,
+            on: HomeRepository.date(from: "2026-09-12")!,
+            time: hour.map { AppointmentTime(hour: $0, minute: minute) },
+            status: .scheduled, origin: .manual, cards: [], todos: []
+        )
+    }
+
+    @Test func 이른_시각이_먼저고_미정은_뒤로_간다() {
+        let early = appointment(id: 1, hour: 9)
+        let late = appointment(id: 2, hour: 14)
+        let unset = appointment(id: 3, hour: nil)
+
+        #expect(AppointmentMapping.isEarlier(early, than: late))
+        #expect(!AppointmentMapping.isEarlier(late, than: early))
+        #expect(AppointmentMapping.isEarlier(late, than: unset))
+        #expect(!AppointmentMapping.isEarlier(unset, than: late))
+    }
+
+    @Test func 시각이_둘_다_없으면_id_순이다() {
+        #expect(AppointmentMapping.isEarlier(appointment(id: 1, hour: nil), than: appointment(id: 2, hour: nil)))
+    }
+}
