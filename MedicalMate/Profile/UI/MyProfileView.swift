@@ -63,7 +63,10 @@ struct MyProfileView: View {
 
     private func list(_ model: MyProfileModel) -> some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: MMSpace.s14) {
+            // 눈여겨볼 것: 여기서 `VStack`을 쓰면 메이트 줄의 긴 설명이 프로필 카드
+            // 아래 빈 띠에 한 번 더 얇게 그려진다(설명이 짧으면 사라진다). 구간을
+            // 하나씩 세우는 `LazyVStack`에서는 나오지 않는다.
+            LazyVStack(alignment: .leading, spacing: MMSpace.s14) {
                 profileCard(model)
                 healthSection(model)
                 reminderSection(model)

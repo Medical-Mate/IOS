@@ -196,6 +196,7 @@ swiftlint --strict
 | 다음 화면 | J 섹션 헤이 메이트(`3671:11369`~) |
 | 서버 연결 | `auth` · `health-profile` · `home` · `cards`(목록·상세·편집·삭제) · `sessions` · `hospitals` · `visits` · `appointments` · `settings` 아홉이 붙었습니다. 나머지 API는 쓰는 화면에서 붙입니다 |
 | 홈 배너 | 다섯 장 중 **두 갈래만** 갑니다(처음 · 진료 후). 나머지 셋은 홈 응답에 가를 값이 없어 백엔드 확인이 필요합니다 — 규칙은 FEATURE-SPEC 2.9 |
+| 알려진 자국 | 없습니다. 1s-1의 잔상은 `LazyVStack`으로 풀었습니다 |
 | 받아쓰기 | `DictationController`. **`requiresOnDeviceRecognition = true`로 고정**했고 온디바이스를 못 하는 기기에서는 마이크를 아예 그리지 않습니다 — 몰래 서버로 보내지 않습니다 |
 | 카카오 SDK | 미연결. `UnavailableKakaoLoginClient`가 자리를 잡고 있습니다 |
 | 앱 아이콘 | 비어 있습니다. Figma에서 내보내 넣습니다 |
