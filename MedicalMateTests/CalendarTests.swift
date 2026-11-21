@@ -383,6 +383,17 @@ struct CalendarDayNextEventTests {
         #expect(next?.cards.first?.id == 7)
     }
 
+    @Test func 확정하러_들어가면_출처와_카드를_함께_보낸다() {
+        // 손으로 만든 일정은 출처가 없다. 확정하러 들어왔을 때만 적는다 — 그래야
+        // 만들어진 일정을 일자 상세가 다음 일정으로 다시 찾는다.
+        #expect(ScheduleAddModel.cardIds(picked: [], followUp: 7) == [7])
+        // 들고 온 카드는 고르지 않았어도 함께 간다.
+        #expect(ScheduleAddModel.cardIds(picked: [9], followUp: 7) == [7, 9])
+        // 같은 카드를 골랐어도 두 번 보내지 않는다.
+        #expect(ScheduleAddModel.cardIds(picked: [7], followUp: 7) == [7])
+        #expect(ScheduleAddModel.cardIds(picked: [9, 3], followUp: nil) == [3, 9])
+    }
+
     @Test func 뽑아_둔_재방문이_없으면_다음_일정도_없다() {
         #expect(CalendarDayModel.pendingFollowUp(record(followUp: nil), after: fixtureDay("2026-09-12")) == nil)
         #expect(CalendarDayModel.pendingFollowUp(nil, after: fixtureDay("2026-09-12")) == nil)

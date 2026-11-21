@@ -174,15 +174,18 @@ struct MainTabView: View {
                     onOpenCard: { path.append(Route.briefCard(cardId: $0)) },
                     onRecordVisit: { path.append(Route.clinicConfirm(cardId: $0)) },
                     onOpenRecord: { path.append(Route.visitDetail(visitId: "\($0)")) },
-                    onConfirmNextEvent: { _ in path.append(Route.scheduleAdd(date: nil)) },
+                    onConfirmNextEvent: { day, cardId in
+                        path.append(Route.scheduleAdd(date: Self.wire(day), followUpCardId: cardId))
+                    },
                     onDeleted: { path.removeLast() }
                 )
                 .toolbar(.hidden, for: .navigationBar)
             }
 
-        case .scheduleAdd(let date):
+        case .scheduleAdd(let date, let followUpCardId):
             ScheduleAddView(
                 initialDate: date.flatMap(HomeRepository.date(from:)),
+                followUpCardId: followUpCardId,
                 onBack: { path.removeLast() },
                 onSaved: { _ in path.removeLast() }
             )

@@ -14,7 +14,8 @@ struct CalendarDayView: View {
     var onOpenCard: (Int64) -> Void = { _ in }
     var onRecordVisit: (Int64) -> Void = { _ in }
     var onOpenRecord: (Int64) -> Void = { _ in }
-    var onConfirmNextEvent: (Int64) -> Void = { _ in }
+    /// 뽑아 둔 재방문을 확정하러 간다. 날짜와 카드를 들고 간다.
+    var onConfirmNextEvent: (Date, Int64?) -> Void = { _, _ in }
     var onDeleted: () -> Void = {}
 
     @State private var model: CalendarDayModel?
@@ -244,7 +245,7 @@ struct CalendarDayView: View {
 
             if !model.isNextEventConfirmed {
                 Color.clear.frame(height: MMSpace.s4)
-                Button { model.nextEvent.map { onConfirmNextEvent($0.id) } } label: {
+                Button { model.nextEvent.map { onConfirmNextEvent($0.on, $0.cards.first?.id) } } label: {
                     HStack(spacing: MMSpace.s6) {
                         MMIcon.clock.view(size: MMSize.iconSm)
                         Text("시간 정하고 확정하기").mmTextStyle(MMFont.bodyMStrong)

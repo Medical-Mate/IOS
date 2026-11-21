@@ -26,7 +26,9 @@ enum Route: Hashable, Sendable {
 
     // 캘린더
     case calendarDay(date: String, appointmentId: Int64?)
-    case scheduleAdd(date: String?)
+    /// 일정 추가. **재방문을 확정하러 들어오면** 그 카드를 들고 간다 — 만들어진 일정이
+    /// 무엇 하러 가는 날인지 남아야 다음 일정으로 다시 찾을 수 있다(`1r-2-A`).
+    case scheduleAdd(date: String?, followUpCardId: Int64? = nil)
 
     // 진료 후 기록
     case hospitalPick

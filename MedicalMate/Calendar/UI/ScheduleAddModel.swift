@@ -38,13 +38,19 @@ final class ScheduleAddModel {
     private let calendar: Calendar
     private let today: @Sendable () -> Date
 
+    /// 재방문을 확정하러 들어왔으면 그 카드. **출처와 카드를 함께 보내야** 만들어진
+    /// 일정이 무엇 하러 가는 날인지 남고, 일자 상세가 그것을 다음 일정으로 다시 찾는다.
+    private let followUpCardId: Int64?
+
     init(
         initialDate: Date?,
+        followUpCardId: Int64? = nil,
         repository: AppointmentRepository,
         cards cardsRepository: CardRepository,
         calendar: Calendar = .current,
         today: @escaping @Sendable () -> Date = { Date() }
     ) {
+        self.followUpCardId = followUpCardId
         self.repository = repository
         self.cardsRepository = cardsRepository
         self.calendar = calendar
@@ -179,6 +185,13 @@ final class ScheduleAddModel {
 
     // MARK: - 저장
 
+    /// 보낼 카드. **확정하러 들고 온 카드는 고르지 않았어도 함께 간다.**
+    nonisolated static func cardIds(picked: Set<Int64>, followUp: Int64?) -> [Int64] {
+        var ids = picked
+        if let followUp { ids.insert(followUp) }
+        return ids.sorted()
+    }
+
     func save() async -> Int64? {
         guard let on, !isSaving else { return nil }
         isSaving = true
@@ -191,8 +204,9 @@ final class ScheduleAddModel {
             purpose: nil,
             scheduledOn: VisitMapping.day(on, calendar: calendar),
             scheduledTime: time?.wire,
-            cardIds: Array(pickedCardIds).sorted(),
-            origin: AppointmentOrigin.manual.wire,
+            cardIds: ScheduleAddModel.cardIds(picked: pickedCardIds, followUp: followUpCardId),
+            // **손으로 만든 일정은 출처가 없다.** 재방문을 확정하러 들어왔을 때만 적는다.
+            origin: (followUpCardId == nil ? AppointmentOrigin.manual : .visitFollowUp).wire,
             // 빈 줄은 보내지 않는다. 추가만 하고 안 적은 칸이다.
             todos: AppointmentMapping.cleaned(todos)
         )
