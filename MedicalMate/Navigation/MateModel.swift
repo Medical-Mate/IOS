@@ -51,7 +51,7 @@ final class MateModel {
     static let guides: [MMMateCard.Guide] = [
         .init(icon: .note, phrase: "배가 아파서 정리할래", meaning: "증상 정리"),
         .init(icon: .edit, phrase: "진료 끝났어", meaning: "진료 후 기록"),
-        .init(icon: .calendar, phrase: "다음 진료 언제야", meaning: "일정 찾기"),
+        .init(icon: .calendar, phrase: "다음 진료 언제야", meaning: "일정 찾기")
     ]
 
     /// 마지막으로 들린 때. 말하는 중의 글도 들린 것으로 친다.
@@ -118,8 +118,7 @@ final class MateModel {
     private func nextVisitAnswer() async -> String {
         guard case .success(let list) = await appointments.upcoming(),
               let next = list.compactMap(AppointmentMapping.appointment(from:))
-                  .sorted(by: { $0.on < $1.on })
-                  .first
+                  .min(by: { $0.on < $1.on })
         else {
             return MateModel.noNextVisit
         }
@@ -145,38 +144,42 @@ final class MateModel {
 
     /// 어디로 갈지. **묻는 말(`nextVisit`)은 옮기지 않는다.**
     nonisolated static func action(for command: MateCommand) -> Action? {
-        switch command {
-        case .home: .tab(.home)
-        case .calendar: .tab(.calendar)
-        case .record: .tab(.record)
-        case .profile: .route(.myProfile)
-        case .back: .back
-        case .intake: .route(.intake(sessionId: nil))
-        case .visitRecord: .route(.hospitalPick)
-        case .briefCards: .route(.briefCardList)
-        case .scheduleAdd: .route(.scheduleAdd(date: nil))
-        case .resume: .tab(.home)
-        case .nextVisit: nil
-        }
+        // 표의 값이 `Action?`이라 꺼내면 두 겹이다. 한 겹을 벗겨 돌려준다.
+        guard let action = actions[command] else { return nil }
+        return action
     }
+
+    /// 명령이 가리키는 곳. **묻는 말은 없다** — `switch`가 아니라 표로 둔다.
+    private nonisolated static let actions: [MateCommand: Action?] = [
+        .home: .tab(.home),
+        .calendar: .tab(.calendar),
+        .record: .tab(.record),
+        .profile: .route(.myProfile),
+        .back: .back,
+        .intake: .route(.intake(sessionId: nil)),
+        .visitRecord: .route(.hospitalPick),
+        .briefCards: .route(.briefCardList),
+        .scheduleAdd: .route(.scheduleAdd(date: nil)),
+        .resume: .tab(.home),
+        .nextVisit: Action?.none
+    ]
 
     /// 옮긴 뒤의 제목. **캘린더만 시안에 있고**(`1r-1-M4`) 나머지는 Android 문구를 따랐다
     /// (COMPONENT-MAP 3장 #26).
-    nonisolated static func movedTitle(_ command: MateCommand) -> String {
-        switch command {
-        case .calendar: "캘린더로 옮겼어요"
-        case .home: "홈으로 왔어요"
-        case .record: "기록을 열었어요"
-        case .profile: "내 정보를 열었어요"
-        case .back: "앞 화면으로 돌아갔어요"
-        case .intake: "증상 정리를 시작할게요"
-        case .visitRecord: "진료 후 기록을 시작할게요"
-        case .briefCards: "브리핑 카드 목록을 열었어요"
-        case .scheduleAdd: "일정 추가를 열었어요"
-        case .resume: "하던 정리를 이어서 할게요"
-        case .nextVisit: ""
-        }
-    }
+    nonisolated static func movedTitle(_ command: MateCommand) -> String { movedTitles[command] ?? "" }
+
+    private nonisolated static let movedTitles: [MateCommand: String] = [
+        .calendar: "캘린더로 옮겼어요",
+        .home: "홈으로 왔어요",
+        .record: "기록을 열었어요",
+        .profile: "내 정보를 열었어요",
+        .back: "앞 화면으로 돌아갔어요",
+        .intake: "증상 정리를 시작할게요",
+        .visitRecord: "진료 후 기록을 시작할게요",
+        .briefCards: "브리핑 카드 목록을 열었어요",
+        .scheduleAdd: "일정 추가를 열었어요",
+        .resume: "하던 정리를 이어서 할게요"
+    ]
 
     /// 둘째 줄. **시안이 적어 둔 것은 캘린더 하나뿐이라** 나머지는 비운다.
     nonisolated static func movedHint(_ command: MateCommand) -> String? {

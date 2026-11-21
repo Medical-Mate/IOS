@@ -128,17 +128,26 @@ enum VisitMapping {
         return VisitFollowUp(date: date, text: response.text, approximate: response.approximate ?? false)
     }
 
+    /// 저장할 기록 한 건. **인자를 묶어 둔다** — 일곱 개를 늘어놓으면 부르는 쪽에서
+    /// 차례가 헷갈린다.
+    struct Draft {
+        var clinicName: String?
+        var visitedOn: Date?
+        var items: [VisitItem]
+        var followUp: VisitFollowUp?
+        var patientNotes: [String]
+        var rawNote: String?
+    }
+
     /// 저장 요청으로 옮긴다.
-    static func createRequest(
-        clinicName: String?,
-        visitedOn: Date?,
-        items: [VisitItem],
-        followUp: VisitFollowUp?,
-        patientNotes: [String],
-        rawNote: String?,
-        calendar: Calendar
-    ) -> CreateVisitRequest {
-        CreateVisitRequest(
+    static func createRequest(_ draft: Draft, calendar: Calendar) -> CreateVisitRequest {
+        let clinicName = draft.clinicName
+        let visitedOn = draft.visitedOn
+        let items = draft.items
+        let followUp = draft.followUp
+        let patientNotes = draft.patientNotes
+        let rawNote = draft.rawNote
+        return CreateVisitRequest(
             clinicName: clinicName,
             visitedOn: visitedOn.map { day($0, calendar: calendar) },
             axes: items.map {

@@ -20,7 +20,7 @@ struct CardListTests {
         CardRepository(
             client: Stub.client,
             calendar: calendar,
-            today: { HomeRepository.date(from: today)! }
+            today: { fixtureDay(today) }
         )
     }
 
@@ -110,7 +110,7 @@ struct RecordListTests {
         CardRepository(
             client: Stub.client,
             calendar: calendar,
-            today: { HomeRepository.date(from: "2026-09-21")! }
+            today: { fixtureDay("2026-09-21") }
         )
     }
 

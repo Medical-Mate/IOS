@@ -10,22 +10,23 @@ import Observation
 /// **최신이 위다.** 시안 `1j-3`은 카드가 위이고 `1j-3-R`(재방문 누적)은 최신이 위인데,
 /// 디자인 피드백이 "최신 기록이 맨 위로 가는 게 멘탈 모델"이라고 적어 둔 쪽을 Android가
 /// 따랐고 여기도 같이 간다(COMPONENT-MAP 3장 #21).
+/// 타임라인 칸의 갈래. **타입 안에 두 겹으로 넣지 않는다**(SwiftLint `nesting`).
+enum RecordStepKind: Equatable {
+    /// 브리핑 카드. 접었다 펼 수 있다.
+    case card
+    /// 진료 후 기록.
+    case visit(id: Int64)
+    /// 아직 오지 않은 칸.
+    case scheduled
+}
+
 @MainActor
 @Observable
 final class RecordDetailModel {
     /// 타임라인의 한 칸.
     struct Step: Identifiable, Equatable {
-        enum Kind: Equatable {
-            /// 브리핑 카드. 접었다 펼 수 있다.
-            case card
-            /// 진료 후 기록.
-            case visit(id: Int64)
-            /// 아직 오지 않은 칸.
-            case scheduled
-        }
-
         let id: String
-        let kind: Kind
+        let kind: RecordStepKind
         /// "09.04 작성" · "09.12 · 진료 후 기록 · 재방문" · "09.26 예정".
         let when: String
         let title: String

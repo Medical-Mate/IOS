@@ -34,7 +34,7 @@ struct OnboardingPage: Identifiable {
             title: "이어가요.",
             body: "진료에서 들은 말과 처방을 기록해요.\n다음 진료 일정까지 한곳에서,\n다시 준비할 때 꺼내 볼 수 있어요.",
             illustration: .onboarding4
-        ),
+        )
     ]
 }
 

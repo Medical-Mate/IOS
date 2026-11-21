@@ -64,9 +64,9 @@ struct CalendarMonthTests {
             == CalendarMonth(year: 2025, month: 12))
     }
 
-    @Test func 머리와_구간_제목의_모양() {
+    @Test func 머리와_구간_제목의_모양() throws {
         #expect(september.title == "2026년 9월")
-        let day = september.date(day: 12, calendar: calendar)!
+        let day = try #require(september.date(day: 12, calendar: calendar))
         #expect(CalendarMonth.dayTitle(day, calendar: calendar) == "9월 12일 (토)")
     }
 }
@@ -114,15 +114,15 @@ struct AppointmentMappingTests {
         #expect(AppointmentMapping.time(from: nil) == nil)
     }
 
-    @Test func 시간이_미정이면_그_사실을_적는다() {
+    @Test func 시간이_미정이면_그_사실을_적는다() throws {
         // 빈 자리로 두면 시간이 정해진 것처럼 읽힌다.
-        let appointment = AppointmentMapping.appointment(from: response(time: nil))!
+        let appointment = try #require(AppointmentMapping.appointment(from: response(time: nil)))
         #expect(AppointmentMapping.meta(appointment) == "시간 미정")
     }
 
-    @Test func 둘째_줄은_시각과_카드를_잇는다() {
+    @Test func 둘째_줄은_시각과_카드를_잇는다() throws {
         let cards = [LinkedCardResponse(cardId: 7, title: "복부 통증 브리핑 카드")]
-        let appointment = AppointmentMapping.appointment(from: response(cards: cards))!
+        let appointment = try #require(AppointmentMapping.appointment(from: response(cards: cards)))
         #expect(AppointmentMapping.meta(appointment) == "오전 10:30 · 복부 통증 브리핑 카드")
     }
 
@@ -138,10 +138,10 @@ struct AppointmentMappingTests {
         #expect(AppointmentOrigin.of("VISIT_FOLLOW_UP") == .visitFollowUp)
     }
 
-    @Test func 지난_일정은_진료_완료_배지다() {
-        let done = AppointmentMapping.appointment(from: response(status: "DONE"))!
+    @Test func 지난_일정은_진료_완료_배지다() throws {
+        let done = try #require(AppointmentMapping.appointment(from: response(status: "DONE")))
         #expect(AppointmentMapping.badge(done)?.text == "진료 완료")
-        let canceled = AppointmentMapping.appointment(from: response(status: "CANCELED"))!
+        let canceled = try #require(AppointmentMapping.appointment(from: response(status: "CANCELED")))
         #expect(AppointmentMapping.badge(canceled) == nil)
     }
 }
@@ -165,7 +165,7 @@ struct ScheduleAddTests {
         let todos = [
             AppointmentTodo(text: "복용 중인 약 챙기기"),
             AppointmentTodo(text: "   "),
-            AppointmentTodo(text: "", isDone: true),
+            AppointmentTodo(text: "", isDone: true)
         ]
         let cleaned = AppointmentMapping.cleaned(todos)
         #expect(cleaned.count == 1)
@@ -178,7 +178,7 @@ struct CalendarDayTests {
     private func appointment(id: Int64, hour: Int?, minute: Int = 0) -> Appointment {
         Appointment(
             id: id, title: "", clinic: nil,
-            on: HomeRepository.date(from: "2026-09-12")!,
+            on: fixtureDay("2026-09-12"),
             time: hour.map { AppointmentTime(hour: $0, minute: minute) },
             status: .scheduled, origin: .manual, cards: [], todos: []
         )
@@ -228,8 +228,8 @@ struct CalendarDayCopyTests {
     @Test func 기록_줄은_재방문_날짜를_덧붙인다() {
         let record = VisitListItem(
             id: 5, cardId: 7, cardTitle: "위염 초기 · 2주 약", clinicName: nil,
-            visitedOn: HomeRepository.date(from: "2026-09-18")!,
-            followUp: VisitFollowUp(date: HomeRepository.date(from: "2026-09-26")!, text: nil, approximate: true)
+            visitedOn: fixtureDay("2026-09-18"),
+            followUp: VisitFollowUp(date: fixtureDay("2026-09-26"), text: nil, approximate: true)
         )
         #expect(CalendarDayView.recordMeta(record) == "위염 초기 · 2주 약 · 09.26 재방문")
     }
@@ -237,7 +237,7 @@ struct CalendarDayCopyTests {
     @Test func 재방문이_없으면_카드_제목만_적는다() {
         let record = VisitListItem(
             id: 5, cardId: 7, cardTitle: "위염 초기", clinicName: nil,
-            visitedOn: HomeRepository.date(from: "2026-09-18")!, followUp: nil
+            visitedOn: fixtureDay("2026-09-18"), followUp: nil
         )
         #expect(CalendarDayView.recordMeta(record) == "위염 초기")
     }

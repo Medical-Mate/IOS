@@ -94,9 +94,26 @@ struct MainTabView: View {
         VisitMapping.day(date, calendar: .current)
     }
 
+    /// 화면이 붙는 대로 여기에 등록한다. **도메인별로 나눠 둔다** — 한 `switch`에 모으면
+    /// 길이도 갈래도 한도를 넘는다.
     @ViewBuilder
     private func destination(for route: Route) -> some View {
-        // 화면이 붙는 대로 여기에 등록한다.
+        switch route {
+        case .briefCardList, .briefCard, .recordDetail, .visitDetail:
+            cardDestination(route)
+        case .calendarDay, .scheduleAdd:
+            calendarDestination(route)
+        case .clinicConfirm, .hospitalPick, .visitNote, .visitRecord:
+            visitDestination(route)
+        case .myProfile, .healthEdit, .reminderTime:
+            profileDestination(route)
+        case .intake, .intakeDone, .onboardingIntro, .profileSetup, .profileComplete:
+            intakeDestination(route)
+        }
+    }
+
+    @ViewBuilder
+    private func cardDestination(_ route: Route) -> some View {
         switch route {
         case .briefCardList:
             BriefCardListView(
@@ -138,6 +155,14 @@ struct MainTabView: View {
                 .toolbar(.hidden, for: .navigationBar)
             }
 
+        default:
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private func calendarDestination(_ route: Route) -> some View {
+        switch route {
         case .calendarDay(let date, _):
             if let day = HomeRepository.date(from: date) {
                 CalendarDayView(
@@ -160,6 +185,14 @@ struct MainTabView: View {
             )
             .toolbar(.hidden, for: .navigationBar)
 
+        default:
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private func visitDestination(_ route: Route) -> some View {
+        switch route {
         case .clinicConfirm(let cardId):
             VisitFlowView(
                 cardId: cardId,
@@ -168,6 +201,14 @@ struct MainTabView: View {
             )
             .toolbar(.hidden, for: .navigationBar)
 
+        default:
+            PlaceholderView(title: "\(route)", note: "아직 그리지 않았다")
+        }
+    }
+
+    @ViewBuilder
+    private func profileDestination(_ route: Route) -> some View {
+        switch route {
         case .myProfile:
             MyProfileView(
                 onBack: { path.removeLast() },
@@ -192,6 +233,14 @@ struct MainTabView: View {
             )
             .toolbar(.hidden, for: .navigationBar)
 
+        default:
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private func intakeDestination(_ route: Route) -> some View {
+        switch route {
         case .intake(let sessionId):
             // 새로 시작하는 길은 1단계(인체도)가 짚은 부위를 넘겨줘야 열린다. 아직
             // 그 화면이 없어서 이어서 하는 길만 간다.

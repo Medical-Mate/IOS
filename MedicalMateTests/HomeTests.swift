@@ -10,17 +10,17 @@ struct HomeTests {
     private func repository(today: String) -> HomeRepository {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
-        let date = HomeRepository.date(from: today)!
+        let date = fixtureDay(today)
         return HomeRepository(client: AppEnvironmentStub.client, calendar: calendar, today: { date })
     }
 
     @Test("D-day는 남은 날로 적고 당일은 D-DAY다")
     func dday() {
         let repo = repository(today: "2026-09-18")
-        #expect(repo.dday(for: HomeRepository.date(from: "2026-09-25")!) == "D-7")
-        #expect(repo.dday(for: HomeRepository.date(from: "2026-09-18")!) == "D-DAY")
+        #expect(repo.dday(for: fixtureDay("2026-09-25")) == "D-7")
+        #expect(repo.dday(for: fixtureDay("2026-09-18")) == "D-DAY")
         // 지난 일정도 홈에 남을 수 있다. 음수로 적는다.
-        #expect(repo.dday(for: HomeRepository.date(from: "2026-09-15")!) == "D+3")
+        #expect(repo.dday(for: fixtureDay("2026-09-15")) == "D+3")
     }
 
     @Test("긴 제목은 24자에서 줄이고 말줄임을 붙인다")
@@ -40,11 +40,11 @@ struct HomeTests {
     }
 
     @Test("서버가 title을 안 주면 환자가 말한 원문을 쓴다")
-    func titleFallback() {
+    func titleFallback() throws {
         let json = """
         {"recentCards":[{"cardId":1,"chiefComplaint":"배가 아파요","visited":false,"createdAt":"2026-09-04"}]}
         """
-        let response = try! JSONDecoder().decode(HomeResponse.self, from: Data(json.utf8))
+        let response = try JSONDecoder().decode(HomeResponse.self, from: Data(json.utf8))
         let summary = repository(today: "2026-09-18").summary(from: response)
         #expect(summary.recentCards.first?.title == "배가 아파요")
         #expect(summary.recentCards.first?.meta == "2026.09.04")
@@ -88,10 +88,10 @@ struct HomeTests {
     }
 
     @Test("오늘 진료를 이미 기록했으면 오늘 배너를 띄우지 않는다")
-    func todayAlreadyRecorded() {
+    func todayAlreadyRecorded() throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
-        let today = HomeRepository.date(from: "2026-09-12")!
+        let today = try #require(HomeRepository.date(from: "2026-09-12"))
         var input = HomeLeadInput()
         input.nextOn = today
         input.nextCard = (id: 7, title: "복부 통증")
@@ -102,24 +102,25 @@ struct HomeTests {
     }
 
     @Test("내일 진료면 내일 배너다")
-    func tomorrowLead() {
+    func tomorrowLead() throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
         var input = HomeLeadInput()
         input.nextOn = HomeRepository.date(from: "2026-09-13")
         input.nextCard = (id: 7, title: "복부 통증")
-        let lead = HomeRepository.timedLead(input, today: HomeRepository.date(from: "2026-09-12")!, calendar: calendar)
+        let today = try #require(HomeRepository.date(from: "2026-09-12"))
+        let lead = HomeRepository.timedLead(input, today: today, calendar: calendar)
         #expect(lead == .tomorrowVisit(time: nil, clinic: nil, cardId: 7))
     }
 
     @Test("카드가 걸리지 않은 일정은 배너를 가르지 않는다")
-    func noCardNoLead() {
+    func noCardNoLead() throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
         var input = HomeLeadInput()
         input.nextOn = HomeRepository.date(from: "2026-09-12")
         // 기록도 "카드 다시 보기"도 카드가 있어야 갈 곳이 있다.
-        let today = HomeRepository.date(from: "2026-09-12")!
+        let today = try #require(HomeRepository.date(from: "2026-09-12"))
         #expect(HomeRepository.timedLead(input, today: today, calendar: calendar) == nil)
     }
 

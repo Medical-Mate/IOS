@@ -47,7 +47,7 @@ struct RecordDetailTests {
         let line = RecordDetailModel.clinicLine(
             [
                 visit(id: 6, clinic: "서울OO병원 내과", on: "2026-09-26"),
-                visit(id: 5, clinic: "서울OO병원 내과", on: "2026-09-12"),
+                visit(id: 5, clinic: "서울OO병원 내과", on: "2026-09-12")
             ],
             calendar: calendar
         )
@@ -84,7 +84,7 @@ struct RecordDetailTests {
         let steps = RecordDetailModel.visitSteps(
             [
                 visit(id: 6, clinic: "서울OO병원", on: "2026-09-26"),
-                visit(id: 5, clinic: "서울OO병원", on: "2026-09-12"),
+                visit(id: 5, clinic: "서울OO병원", on: "2026-09-12")
             ],
             calendar: calendar
         )
@@ -98,10 +98,10 @@ struct RecordDetailTests {
         #expect(RecordDetailModel.visitKind(count: 2, index: 0) == "재방문")
     }
 
-    @Test func 잡아_둔_일정이_없으면_기록의_재방문_날짜를_세운다() {
+    @Test func 잡아_둔_일정이_없으면_기록의_재방문_날짜를_세운다() throws {
         // 캘린더가 점을 찍는 값과 같아야 달력과 상세가 다른 날을 가리키지 않는다.
         let followUp = VisitFollowUp(
-            date: HomeRepository.date(from: "2026-09-26")!,
+            date: try #require(HomeRepository.date(from: "2026-09-26")),
             text: nil,
             approximate: true
         )

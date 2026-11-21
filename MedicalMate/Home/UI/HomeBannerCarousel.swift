@@ -65,15 +65,14 @@ struct HomeBannerCarousel: View {
             title: HomeBannerCopy.title(item),
             message: HomeBannerCopy.message(item),
             link: HomeBannerCopy.link(item, index: offset, total: pages.count)
-                .map { ($0.title, $0.counter, { onLink(item) }) },
+                .map { MMBannerLink(title: $0.title, counter: $0.counter) { onLink(item) } },
             initial: initial,
             onNotification: onNotification,
             onAvatar: onAvatar,
             showsHeader: showsHeader
         ) {
             Image(item.photo)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
+                .resizable().scaledToFill()
         }
     }
 

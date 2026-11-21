@@ -36,7 +36,7 @@ final class HealthEditModel {
             let fields = [
                 profile.health.medications,
                 profile.health.conditions,
-                profile.health.allergies,
+                profile.health.allergies
             ]
             for (index, field) in fields.enumerated() {
                 picked[index] = Set(field.items)

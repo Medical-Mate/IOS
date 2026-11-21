@@ -42,19 +42,19 @@ enum MMElevation {
     /// Card, 선택된 행.
     static let card: [MMShadow] = [
         MMShadow(hex: 0x1B255A, opacity: 0.08, blur: 10, y: 3),
-        MMShadow(hex: 0x1B255A, opacity: 0.05, blur: 2, y: 1),
+        MMShadow(hex: 0x1B255A, opacity: 0.05, blur: 2, y: 1)
     ]
 
     /// 하단 고정 바, Toast, 플로팅.
     static let float: [MMShadow] = [
         MMShadow(hex: 0x1B255A, opacity: 0.09, blur: 14, y: 4),
-        MMShadow(hex: 0x1B255A, opacity: 0.06, blur: 3, y: 1),
+        MMShadow(hex: 0x1B255A, opacity: 0.06, blur: 3, y: 1)
     ]
 
     /// Bottom Sheet, Dialog, 홈의 흰 시트. **위로 떠오르는 그림자라 y가 음수다.**
     static let sheet: [MMShadow] = [
         MMShadow(hex: 0x1B255A, opacity: 0.10, blur: 24, y: -4),
-        MMShadow(hex: 0x1B255A, opacity: 0.05, blur: 2, y: 0),
+        MMShadow(hex: 0x1B255A, opacity: 0.05, blur: 2, y: 0)
     ]
 
     /// 사진 위 흰 글자(`Shadow/On Image · Text`). 두 겹이다.
@@ -63,12 +63,12 @@ enum MMElevation {
     /// iOS는 `.shadow`를 중첩할 수 있어 그럴 필요가 없다.
     static let onImageText: [MMShadow] = [
         MMShadow(hex: 0x131722, opacity: 0.40, blur: 16, y: 2),
-        MMShadow(hex: 0x131722, opacity: 0.50, blur: 2, y: 1),
+        MMShadow(hex: 0x131722, opacity: 0.50, blur: 2, y: 1)
     ]
 
     /// 사진 위 흰 아이콘(`Shadow/On Image · Icon`). 한 겹이다.
     static let onImageIcon: [MMShadow] = [
-        MMShadow(hex: 0x131722, opacity: 0.50, blur: 3, y: 1),
+        MMShadow(hex: 0x131722, opacity: 0.50, blur: 3, y: 1)
     ]
 
     /// `Elevation/Primary` — `bg/primary` 채움 카드 · 큰 버튼(홈의 `Card / Action`).

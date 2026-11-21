@@ -65,7 +65,7 @@ private enum ThumbnailMetrics {
         .init(width: 73.22, height: 4.068, radius: 2.034, color: MMColor.bgSubtle),
         .init(width: 116.61, height: 4.068, radius: 2.034, color: MMColor.bgSubtle),
         .init(width: 146.441, height: 28.475, radius: 9.492, color: MMColor.bgSubtle),
-        .init(width: 66.441, height: 4.068, radius: 2.034, color: MMColor.bgSubtle),
+        .init(width: 66.441, height: 4.068, radius: 2.034, color: MMColor.bgSubtle)
     ]
 }
 

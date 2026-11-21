@@ -24,7 +24,7 @@ struct IntakeTests {
     @Test func 대화는_seq_순으로_서고_역할이_갈린다() {
         let messages = IntakeRepository.messages(from: [
             MessageResponse(seq: 2, role: "USER", text: "한 3주쯤 됐어요."),
-            MessageResponse(seq: 1, role: "AI", text: "언제부터 그러셨어요?"),
+            MessageResponse(seq: 1, role: "AI", text: "언제부터 그러셨어요?")
         ])
         #expect(messages.map(\.text) == ["언제부터 그러셨어요?", "한 3주쯤 됐어요."])
         #expect(messages.map(\.fromPatient) == [false, true])
@@ -37,7 +37,7 @@ struct IntakeTests {
         let candidates = IntakeRepository.candidates(from: [
             QuestionCandidateResponse(text: "셋", rank: 3),
             QuestionCandidateResponse(text: "하나", rank: 1),
-            QuestionCandidateResponse(text: "둘", rank: 2),
+            QuestionCandidateResponse(text: "둘", rank: 2)
         ])
         #expect(candidates == ["하나", "둘", "셋"])
     }
@@ -65,7 +65,7 @@ struct IntakeTests {
         let rows = [
             IntakeQuestionRow(text: "하나", isSelected: true),
             IntakeQuestionRow(text: "둘", isSelected: false),
-            IntakeQuestionRow(text: "셋", isSelected: true),
+            IntakeQuestionRow(text: "셋", isSelected: true)
         ]
         #expect(IntakeRepository.selected(in: rows) == ["하나", "셋"])
     }
@@ -77,7 +77,7 @@ struct IntakeTests {
     @Test func 정리_문장은_고른_수를_세고_직접_적은_것이_있으면_마무리로_바뀐다() {
         let suggested = [
             IntakeQuestionRow(text: "하나", isSelected: true),
-            IntakeQuestionRow(text: "둘", isSelected: true),
+            IntakeQuestionRow(text: "둘", isSelected: true)
         ]
         #expect(IntakeRepository.summary(rows: suggested) == "질문 2개를 카드에 담을게요.\n더 묻고 싶은 게 있으면 빈 칸에 적어주세요.")
 

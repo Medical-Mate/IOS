@@ -74,12 +74,12 @@ struct MateTests {
         #expect(MateModel.movedTitle(.calendar) == "캘린더로 옮겼어요")
     }
 
-    @Test func 다음_진료_답은_날짜와_제목을_두_줄로_적는다() {
+    @Test func 다음_진료_답은_날짜와_제목을_두_줄로_적는다() throws {
         let appointment = Appointment(
             id: 2,
             title: "서울OO병원 내과 재진",
             clinic: "서울OO병원 내과",
-            on: HomeRepository.date(from: "2026-09-25")!,
+            on: try #require(HomeRepository.date(from: "2026-09-25")),
             time: AppointmentTime(hour: 10, minute: 30),
             status: .scheduled,
             origin: .manual,

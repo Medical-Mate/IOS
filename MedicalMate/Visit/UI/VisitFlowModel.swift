@@ -233,12 +233,14 @@ final class VisitFlowModel {
         errorMessage = nil
 
         let request = VisitMapping.createRequest(
-            clinicName: clinic?.name,
-            visitedOn: visitedOn,
-            items: items,
-            followUp: classification?.followUp,
-            patientNotes: classification?.patientNotes ?? [],
-            rawNote: memo.trimmingCharacters(in: .whitespacesAndNewlines),
+            VisitMapping.Draft(
+                clinicName: clinic?.name,
+                visitedOn: visitedOn,
+                items: items,
+                followUp: classification?.followUp,
+                patientNotes: classification?.patientNotes ?? [],
+                rawNote: memo.trimmingCharacters(in: .whitespacesAndNewlines)
+            ),
             calendar: calendar
         )
 

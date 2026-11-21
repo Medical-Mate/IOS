@@ -22,7 +22,7 @@ struct BriefCardTests {
         let items = BriefCardMapping.items(from: [
             "site": axis("FILLED", "복부"),
             "onset": axis("NOT_ASKED"),
-            "character": axis("SKIPPED"),
+            "character": axis("SKIPPED")
         ])
         #expect(items.map(\.key) == ["부위"])
     }
@@ -42,7 +42,7 @@ struct BriefCardTests {
         let items = BriefCardMapping.items(from: [
             "character": axis("FILLED", "쓰림"),
             "site": axis("FILLED", "복부"),
-            "onset": axis("FILLED", "3주 전"),
+            "onset": axis("FILLED", "3주 전")
         ])
         #expect(items.map(\.key) == ["부위", "기간", "양상"])
     }
@@ -136,13 +136,13 @@ struct BriefCardTests {
     }
 
     @Test func 하단_버튼은_일정으로_갈리고_당일은_기록하기다() {
-        let today = HomeRepository.date(from: "2026-09-18")!
+        let today = fixtureDay("2026-09-18")
         func card(on day: String?) -> BriefCard {
             BriefCard(
                 id: 1, title: "", patientLine: "", maskedPatientLine: "", items: [],
                 severity: nil, allergies: [], questions: [], hospital: nil,
                 appointment: day.map {
-                    BriefCardAppointment(id: 1, date: HomeRepository.date(from: $0)!, clinicName: nil)
+                    BriefCardAppointment(id: 1, date: fixtureDay($0), clinicName: nil)
                 },
                 status: nil, visited: false
             )

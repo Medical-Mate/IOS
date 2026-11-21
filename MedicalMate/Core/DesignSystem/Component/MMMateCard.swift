@@ -162,7 +162,7 @@ private enum MateCardMetrics {
                 state: .listening(guides: [
                     .init(icon: .note, phrase: "배가 아파서 정리할래", meaning: "증상 정리"),
                     .init(icon: .edit, phrase: "진료 끝났어", meaning: "진료 후 기록"),
-                    .init(icon: .calendar, phrase: "다음 진료 언제야", meaning: "일정 찾기"),
+                    .init(icon: .calendar, phrase: "다음 진료 언제야", meaning: "일정 찾기")
                 ]),
                 onClose: {}
             )

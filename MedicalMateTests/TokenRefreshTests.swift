@@ -49,14 +49,15 @@ private actor CountingRefresher: TokenRefreshing {
 
 struct TokenRefreshTests {
     @Test("재발급에 성공하면 새 토큰이 저장된다")
-    func storesNewTokens() async {
+    func storesNewTokens() async throws {
         let tokens = MemoryTokens(access: "old", refresh: "r1")
         let refresher = CountingRefresher(result: TokenPair(access: "new", refresh: "r2"))
 
         let pair = await refresher.refresh(using: "r1")
         #expect(pair?.access == "new")
 
-        await tokens.update(access: pair!.access, refresh: pair!.refresh)
+        let fresh = try #require(pair)
+        await tokens.update(access: fresh.access, refresh: fresh.refresh)
         #expect(await tokens.accessToken() == "new")
         #expect(await tokens.refreshToken() == "r2")
         #expect(await tokens.updateCount == 1)

@@ -34,7 +34,7 @@ struct ProfileSetupStep: Identifiable, Sendable {
             description: "약이나 음식에 반응이 있었다면 꼭 알려주세요.",
             options: ["페니실린", "아스피린", "조개·갑각류", "땅콩", "계란", "꽃가루", "먼지·진드기"],
             tooltip: "브리핑 카드 맨 위에 항상 표시돼요"
-        ),
+        )
     ]
 }
 
@@ -84,7 +84,7 @@ final class ProfileSetupModel {
             picked = [
                 Set(profile.health.medications.items),
                 Set(profile.health.conditions.items),
-                Set(profile.health.allergies.items),
+                Set(profile.health.allergies.items)
             ]
         }
     }

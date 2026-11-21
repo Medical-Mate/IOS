@@ -51,7 +51,7 @@ enum Palette {
         Color(hex: 0xFFC79B),
         Color(hex: 0xFFA894),
         Color(hex: 0xF58079),
-        Color(hex: 0xDC5A55),
+        Color(hex: 0xDC5A55)
     ]
 
     static let severityTint: [Color] = [
@@ -59,7 +59,7 @@ enum Palette {
         Color(hex: 0xFFEFE4),
         Color(hex: 0xFFE9E3),
         Color(hex: 0xFDE4E2),
-        Color(hex: 0xF9DEDD),
+        Color(hex: 0xF9DEDD)
     ]
 }
 

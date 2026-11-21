@@ -65,15 +65,11 @@ struct CalendarMonth: Sendable, Equatable {
 
         for day in 1...max(count, 1) where count > 0 {
             let state: MMCalendarDay.State =
-                if day == today { .today }
-                else if day == selected { .selected }
-                else { .default }
+                if day == today { .today } else if day == selected { .selected } else { .default }
             // **기록이 예정보다 앞선다.** 이미 지난 일은 사실이고 예정은 계획이다
             // (Android `markerOn`과 같다).
             let dot: MMCalendarDay.Dot =
-                if records.contains(day) { .record }
-                else if scheduled.contains(day) { .scheduled }
-                else { .none }
+                if records.contains(day) { .record } else if scheduled.contains(day) { .scheduled } else { .none }
             cells.append(MMCalendarGrid.Day(date: day, state: state, dot: dot))
         }
 

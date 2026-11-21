@@ -16,7 +16,7 @@ enum BriefCardMapping {
         "radiation",
         "associated",
         "time_course",
-        "exacerbating_relieving",
+        "exacerbating_relieving"
     ]
 
     static let severityAxis = "severity"
@@ -112,7 +112,7 @@ enum BriefCardMapping {
     static func healthRows(_ patient: PatientResponse?) -> [BriefCardItem] {
         [
             row(patient?.medications, key: "복용약"),
-            row(patient?.conditions, key: "기저질환"),
+            row(patient?.conditions, key: "기저질환")
         ].compactMap(\.self)
     }
 
@@ -149,7 +149,7 @@ enum BriefCardMapping {
             response.patient?.age.map { age in
                 "\(age)세 \(sexLabel(response.patient?.sex))".trimmingCharacters(in: .whitespaces)
             },
-            writtenOn(response.createdAt, calendar: calendar),
+            writtenOn(response.createdAt, calendar: calendar)
         ].compactMap(\.self).joined(separator: " · ")
     }
 
@@ -165,7 +165,7 @@ enum BriefCardMapping {
         return [
             name,
             sex.isEmpty ? nil : sex,
-            writtenOn(response.createdAt, calendar: calendar),
+            writtenOn(response.createdAt, calendar: calendar)
         ].compactMap(\.self).joined(separator: " · ")
     }
 

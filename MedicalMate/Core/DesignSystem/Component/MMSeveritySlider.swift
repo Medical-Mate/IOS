@@ -16,7 +16,7 @@ struct MMSeverityLevel: Sendable, Equatable {
         .init(level: 2, title: "은근히 아파요", detail: "자꾸 생각나고 집중이 잘 안 돼요", nrs: "NRS 3–4"),
         .init(level: 3, title: "꽤 아파요", detail: "하던 일을 멈추게 될 때가 있어요", nrs: "NRS 5–6"),
         .init(level: 4, title: "많이 아파요", detail: "일상생활이 어렵고 참기 힘들어요", nrs: "NRS 7–8"),
-        .init(level: 5, title: "견디기 힘들어요", detail: "잠도 못 자고 아무것도 못 하겠어요", nrs: "NRS 9–10"),
+        .init(level: 5, title: "견디기 힘들어요", detail: "잠도 못 자고 아무것도 못 하겠어요", nrs: "NRS 9–10")
     ]
 
     static func of(_ level: Int) -> MMSeverityLevel {

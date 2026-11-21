@@ -139,7 +139,6 @@ final class CalendarDayModel {
         isLoading = false
     }
 
-
     /// 카드 줄의 둘째 줄("2026.09.04 · 5항목")은 일정 응답에 없다. 카드 목록에서
     /// 짝을 지어 채운다.
     private func loadCards() async {
@@ -189,8 +188,10 @@ final class CalendarDayModel {
         let linked = Set((appointment?.cards ?? []).map(\.id))
         nextEvent = list
             .compactMap(AppointmentMapping.appointment(from:))
-            .filter { $0.origin == .visitFollowUp && $0.on > date }
-            .first { next in linked.isEmpty || next.cards.contains { linked.contains($0.id) } }
+            .first { next in
+                next.origin == .visitFollowUp && next.on > date
+                    && (linked.isEmpty || next.cards.contains { linked.contains($0.id) })
+            }
     }
 
     // MARK: - 할 일

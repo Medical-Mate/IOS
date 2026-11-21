@@ -39,9 +39,9 @@ struct HomeRepository: Sendable {
         return HomeLeadInput(
             lastVisitedOn: response.lastVisitedOn.flatMap(Self.date(from:)),
             nextOn: next.flatMap { Self.date(from: $0.scheduledOn) },
-            nextTime: next?.scheduledTime.flatMap { Self.time(from: $0) } ?? nil,
+            nextTime: next?.scheduledTime.flatMap { Self.time(from: $0) },
             nextClinicLabel: next.flatMap(Self.clinicLabel),
-            nextClinicName: next?.clinicName.flatMap { $0.isEmpty ? nil : $0 } ?? nil,
+            nextClinicName: next?.clinicName.flatMap { $0.isEmpty ? nil : $0 },
             nextCard: card.map { (id: $0.cardId, title: $0.title ?? "") }
         )
     }

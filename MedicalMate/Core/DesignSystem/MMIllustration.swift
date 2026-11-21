@@ -32,8 +32,7 @@ extension MMIllustration {
     @MainActor
     func view() -> some View {
         Image(rawValue)
-            .resizable()
-            .aspectRatio(contentMode: .fit)
+            .resizable().scaledToFit()
             .accessibilityHidden(true)
     }
 }

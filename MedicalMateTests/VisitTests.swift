@@ -15,7 +15,7 @@ struct VisitTests {
     }
 
     private func followUp(_ day: String, approximate: Bool) -> VisitFollowUp {
-        VisitFollowUp(date: HomeRepository.date(from: day)!, text: nil, approximate: approximate)
+        VisitFollowUp(date: fixtureDay(day), text: nil, approximate: approximate)
     }
 
     // MARK: - 축
@@ -25,7 +25,7 @@ struct VisitTests {
         let items = VisitMapping.items(from: [
             "findings": axis("위염 초기 소견"),
             "tests": axis(""),
-            "medication_instructions": axis(nil),
+            "medication_instructions": axis(nil)
         ])
         #expect(items.map(\.label) == ["소견"])
     }
@@ -34,7 +34,7 @@ struct VisitTests {
         let items = VisitMapping.items(from: [
             "follow_up": axis("2주 뒤"),
             "findings": axis("위염"),
-            "medication_instructions": axis("2주분"),
+            "medication_instructions": axis("2주분")
         ])
         #expect(items.map(\.label) == ["소견", "약", "재방문"])
     }
@@ -44,7 +44,7 @@ struct VisitTests {
         // 적은 줄이 사라진다.
         let items = VisitMapping.items(from: [
             "referral": axis("상급병원 의뢰"),
-            "findings": axis("위염"),
+            "findings": axis("위염")
         ])
         #expect(items.map(\.label) == ["소견", "referral"])
     }
@@ -54,7 +54,7 @@ struct VisitTests {
     @Test func 재방문_줄에만_날짜를_붙이고_범위면_전후를_단다() {
         let items = [
             VisitItem(axis: VisitAxis.findings, label: "소견", value: "위염"),
-            VisitItem(axis: VisitAxis.followUp, label: "재방문", value: "2주 뒤 재방문"),
+            VisitItem(axis: VisitAxis.followUp, label: "재방문", value: "2주 뒤 재방문")
         ]
         let withDate = VisitMapping.withRevisitDate(
             items,
@@ -101,12 +101,14 @@ struct VisitTests {
     @Test func 저장_요청은_축과_재방문을_나눠_보낸다() {
         let follow = followUp("2026-09-26", approximate: true)
         let request = VisitMapping.createRequest(
-            clinicName: "서울OO병원 내과",
-            visitedOn: HomeRepository.date(from: "2026-09-18"),
-            items: [VisitItem(axis: VisitAxis.followUp, label: "재방문", value: "2주 뒤 (9월 26일 전후)")],
-            followUp: follow,
-            patientNotes: ["커피 줄이기"],
-            rawNote: "원문",
+            VisitMapping.Draft(
+                clinicName: "서울OO병원 내과",
+                visitedOn: HomeRepository.date(from: "2026-09-18"),
+                items: [VisitItem(axis: VisitAxis.followUp, label: "재방문", value: "2주 뒤 (9월 26일 전후)")],
+                followUp: follow,
+                patientNotes: ["커피 줄이기"],
+                rawNote: "원문"
+            ),
             calendar: calendar
         )
         #expect(request.visitedOn == "2026-09-18")

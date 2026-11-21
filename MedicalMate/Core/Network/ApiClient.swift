@@ -142,15 +142,19 @@ actor ApiClient {
             return .rejected(ApiError(statusCode: http.statusCode, message: serverMessage(from: data)))
         }
 
-        if Response.self == EmptyResponse.self {
-            // 본문이 없거나 쓰지 않는 응답. 빈 바디를 디코딩하려다 실패하지 않게 막는다.
-            return .success(EmptyResponse() as! Response)
+        // 본문이 없거나 쓰지 않는 응답. 빈 바디를 디코딩하려다 실패하지 않게 막는다.
+        if let empty = EmptyResponse() as? Response {
+            return .success(empty)
         }
 
         // **직렬화 실패는 잡지 않는다.** 서버와 클라이언트의 계약이 어긋난 것을
-        // "다시 시도해주세요"로 감추면 원인을 찾을 수 없게 된다. 개발 중에 바로 터뜨린다.
-        let decoded = try! decoder.decode(Response.self, from: data)
-        return .success(decoded)
+        // "다시 시도해주세요"로 감추면 원인을 찾을 수 없게 된다. 개발 중에 바로 터뜨리되,
+        // 어느 타입이 어긋났는지 남긴다.
+        do {
+            return .success(try decoder.decode(Response.self, from: data))
+        } catch {
+            fatalError("\(Response.self) 응답을 읽지 못했다. 서버 계약이 바뀌었는지 본다: \(error)")
+        }
     }
 
     private func makeURLRequest(_ request: HTTPRequest) async -> URLRequest? {

@@ -48,13 +48,26 @@ struct MMLinkOnImage: View {
 /// **원본 사진은 훨씬 밝아 그대로 쓰면 흰 글자가 읽히지 않는다.** 여섯 장이 다 들어와
 /// 있다 — Figma의 이미지 채움으로는 32×32만 닿아서 Android 저장소에 들어간 내보내기를
 /// 그대로 가져왔다(`docs/COMPONENT-MAP.md`).
+/// 사진 배너 아래 링크 한 줄. 글 · 장 수 · 누를 때 할 일.
+struct MMBannerLink {
+    let title: String
+    let counter: String
+    let action: () -> Void
+
+    init(title: String, counter: String, action: @escaping () -> Void) {
+        self.title = title
+        self.counter = counter
+        self.action = action
+    }
+}
+
 struct MMHomeBanner<Photo: View>: View {
     @Environment(\.mmSafeAreaTop) private var safeAreaTop
 
     let title: String
     let message: String
     /// 아래 링크. 첫 홈(`CTA=None`)은 `nil`이다.
-    var link: (title: String, counter: String, action: () -> Void)?
+    var link: MMBannerLink?
     /// 헤더 아바타에 넣을 한 글자.
     var initial: String
     var onNotification: () -> Void
@@ -130,23 +143,22 @@ private enum BannerMetrics {
                 message: "아픈 곳을 짚고 몇 가지만 답하면\n진료실에서 보여줄 카드가 돼요.",
                 initial: "김",
                 onNotification: {},
-                onAvatar: {}
-            ) {
-                Image("home-banner-first")
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            }
+                onAvatar: {},
+                photo: {
+                    Image("home-banner-first")
+                        .resizable().scaledToFill()
+                }
+            )
 
             MMHomeBanner(
                 title: "진료 잘\n다녀오셨나요?",
                 message: "서울OO병원 내과에서 들은 말을\n잊기 전에 남겨두세요.",
-                link: ("진료 후 기록하기", "1 / 5", {}),
+                link: MMBannerLink(title: "진료 후 기록하기", counter: "1 / 5") {},
                 initial: "김",
                 onNotification: {},
-                onAvatar: {}
-            ) {
-                Color.clear
-            }
+                onAvatar: {},
+                photo: { Color.clear }
+            )
         }
     }
     .background(MMColor.bgCanvas)
