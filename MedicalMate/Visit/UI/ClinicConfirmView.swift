@@ -55,18 +55,14 @@ struct ClinicConfirmView: View {
     /// "다른 병원이에요".
     ///
     /// 마스터는 `Button / Ghost`인데 **인스턴스가 96×20으로 눌려 있다**(`3663:14326`) —
-    /// 세 크기(56 · 48 · 40) 어디에도 맞지 않고 좌우 여백도 없다. 그래서 컴포넌트를
-    /// 그대로 쓰지 않고 글자만 왼쪽에 세운다. 누르는 영역은 44를 확보한다.
-    /// 디자인 트랙 확인 대기 — COMPONENT-MAP 3장 18번.
+    /// 세 크기(56 · 48 · 40) 어디에도 맞지 않고 좌우 여백도 없다.
+    ///
+    /// **컴포넌트는 그대로 쓰고 버튼의 좌우 여백 20만큼 왼쪽으로 물린다.** 글자는 시안처럼
+    /// 콘텐츠 왼쪽 끝에 붙고 누르는 영역은 그대로 남는다 — Android `ClinicConfirmScreen.kt`가
+    /// 같은 방식이다(COMPONENT-MAP 3장 #18).
     private var changeButton: some View {
-        Button(action: onChange) {
-            Text("다른 병원이에요")
-                .mmTextStyle(MMFont.labelL)
-                .foregroundStyle(MMColor.fgSubtle)
-                .frame(minHeight: MMSize.touchMin, alignment: .leading)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
+        MMButton("다른 병원이에요", kind: .ghost, size: .m, fill: false, action: onChange)
+            .offset(x: -MMSpace.s20)
     }
 
     /// 고른 줄이라 제목이 `fg/primary`다. 1m-B의 결과 줄과 같은 모양이고 **체크는
