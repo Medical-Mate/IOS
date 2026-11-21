@@ -373,6 +373,13 @@ struct CalendarDayNextEventTests {
         )
     }
 
+    @Test func 할_일_지우기는_그_줄의_글을_읽는다() {
+        // 같아 보이는 단추가 줄마다 있어서, 글이 없으면 어느 줄을 지우는지 알 수 없다.
+        #expect(CalendarDayView.todoDeleteLabel("복용 중인 약 챙기기") == "복용 중인 약 챙기기 삭제")
+        #expect(CalendarDayView.todoDeleteLabel("  ") == "빈 할 일 삭제")
+        #expect(CalendarDayView.todoDeleteLabel("") == "빈 할 일 삭제")
+    }
+
     @Test func 잡아_둔_일정이_없으면_뽑아_둔_재방문이_선다() {
         // 1r-2-A. 시각이 없어 화면이 "시간 정하고 확정하기"를 둔다.
         let next = CalendarDayModel.pendingFollowUp(record(followUp: "2026-09-26"), after: fixtureDay("2026-09-12"))

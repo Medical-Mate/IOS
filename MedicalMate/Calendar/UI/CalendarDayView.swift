@@ -7,6 +7,15 @@ import SwiftUI
 /// **할 일 체크는 읽기 모드에서도 된다.** 진료 전에 하나씩 지워 가는 목록이라 편집을
 /// 거쳐야 체크할 수 있으면 쓸모가 없다. 편집은 줄을 지우는 자리다.
 struct CalendarDayView: View {
+
+    /// 할 일 줄의 지우기 단추가 읽히는 말.
+    ///
+    /// **그 줄의 글을 넣는다.** 같아 보이는 단추가 줄마다 있어서, 글이 없으면 화면
+    /// 낭독기로는 어느 줄을 지우는지 알 수 없다. 아직 안 적은 줄은 그렇게 말한다.
+    nonisolated static func todoDeleteLabel(_ text: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "빈 할 일 삭제" : "\(trimmed) 삭제"
+    }
     @Environment(\.appEnvironment) private var app
 
     let date: Date
@@ -165,7 +174,7 @@ struct CalendarDayView: View {
                                 .frame(width: MMSize.touchMin, height: MMSize.touchMin)
                                 .contentShape(Rectangle())
                         }
-                        .accessibilityLabel("할 일 지우기")
+                        .accessibilityLabel(CalendarDayView.todoDeleteLabel(todo.text))
                     }
                 }
             }

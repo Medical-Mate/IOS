@@ -277,12 +277,12 @@ struct ScheduleAddView: View {
                     .padding(.top, MMSpace.s14)
 
                 HStack(spacing: MMSpace.s8) {
-                    MMIconButton(icon: .chevronLeft, label: "이전 달") { model.sheetGoToPreviousMonth() }
+                    MMIconButton(icon: .chevronLeft, label: "지난달") { model.sheetGoToPreviousMonth() }
                     Text(model.sheetMonth.title)
                         .mmTextStyle(MMFont.headingM)
                         .foregroundStyle(MMColor.fgDefault)
                         .frame(maxWidth: .infinity)
-                    MMIconButton(icon: .chevronRight, label: "다음 달") { model.sheetGoToNextMonth() }
+                    MMIconButton(icon: .chevronRight, label: "다음달") { model.sheetGoToNextMonth() }
                 }
 
                 // 시트의 그리드는 범례를 끈다. 고르는 자리라 보여 줄 상태가 없다.

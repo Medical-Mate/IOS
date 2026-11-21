@@ -82,7 +82,9 @@ struct MMCallout: View {
             }
 
             if isEditing {
-                MMIconButton(icon: .close, label: "질문 지우기", style: .ghost, size: .s) {
+                // **번호를 넣는다.** 같아 보이는 지우기 단추가 다섯이라 번호가 없으면
+                // 화면 낭독기로는 어느 질문을 지우는지 알 수 없다.
+                MMIconButton(icon: .close, label: "\(index + 1)번 질문 삭제", style: .ghost, size: .s) {
                     onDelete?(index)
                 }
             }

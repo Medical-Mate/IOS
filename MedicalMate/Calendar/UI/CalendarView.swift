@@ -118,14 +118,14 @@ struct CalendarView: View {
 
     private func monthHead(_ model: CalendarModel) -> some View {
         HStack(spacing: MMSpace.s8) {
-            MMIconButton(icon: .chevronLeft, label: "이전 달") {
+            MMIconButton(icon: .chevronLeft, label: "지난달") {
                 Task { await model.goToPreviousMonth() }
             }
             Text(model.month.title)
                 .mmTextStyle(MMFont.headingM)
                 .foregroundStyle(MMColor.fgDefault)
                 .frame(maxWidth: .infinity)
-            MMIconButton(icon: .chevronRight, label: "다음 달") {
+            MMIconButton(icon: .chevronRight, label: "다음달") {
                 Task { await model.goToNextMonth() }
             }
         }

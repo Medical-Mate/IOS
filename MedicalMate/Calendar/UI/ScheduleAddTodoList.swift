@@ -34,7 +34,7 @@ extension ScheduleAddView {
                             .frame(width: MMSize.touchMin, height: MMSize.touchMin)
                             .contentShape(Rectangle())
                     }
-                    .accessibilityLabel("할 일 지우기")
+                    .accessibilityLabel(CalendarDayView.todoDeleteLabel(todo.text))
                 }
                 .frame(height: ScheduleMetrics.rowHeight)
             }
