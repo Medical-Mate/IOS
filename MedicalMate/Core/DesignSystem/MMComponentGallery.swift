@@ -88,6 +88,8 @@ struct MMComponentGallery: View {
                     HStack(spacing: MMSpace.s12) {
                         MMAvatar(initial: "나")
                         MMAvatar(initial: "김", kind: .doctor)
+                        // 1s-1의 프로필만 56이다.
+                        MMAvatar(initial: "김", size: 56)
                     }
                 }
 
@@ -113,7 +115,14 @@ struct MMComponentGallery: View {
                         MMToggle(isOn: .constant(false))
                     }
                     MMSettingRow(title: "진료 전 알림", kind: .toggle($reminderOn, description: "확정 시 24시간 전"))
+                    // 1s-1의 토글 줄은 제목이 굵다(인스턴스 덮어쓰기 · COMPONENT-MAP #22).
+                    MMSettingRow(
+                        title: "진료 전 알림",
+                        kind: .toggle($reminderOn, description: "확정 시 24시간 전"),
+                        isTitleStrong: true
+                    )
                     MMSettingRow(title: "알림 시간", kind: .navigation(value: "오후 7:00", action: {}))
+                    MMSettingRow(title: "진료 전 알림", kind: .value("24시간 전"))
                 }
 
                 section("Notice · 292:668 / Callout · 293:657") {

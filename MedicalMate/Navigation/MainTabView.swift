@@ -8,6 +8,7 @@ import SwiftUI
 /// 탭마다 스택을 따로 두지 않고 하나를 공유한다. Android가 단일 `NavHost`를 쓰는 것과
 /// 같은 이유다 — 탭마다 스택을 두면 같은 화면이 탭 수만큼 쌓인다.
 struct MainTabView: View {
+    @Environment(\.appEnvironment) private var app
     @State private var tab: Tab = .home
     @State private var path = NavigationPath()
 
@@ -44,7 +45,8 @@ struct MainTabView: View {
             HomeView(
                 onOpenCardList: { path.append(Route.briefCardList) },
                 onOpenCard: { card in Int64(card.id).map { path.append(Route.briefCard(cardId: $0)) } },
-                onStartIntake: { path.append(Route.intake(sessionId: nil)) }
+                onStartIntake: { path.append(Route.intake(sessionId: nil)) },
+                onProfile: { path.append(Route.myProfile) }
             )
         case .record:
             BriefCardListView(
@@ -133,6 +135,30 @@ struct MainTabView: View {
                 cardId: cardId,
                 onClose: { path.removeLast() },
                 onSaved: { _ in path.removeLast() }
+            )
+            .toolbar(.hidden, for: .navigationBar)
+
+        case .myProfile:
+            MyProfileView(
+                onBack: { path.removeLast() },
+                onEditHealth: { path.append(Route.healthEdit) },
+                onEditReminderTime: { path.append(Route.reminderTime) },
+                onLogout: { Task { await app.session.logOut() } },
+                onWithdraw: { Task { _ = await app.session.withdraw() } }
+            )
+            .toolbar(.hidden, for: .navigationBar)
+
+        case .healthEdit:
+            HealthEditView(
+                onClose: { path.removeLast() },
+                onSaved: { path.removeLast() }
+            )
+            .toolbar(.hidden, for: .navigationBar)
+
+        case .reminderTime:
+            ReminderTimeView(
+                onBack: { path.removeLast() },
+                onSaved: { path.removeLast() }
             )
             .toolbar(.hidden, for: .navigationBar)
 

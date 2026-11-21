@@ -18,6 +18,9 @@ struct MMSettingRow: View {
 
     let title: String
     let kind: Kind
+    /// 제목을 굵게. 마스터는 `Body/L`인데 **1s-1의 토글 줄 셋이 `Body/L Strong`으로
+    /// 덮여 있다**(COMPONENT-MAP 3장 #22).
+    var isTitleStrong = false
 
     var body: some View {
         switch kind {
@@ -25,11 +28,12 @@ struct MMSettingRow: View {
             HStack {
                 VStack(alignment: .leading, spacing: MMSpace.s2) {
                     Text(title)
-                        .mmTextStyle(MMFont.bodyL)
+                        .mmTextStyle(isTitleStrong ? MMFont.bodyLStrong : MMFont.bodyL)
                         .foregroundStyle(MMColor.fgDefault)
                     Text(description)
                         .mmTextStyle(MMFont.bodyS)
                         .foregroundStyle(MMColor.fgSubtle)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 

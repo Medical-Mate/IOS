@@ -11,6 +11,7 @@ final class AppEnvironment {
     let client: ApiClient
     let auth: AuthRepository
     let healthProfile: HealthProfileRepository
+    let settings: SettingsRepository
     let home: HomeRepository
     let cards: CardRepository
     let intake: IntakeRepository
@@ -37,6 +38,7 @@ final class AppEnvironment {
         self.client = client
 
         self.healthProfile = HealthProfileRepository(client: client)
+        self.settings = SettingsRepository(client: client)
         self.home = HomeRepository(client: client)
         self.cards = CardRepository(client: client)
         self.intake = IntakeRepository(client: client)

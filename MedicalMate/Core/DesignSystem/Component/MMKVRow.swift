@@ -62,12 +62,14 @@ struct MMAvatar: View {
     /// 한 글자. 이름의 끝 글자나 "나"를 넣는다.
     let initial: String
     var kind: Kind = .patient
+    /// 지름. 마스터는 44이고 **1s-1의 프로필만 56이다.** 글자도 같은 비율로 커진다.
+    var size: CGFloat = AvatarMetrics.size
 
     var body: some View {
         Text(initial)
-            .mmTextStyle(MMFont.bodyMStrong)
+            .font(.pretendard(.semibold, size: MMFont.bodyMStrong.size * size / AvatarMetrics.size))
             .foregroundStyle(kind == .patient ? MMColor.fgPrimary : MMColor.fgSubtle)
-            .frame(width: AvatarMetrics.size, height: AvatarMetrics.size)
+            .frame(width: size, height: size)
             .background(kind == .patient ? MMColor.bgPrimarySubtle : MMColor.bgSubtle)
             .clipShape(Circle())
     }
