@@ -89,8 +89,6 @@ struct ScheduleAddView: View {
 
                         cardList(model)
 
-                        addRow(title: "새 카드 만들기", action: onNewCard)
-
                         MMSectionHeader(title: "진료 전 할 일")
 
                         todoList(model, focus: $focusedTodo)
@@ -196,10 +194,16 @@ struct ScheduleAddView: View {
 
     @ViewBuilder
     private func cardList(_ model: ScheduleAddModel) -> some View {
-        VStack(spacing: MMSpace.s10) {
+        // **"새 카드 만들기"가 카드 목록 안에 든다.** 시안 `1r-4`(`3663:14803`)가 마지막
+        // 카드와 이 줄 사이에 **10**을 두고, Android의 `CardSection`도 `AddRow`를 같은
+        // `Column(spacedBy(s10))`에 넣는다. 밖에 두면 붙어 버려 카드 목록의 리듬이 깨진다.
+        // 할 일 쪽은 반대다 — `TodoSection`이 `AddRow`를 바깥에 두고 시안도 0이다.
+        VStack(spacing: ScheduleMetrics.cardListGap) {
             ForEach(model.cards) { item in
                 cardRow(item, model: model)
             }
+
+            addRow(title: "새 카드 만들기", action: onNewCard)
         }
     }
 
@@ -260,8 +264,10 @@ struct ScheduleAddView: View {
 
     // MARK: - 아래 칸
 
+    /// 위 12 · 줄 사이 **10** · 아래 24. 시안 `1r-4`(`3663:14810`)가 안내 줄을 12에
+    /// 두고 버튼을 40에 세운다(18 + 10). Android의 `MedicalMateFooter`도 `s10`이다.
     private func footer(_ model: ScheduleAddModel) -> some View {
-        VStack(spacing: MMSpace.s12) {
+        VStack(spacing: ScheduleMetrics.footerGap) {
             // 병원을 아직 안 골랐을 때만 예약 문자 길을 알린다.
             if !model.hasClinic {
                 Button { model.sheet = .shareGuide } label: {
@@ -404,4 +410,8 @@ enum ScheduleMetrics {
     static let rowHeight: CGFloat = MMSize.controlMd
     /// 빈 할 일 칸의 글자와 밑줄 사이. `MMCallout`의 빈 질문 칸과 같다.
     static let todoFieldGap: CGFloat = 5
+    /// 카드 줄과 "새 카드 만들기" 사이. 시안 `1r-4`와 Android `CardSection`이 둘 다 10이다.
+    static let cardListGap = MMSpace.s10
+    /// 아래 칸의 안내 줄과 버튼 사이. Android `MedicalMateFooter`와 같다.
+    static let footerGap = MMSpace.s10
 }

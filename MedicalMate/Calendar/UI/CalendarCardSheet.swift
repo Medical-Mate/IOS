@@ -41,8 +41,13 @@ struct CalendarCardSheet: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
+            // 시안이 줄과 버튼 사이를 **12 + 14** 두 칸으로 나눠 둔다
+            // (`3663:14672` · `3663:14674`). 16 하나로 두고 있어서 10이 모자랐다 —
+            // 시트 전체 높이가 332가 아니라 322로 섰다.
+            Color.clear.frame(height: CardSheetMetrics.listBottom)
+
             MMButton(buttonTitle, kind: .primary, action: onSchedule)
-                .padding(.top, MMSpace.s16)
+                .padding(.top, CardSheetMetrics.beforeButton)
         }
     }
 
@@ -62,4 +67,11 @@ struct CalendarCardSheet: View {
     private var badge: (text: String, tone: MMBadge.Tone) {
         card.visited ? ("진료 완료", .success) : ("진료 전", .brand)
     }
+}
+
+enum CardSheetMetrics {
+    /// 카드 줄 아래(`3663:14672`).
+    static let listBottom = MMSpace.s12
+    /// 버튼 위(`3663:14674`). 둘을 합쳐 26이고, 시트는 332로 선다.
+    static let beforeButton = MMSpace.s14
 }

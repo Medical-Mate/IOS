@@ -438,3 +438,26 @@ struct CalendarDayNextEventTests {
         #expect(CalendarDayModel.pendingFollowUp(record(followUp: "2026-09-04"), after: day) == nil)
     }
 }
+
+/// 좌표 대조에서 나온 세 값(2026-11-22). 코드에 적혀 있지 않고 쌓여서 나오던 자리라
+/// 숫자로 묶어 둔다.
+@Suite("일정 추가 · 카드 시트 치수")
+struct ScheduleLayoutSpecTests {
+    /// `1r-4`(`3663:14803`)가 마지막 카드와 "새 카드 만들기" 사이에 10을 둔다.
+    /// Android `CardSection`도 `AddRow`를 같은 `Column(spacedBy(s10))`에 넣는다.
+    @Test func 카드_목록과_새_카드_만들기_사이는_10이다() {
+        #expect(ScheduleMetrics.cardListGap == 10)
+    }
+
+    /// `1r-4`(`3663:14810`)가 안내 줄을 12에 두고 버튼을 40에 세운다 — 18 + 10이다.
+    /// Android `MedicalMateFooter`도 `s10`이고, iOS의 `1s-3`은 이미 10이었다.
+    @Test func 아래_칸의_줄_사이는_10이다() {
+        #expect(ScheduleMetrics.footerGap == 10)
+    }
+
+    /// `1r-1-S`(`3663:14672` · `3663:14674`)가 줄과 버튼 사이를 12 + 14로 나눠 둔다.
+    /// 합이 26이라야 시트가 332로 선다.
+    @Test func 카드만_있는_날_시트는_줄과_버튼_사이가_26이다() {
+        #expect(CardSheetMetrics.listBottom + CardSheetMetrics.beforeButton == 26)
+    }
+}
