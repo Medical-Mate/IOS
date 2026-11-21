@@ -403,9 +403,21 @@ grep -rhoE 'fun `[^`]+`' aos/app/src/test | sed 's/fun `//; s/`$//'
 | `1j-3` 기록 상세 제목 | 같은 자리, 같은 까닭 | `RecordDetailScreen.Head`에 `maxLines`가 없다 |
 | `1r-4` 고르는 칸 | 긴 병원 이름이 끊겼다 | `PickerField.PickerRow`가 `maxLines` 없이 `heightIn(min=)`으로 는다 |
 
-둘 다 `.fixedSize(horizontal: false, vertical: true)`로 바꿨다. **기본 크기에서는 여전히
+셋 다 `.fixedSize(horizontal: false, vertical: true)`로 바꿨다. **기본 크기에서는 여전히
 한 줄이라 시안과 같고**, 길어질 때만 줄이 는다. 배지가 첫 줄에 붙도록 `HStack`을
 `.firstTextBaseline`으로 맞췄다.
+
+`1r-4`의 칸은 테두리도 따라 늘려야 했다 — 줄 수만 풀면 둘째 줄이 56pt 상자 밖으로
+샌다. `.frame(height:)`를 `.frame(minHeight:)`로 바꿨고, 이것이 Android의
+`heightIn(min = controlLg)`와 같은 것이다. **기본 크기에서는 56으로 서서 시안과 같다**
+— 띄워서 둘 다 확인했다.
+
+**나머지 `.frame(height:)`는 그대로 둔다.** Android는 글자가 드는 칸마다
+`heightIn(min=)`을 쓰고(`Button` · `Badge` · `Chip` · `SearchField` · `QuestionRow` ·
+`SocialLoginButton`) iOS는 `.frame(height:)`라 못이 박혀 있지만, **컴포넌트 갤러리를
+`accessibility-extra-large`로 띄워 보니 어느 것도 넘치지 않았다.** SwiftUI는 고정 높이에
+글자를 가두지 않고, 이 토큰 높이들이 가장 큰 글자에도 넉넉했다. 보이지도 않는 차이를
+열 군데 고치는 것은 범위 밖이다(CLAUDE.md 6장 3번). `Tab Bar`는 양쪽 다 고정이다.
 
 **묶어 둔 나머지는 그대로 둔다.** `MMListRow`의 제목(한 줄 · 넘치면 줄임)과 요약은
 마스터(`335:1114`)가 `whitespace-nowrap` · `text-ellipsis`로 그려 두었고 Android도

@@ -149,7 +149,10 @@ struct ScheduleAddView: View {
             }
             .padding(.leading, MMSpace.s16)
             .padding(.trailing, MMSpace.s12)
-            .frame(height: MMSize.controlLg)
+            // **칸이 는다.** 위에서 줄 수를 풀었으니 테두리도 따라 늘어야 둘째 줄이
+            // 밖으로 새지 않는다. Android의 `PickerRow`도 `heightIn(min=)`이다.
+            // 기본 글자 크기에서는 한 줄이라 56으로 서고 시안과 같다.
+            .frame(minHeight: MMSize.controlLg)
             .frame(maxWidth: .infinity)
             .overlay {
                 RoundedRectangle(cornerRadius: MMRadius.md)
