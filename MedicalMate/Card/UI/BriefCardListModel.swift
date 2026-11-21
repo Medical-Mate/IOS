@@ -50,7 +50,9 @@ final class BriefCardListModel {
                 sections = repository.sections(cards: list, openIntake: openIntake)
             }
         case .rejected(let error):
-            errorMessage = error.message ?? "불러오지 못했어요."
+            // **무엇을 못 읽었는지 적는다.** 같은 목록이 두 화면을 겸해 말이 갈린다
+            // (Android `record_failed_title` · `brief_card_list_failed_title`).
+            errorMessage = error.message ?? (visits == nil ? "카드를 불러오지 못했어요" : "기록을 불러오지 못했어요")
         case .networkUnavailable:
             errorMessage = "연결이 끊어졌어요."
         }

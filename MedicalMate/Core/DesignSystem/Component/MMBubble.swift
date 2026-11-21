@@ -91,7 +91,7 @@ struct MMTypingIndicator: View {
         }
         .frame(height: TypingMetrics.height, alignment: .center)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityLabel("답을 짓고 있어요")
+        .accessibilityLabel("답변을 준비하고 있어요")
     }
 
     private func dots(phase: Int) -> some View {

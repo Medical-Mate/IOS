@@ -108,6 +108,16 @@ struct IntakeRepository: Sendable {
     /// 않는다. **직접 적은 줄이 있는지로 가른다** — Android `IntakeQuestionRows.kt`가
     /// 같은 규칙이라 그쪽을 따랐다(COMPONENT-MAP 3장 #11).
     ///
+    /// 질문 줄 위의 AI 말(`1c-D` `3663:7218`). "물어볼 질문 3개를 골라봤어요."
+    ///
+    /// **추천만 센다.** 환자가 직접 적은 줄은 AI가 고른 것이 아니다. 추천이 하나도 없으면
+    /// 이 말도 서지 않는다.
+    nonisolated static func intro(rows: [IntakeQuestionRow]) -> String? {
+        let suggested = rows.count { !$0.isOwn }
+        guard suggested > 0 else { return nil }
+        return "물어볼 질문 \(suggested)개를 골라봤어요.\n눌러서 카드에 담아주세요."
+    }
+
     /// **고른 것이 아니라 줄 전체를 본다.** 적어 넣고 체크를 푼 줄도 "직접 적은 것"이다.
     static func summary(rows: [IntakeQuestionRow]) -> String? {
         let picked = rows.filter(\.isSelected)

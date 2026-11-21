@@ -49,8 +49,8 @@ struct MyProfileView: View {
                 // 탈퇴는 되돌릴 수 없다. 실수로 한 번 눌러 계정이 사라지면 되돌릴 길이 없다.
                 MMDialog(
                     title: "정말 탈퇴하시겠어요?",
-                    message: "기록과 브리핑 카드가 모두 지워지고 되돌릴 수 없어요.",
-                    confirmTitle: "탈퇴",
+                    message: "저장된 브리핑 카드와 진료 기록이 모두 삭제되고 되돌릴 수 없어요",
+                    confirmTitle: "탈퇴하기",
                     onCancel: { askingWithdraw = false },
                     onConfirm: {
                         askingWithdraw = false

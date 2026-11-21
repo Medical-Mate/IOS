@@ -74,6 +74,21 @@ struct IntakeTests {
         #expect(IntakeRepository.summary(rows: [IntakeQuestionRow(text: "하나")]) == nil)
     }
 
+    @Test func 질문_줄_위의_AI_말은_추천만_센다() {
+        // 환자가 직접 적은 줄은 AI가 고른 것이 아니다(3663:7218).
+        let rows = [
+            IntakeQuestionRow(text: "검사를 받아야 하나요?"),
+            IntakeQuestionRow(text: "지금 진통제 계속 먹어도 되나요?"),
+            IntakeQuestionRow(text: "내가 적은 질문", isSelected: true, isOwn: true)
+        ]
+        #expect(IntakeRepository.intro(rows: rows) == "물어볼 질문 2개를 골라봤어요.\n눌러서 카드에 담아주세요.")
+    }
+
+    @Test func 추천이_없으면_AI_말이_서지_않는다() {
+        #expect(IntakeRepository.intro(rows: []) == nil)
+        #expect(IntakeRepository.intro(rows: [IntakeQuestionRow(text: "내가 적은 질문", isOwn: true)]) == nil)
+    }
+
     @Test func 정리_문장은_고른_수를_세고_직접_적은_것이_있으면_마무리로_바뀐다() {
         let suggested = [
             IntakeQuestionRow(text: "하나", isSelected: true),

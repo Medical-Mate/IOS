@@ -87,6 +87,8 @@ final class IntakeModel {
     var blankNumber: Int { rows.count + 1 }
 
     /// 줄 아래 서는 AI 말(1c-D1 · 1c-D4).
+    /// 질문 줄 위의 AI 말(`1c-D`). 추천이 하나도 없으면 서지 않는다.
+    var questionIntro: String? { IntakeRepository.intro(rows: rows) }
     var questionSummary: String? { IntakeRepository.summary(rows: rows) }
 
     /// 더 담을 수 있는지. 차면 체크도 빈 칸도 막힌다.

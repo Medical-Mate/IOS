@@ -117,6 +117,11 @@ struct IntakeChatView: View {
 
     private var questions: some View {
         VStack(alignment: .leading, spacing: MMSpace.s14) {
+            // 줄 위의 AI 말(`3663:7218`). 무엇을 왜 보여주는지를 먼저 적는다.
+            if let intro = model.questionIntro {
+                MMBubble(text: intro, sender: .ai)
+            }
+
             VStack(spacing: MMSpace.s8) {
                 ForEach(Array(model.rows.enumerated()), id: \.element.id) { index, row in
                     MMQuestionRow(
