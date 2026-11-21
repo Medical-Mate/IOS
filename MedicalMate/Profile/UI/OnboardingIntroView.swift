@@ -9,31 +9,37 @@ struct OnboardingPage: Identifiable {
     let title: String
     let body: String
     let illustration: MMIllustration
+    /// 그림의 **원래 크기**. 칸에 맞춰 줄이지 않는다 — 마스터의 규칙이다.
+    let artSize: CGSize
 
     static let all: [OnboardingPage] = [
         .init(
             id: 1,
             title: "말하기 어려웠던 증상,\n함께 준비해요.",
             body: "아픈 곳을 짚고, 증상을 말해 주세요.\n진료 전에 보여줄 카드부터\n진료 후 기록까지 함께 정리해요.",
-            illustration: .onboarding1
+            illustration: .onboarding1,
+            artSize: CGSize(width: 326, height: 326)
         ),
         .init(
             id: 2,
             title: "짚어요.",
             body: "정확한 의학 용어를 몰라도 괜찮아요.\n아픈 부위를 먼저 고르고,\n이어지는 질문에 편하게 답해 주세요.",
-            illustration: .onboarding2
+            illustration: .onboarding2,
+            artSize: CGSize(width: 342, height: 228)
         ),
         .init(
             id: 3,
             title: "정리해요.",
             body: "말한 증상은 AI가 한 장으로 정리해요.\n직접 확인하고 고친 뒤,\n진료실에서 의료진에게 보여 주세요.",
-            illustration: .onboarding3
+            illustration: .onboarding3,
+            artSize: CGSize(width: 340, height: 340)
         ),
         .init(
             id: 4,
             title: "이어가요.",
             body: "진료에서 들은 말과 처방을 기록해요.\n다음 진료 일정까지 한곳에서,\n다시 준비할 때 꺼내 볼 수 있어요.",
-            illustration: .onboarding4
+            illustration: .onboarding4,
+            artSize: CGSize(width: 307, height: 307)
         )
     ]
 }
@@ -102,17 +108,30 @@ struct OnboardingIntroView: View {
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            // 일러스트 칸 320×340. 그림은 원래 비율 그대로 가운데에 든다.
+            // **그림을 칸에 맞춰 줄이지 않는다.** 마스터(`3610:10270`)가 "이미지
+            // 원래 크기·비율 그대로"라고 못박았고 네 장의 크기를 적어 두었다
+            // (1/4 326 · 2/4 342×228 · 3/4 340 · 4/4 307). **2/4와 3/4는 콘텐츠
+            // 폭 320보다 넓어 좌우 거터로 조금 나간다 — 시안도 그렇다.** 칸의 폭에
+            // 맞춰 줄이면 세 장이 최대 6% 작아진다. Android도 `requiredSize`로 둔다.
             page.illustration.view()
-                .frame(maxWidth: OnboardingMetrics.illustrationBox.width,
-                       maxHeight: OnboardingMetrics.illustrationBox.height)
+                .frame(width: page.artSize.width, height: page.artSize.height)
                 .frame(maxWidth: .infinity, maxHeight: OnboardingMetrics.illustrationBox.height)
         }
         .padding(.top, OnboardingMetrics.topInset)
         .padding(.bottom, MMSpace.s24)
         .padding(.horizontal, MMSize.gutter)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .animation(reduceMotion ? nil : .easeInOut(duration: 0.24), value: index)
+        // **장은 겹쳐 바뀐다**(dissolve). 프로토타입(`3663:6862`)의 다음 버튼이
+        // `DISSOLVE 350ms EASE_IN_AND_OUT`으로 다음 장을 연다 — 옆으로 밀지 않는다.
+        // 되짚을 때도 같다. 240ms는 진행 표시의 값이라 여기 쓰지 않는다.
+        // 진행 표시와 하단 버튼은 그대로 둔다 — 함께 바뀌면 몇 번째 장인지가 눈에서
+        // 사라지고 손가락이 버튼을 따라다녀야 한다.
+        .id(index)
+        .transition(.opacity)
+        .animation(
+            reduceMotion ? nil : .easeInOut(duration: OnboardingMetrics.pageDissolve),
+            value: index
+        )
     }
 
     private var footer: some View {
@@ -135,6 +154,8 @@ private enum OnboardingMetrics {
     static let leftSpace: CGFloat = 59
     static let topInset: CGFloat = 72
     static let illustrationBox = CGSize(width: 320, height: 340)
+    /// 장이 겹쳐 바뀌는 시간. 프로토타입(`3663:6862`)의 `DISSOLVE 350ms`다.
+    static let pageDissolve: Double = 0.35
 }
 
 #Preview {

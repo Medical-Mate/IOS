@@ -212,13 +212,15 @@ struct CalendarDayView: View {
     private func emptyRecord(_ model: CalendarDayModel) -> some View {
         // 진료 전에는 기록이 없다. **액션이 면 없는 링크다**(마스터의 Tonal을 인스턴스가
         // 바꿔 놓았다).
+        // **앞날에는 기록하러 가는 단추를 두지 않는다**(`canRecord`). 빈 상태의
+        // "진료가 끝나면 … 기록할 수 있어요"가 그 자리를 대신한다. Android도 같다.
         MMEmptyState(
             icon: .emptyBox,
             title: "아직 진료 전이에요",
             message: "진료가 끝나면 들은 내용을 여기에 기록할 수 있어요",
-            actionTitle: "진료 후 기록하기",
+            actionTitle: model.canRecord ? "진료 후 기록하기" : nil,
             actionStyle: .link,
-            onAction: { model.cards.first.map { onRecordVisit($0.id) } }
+            onAction: model.canRecord ? { model.cards.first.map { onRecordVisit($0.id) } } : nil
         )
         .frame(maxWidth: .infinity)
     }

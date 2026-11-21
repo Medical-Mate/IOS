@@ -14,6 +14,22 @@ final class CalendarDayModel {
     private(set) var record: VisitListItem?
     /// 이 진료에서 나온 재방문 일정(`1r-2-A` · `1r-2-A2`).
     private(set) var nextEvent: Appointment?
+    /// 진료 후 기록을 시작할 수 있는지.
+    ///
+    /// **앞날에는 두지 않는다.** 기록 날짜가 그 일자라서, 오지 않은 날에 적으면
+    /// 다녀오지 않은 진료가 기록으로 남고 캘린더가 그 날을 "기록 있음"으로 찍는다.
+    /// **일정을 지워도 그 점은 남는다.** 오늘은 든다 — 오늘 진료는 다녀와서 바로
+    /// 적는다. 빈 상태의 "진료가 끝나면 …"이 그 자리를 대신한다. Android도 같다.
+    var canRecord: Bool {
+        guard record == nil, !cards.isEmpty else { return false }
+        return !CalendarDayModel.isUpcoming(date, today: today(), calendar: calendar)
+    }
+
+    /// 아직 오지 않은 날인지. **오늘은 들지 않는다.**
+    nonisolated static func isUpcoming(_ date: Date, today: Date, calendar: Calendar) -> Bool {
+        calendar.startOfDay(for: date) > calendar.startOfDay(for: today)
+    }
+
     private(set) var isLoading = true
     private(set) var errorMessage: String?
 

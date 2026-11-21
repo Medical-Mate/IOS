@@ -174,6 +174,32 @@ struct ScheduleAddTests {
 }
 
 /// 일자 상세가 하루의 일정을 어떻게 고르는지.
+struct CalendarDayUpcomingTests {
+    private var calendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
+        return calendar
+    }
+
+    @Test func 앞날인지는_날로_가르고_오늘은_들지_않는다() {
+        // 앞날에 진료 후 기록을 시작하면 다녀오지 않은 진료가 기록으로 남고
+        // 캘린더가 그 날을 "기록 있음"으로 찍는다. 일정을 지워도 그 점은 남는다.
+        let today = fixtureDay("2026-09-12")
+        #expect(CalendarDayModel.isUpcoming(fixtureDay("2026-09-13"), today: today, calendar: calendar))
+        // 오늘 진료는 다녀와서 바로 적는다.
+        #expect(!CalendarDayModel.isUpcoming(today, today: today, calendar: calendar))
+        #expect(!CalendarDayModel.isUpcoming(fixtureDay("2026-09-11"), today: today, calendar: calendar))
+    }
+
+    @Test func 시각이_늦어도_같은_날이면_앞날이_아니다() {
+        // 시각이 아니라 날로 가른다. 오늘 23시 진료도 오늘이다.
+        let today = calendar.date(bySettingHour: 23, minute: 0, second: 0, of: fixtureDay("2026-09-12"))
+        #expect(!CalendarDayModel.isUpcoming(
+            fixtureDay("2026-09-12"), today: today ?? .distantPast, calendar: calendar
+        ))
+    }
+}
+
 struct CalendarDayTests {
     private func appointment(id: Int64, hour: Int?, minute: Int = 0) -> Appointment {
         Appointment(
